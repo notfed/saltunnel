@@ -13,11 +13,11 @@ void saltunnel(int fd_local_read, int fd_local_write, int fd_net_read, int fd_ne
 {
     // We'll take bytes from fd_local_read, encrypt them, and send to fd_net_write
     cryptostream cryptostream_egress =
-        { .op = CRYPTOSTREAM_ENCRYPT, .from_fd = fd_local_read, .to_fd = fd_net_write};
+        { .op = cryptostream_identity_feed, .from_fd = fd_local_read, .to_fd = fd_net_write};
     
     // We'll take bytes from fd_net_read, decrypt them, and send to fd_local_write
     cryptostream cryptostream_ingress =
-        { .op = CRYPTOSTREAM_DECRYPT, .from_fd = fd_net_read, .to_fd = fd_local_write};
+        { .op = cryptostream_identity_feed, .from_fd = fd_net_read, .to_fd = fd_local_write};
     
     // Define poll (we will poll fd_localin and fd_netin)
     struct pollfd pfds[] = {
@@ -34,11 +34,11 @@ void saltunnel(int fd_local_read, int fd_local_write, int fd_net_read, int fd_ne
 
         // Handle data on fd_localin
         if (pfds[0].revents & POLLIN) {
-            try(cryptostream_feed(&cryptostream_egress)) || oops_fatal("failed to feed");
+            try(cryptostream_egress.op(&cryptostream_egress)) || oops_fatal("failed to feed");
         }
         // Handle data on fd_netin
         if (pfds[1].revents & POLLIN) {
-            try(cryptostream_feed(&cryptostream_ingress)) || oops_fatal("failed to feed");
+            try(cryptostream_ingress.op(&cryptostream_ingress)) || oops_fatal("failed to feed");
         }
         
         /* If both fds are closed, exit */

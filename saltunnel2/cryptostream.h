@@ -6,15 +6,14 @@
 #ifndef cryptostream_h
 #define cryptostream_h
 
-#define CRYPTOSTREAM_ENCRYPT 0
-#define CRYPTOSTREAM_DECRYPT 1
-
 typedef struct cryptostream {
-    int op;
+    int (*op)(struct cryptostream*);
     int from_fd;
     int to_fd;
 } cryptostream;
 
-int cryptostream_feed(cryptostream*);
+int cryptostream_identity_feed(cryptostream*);
+int cryptostream_encrypt_feed(cryptostream*);
+int cryptostream_decrypt_feed(cryptostream*);
 
 #endif /* cryptostream_h */

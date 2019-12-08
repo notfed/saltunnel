@@ -48,7 +48,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "20"
             endingLineNumber = "20"
-            landmarkName = "cryptostream_feed(cs)"
+            landmarkName = "cryptostream_identity_feed(cs)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
@@ -64,23 +64,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "16"
             endingLineNumber = "16"
-            landmarkName = "cryptostream_feed(cs)"
-            landmarkType = "9">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "3D1AA21D-A563-4FB1-913A-21B0FEEA4FB6"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "saltunnel2/test.c"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "55"
-            endingLineNumber = "55"
-            landmarkName = "test2()"
+            landmarkName = "cryptostream_identity_feed(cs)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
