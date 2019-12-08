@@ -9,40 +9,40 @@
 #include "log.h"
 #include "oops.h"
 
-void saltunnel(int fd_localin, int fd_localout, int fd_netin, int fd_netout)
+void saltunnel(int fd_local_read, int fd_local_write, int fd_net_read, int fd_net_write)
 {
-    // We'll take bytes from fd_localin, encrypt them, and send to fd_netout
-    cryptostream cryptostream_out =
-        { .op = CRYPTOSTREAM_ENCRYPT, .from_fd = fd_localin, .to_fd = fd_netout};
+    // We'll take bytes from fd_local_read, encrypt them, and send to fd_net_write
+    cryptostream cryptostream_egress =
+        { .op = CRYPTOSTREAM_ENCRYPT, .from_fd = fd_local_read, .to_fd = fd_net_write};
     
-    // We'll take bytes from fd_netin, decrypt them, and send to fd_localout
-    cryptostream cryptostream_in =
-        { .op = CRYPTOSTREAM_DECRYPT, .from_fd = fd_netin, .to_fd = fd_localout};
+    // We'll take bytes from fd_net_read, decrypt them, and send to fd_local_write
+    cryptostream cryptostream_ingress =
+        { .op = CRYPTOSTREAM_DECRYPT, .from_fd = fd_net_read, .to_fd = fd_local_write};
     
     // Define poll (we will poll fd_localin and fd_netin)
     struct pollfd pfds[] = {
-        { .fd = fd_localin, .events = POLLIN },
-        { .fd = fd_netin,   .events = POLLIN }
+        { .fd = fd_local_read, .events = POLLIN }, // egress
+        { .fd = fd_net_read,   .events = POLLIN }  // ingress
     };
     
     for(;;) {
 
         /* Poll */
         log_debug("about to poll\n");
-        try(poll(pfds,2,-1)) || oops_fatal("step 2: failed to poll: ");
+        try(poll(pfds,2,-1)) || oops_fatal("step 2: failed to poll");
+        log_debug("successfully polled\n");
 
         // Handle data on fd_localin
         if (pfds[0].revents & POLLIN) {
-            try(cryptostream_feed(&cryptostream_out)) || oops_fatal("step3: failed to feed: ");
+            try(cryptostream_feed(&cryptostream_egress)) || oops_fatal("failed to feed");
         }
-        
         // Handle data on fd_netin
         if (pfds[1].revents & POLLIN) {
-            try(cryptostream_feed(&cryptostream_in)) || oops_fatal("step3: failed to feed: ");
+            try(cryptostream_feed(&cryptostream_ingress)) || oops_fatal("failed to feed");
         }
         
         /* If both fds are closed, exit */
-        else if(pfds[0].revents & POLLHUP && pfds[1].revents & POLLHUP) {
+        if(pfds[0].revents & POLLHUP && pfds[1].revents & POLLHUP) {
             break;
         }
     }
