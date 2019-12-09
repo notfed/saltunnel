@@ -33,12 +33,12 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
         
         // Handle ingress data
         if (pfds[1].revents & POLLIN) {
-            try(ingress->op(ingress)) || oops_fatal("failed to feed");
+            try(ingress->op(ingress,k)) || oops_fatal("failed to feed");
         }
         
         // Handle egress data
         if (pfds[0].revents & POLLIN) {
-            try(egress->op(egress)) || oops_fatal("failed to feed");
+            try(egress->op(egress,k)) || oops_fatal("failed to feed");
         }
         
         /* If both fds are closed, exit */

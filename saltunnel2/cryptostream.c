@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <stdio.h>
 
-int cryptostream_identity_feed(cryptostream* cs) {
+int cryptostream_identity_feed(cryptostream* cs, unsigned char* k) {
     char buf[512];
     ssize_t n;
     for(;;) {
