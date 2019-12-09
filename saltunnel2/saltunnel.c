@@ -9,8 +9,15 @@
 #include "log.h"
 #include "oops.h"
 
-void saltunnel(cryptostream* ingress, cryptostream* egress)
-{
+static void exchange_key(cryptostream *ingress, cryptostream *egress, unsigned char* k) {
+    // TODO: Perform steps to agree on key
+    //       For now, just hard-coding to [0..31].
+    for(int i = 0; i<32;  i++)
+        k[i] = i;
+}
+
+static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsigned char* k) {
+    
     // Configure poll (we will poll both "readable" fds)
     struct pollfd pfds[] = {
         { .fd = ingress->from_fd, .events = POLLIN },
@@ -18,7 +25,7 @@ void saltunnel(cryptostream* ingress, cryptostream* egress)
     };
     
     for(;;) {
-
+        
         /* Poll */
         log_debug("about to poll\n");
         try(poll(pfds,2,-1)) || oops_fatal("step 2: failed to poll");
@@ -39,4 +46,15 @@ void saltunnel(cryptostream* ingress, cryptostream* egress)
             break;
         }
     }
+}
+
+void saltunnel(cryptostream* ingress, cryptostream* egress)
+{
+    unsigned char k[32];
+    
+    // Key Exchange
+    exchange_key(ingress, egress, k);
+    
+    // Message Exchange
+    exchange_messages(ingress, egress, k);
 }
