@@ -52,7 +52,17 @@ void test2() {
     uninterruptable_write(write, pipe_net_read[1],   net_teststr_expected,   12); close(pipe_net_read[1]);
     
     // Run saltunnel
-    saltunnel(pipe_local_read[0], pipe_local_write[1], pipe_net_read[0], pipe_net_write[1]);
+    cryptostream ingress = {
+        .op = cryptostream_identity_feed,
+        .from_fd = pipe_net_read[0],
+        .to_fd = pipe_local_write[1]
+    };
+    cryptostream egress = {
+        .op = cryptostream_identity_feed,
+        .from_fd = pipe_local_read[0],
+        .to_fd = pipe_net_write[1]
+    };
+    saltunnel(&ingress, &egress);
     
     // Read "actual value" from both "write" pipes
     char local_teststr_actual[12+1] = {0};
