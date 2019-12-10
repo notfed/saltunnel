@@ -6,10 +6,13 @@
 #ifndef cryptostream_h
 #define cryptostream_h
 
+#include "nonce.h"
+
 typedef struct cryptostream {
     int (*op)(struct cryptostream*,unsigned char*);
     int from_fd;
     int to_fd;
+    nonce24 nonce;
 } cryptostream;
 
 int cryptostream_identity_feed(cryptostream*,unsigned char*);
