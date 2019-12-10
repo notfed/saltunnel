@@ -6,6 +6,8 @@
 #include "test.h"
 #include "uninterruptable.h"
 #include "saltunnel.h"
+#include "tweetnacl.h"
+#include "nonce.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -75,6 +77,46 @@ void test2() {
     strcmp(net_teststr_expected, local_teststr_actual) == 0 || oops_fatal("net teststr did not match");
 }
 
+// test3: Can encrypt and decrypt
+void test3() {
+    
+    // Arrange
+    unsigned char nonce[24] = {0};
+    unsigned char key[32] = {0};
+    unsigned char expectedbuf[512] = {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0this is the test string"}; // 32 zeros
+    unsigned char cipherbuf[512] = {0};
+    unsigned char actualbuf[512] = {0};
+    
+    // Act
+    
+    // crypto_secretbox:
+    // - signature: crypto_secretbox(c,m,mlen,n,k);
+    // - input structure:
+    //   - [0..32] == zero
+    //   - [32..]  == plaintext
+    // - output structure:
+    //   - [0..16] == zero
+    //   - [16..]  == ciphertext
+    crypto_secretbox(cipherbuf,expectedbuf,sizeof(expectedbuf),nonce,key);
+    
+    //
+    // crypto_secretbox_open:
+    // - signature: crypto_secretbox_open(m,c,clen,n,k);
+    // - input structure:
+    //   - [0..16] == zero
+    //   - [32..]  == ciphertext
+    // - output structure:
+    //   - [0..32] == zero
+    //   - [32..]  == plaintext
+    try(crypto_secretbox_open(actualbuf,cipherbuf,sizeof(cipherbuf),nonce,key)) || oops_fatal("MAC validation failed");
+    
+    // Assert
+    memcmp(expectedbuf,actualbuf,sizeof(expectedbuf)) == 0 || oops_fatal("expected did not match actual");
+    
+}
+
+
+
 static void run(void (*the_test)(void), const char *test_name) {
     fprintf(stderr, "test: %s: started...\n", test_name);
     the_test();
@@ -84,6 +126,7 @@ static void run(void (*the_test)(void), const char *test_name) {
 int test() {
     run(test1, "test1");
     run(test2, "test2");
+    run(test3, "test3");
     fprintf(stderr, "test: all tests passed\n");
     return 0;
 }
