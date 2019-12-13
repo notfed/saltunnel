@@ -132,12 +132,12 @@ void test4() {
     
     // Run saltunnel
     cryptostream ingress = {
-        .op = cryptostream_identity_feed,
+        .op = cryptostream_decrypt_feed,
         .from_fd = pipe_net_read[0],
         .to_fd = pipe_local_write[1]
     };
     cryptostream egress = {
-        .op = cryptostream_identity_feed,
+        .op = cryptostream_encrypt_feed,
         .from_fd = pipe_local_read[0],
         .to_fd = pipe_net_write[1]
     };

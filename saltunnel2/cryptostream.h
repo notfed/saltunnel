@@ -8,6 +8,9 @@
 
 #include "nonce.h"
 
+#define packetsize 512
+#define maxchunksize 65536
+
 typedef struct cryptostream {
     int (*op)(struct cryptostream*,unsigned char*);
     int from_fd;
