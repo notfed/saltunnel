@@ -237,7 +237,8 @@ void test5() {
 }
 
 // Bidirectional saltunnel test
-void test6() {
+void bidirectional_test(const char* from_peer1_local_str, unsigned int from_peer1_local_str_len,
+                        const char* from_peer2_local_str, unsigned int from_peer2_local_str_len) {
     
     int peer1_pipe_local_read[2];  try(pipe(peer1_pipe_local_read))  || oops_fatal("failed to create pipe");
     int peer1_pipe_local_write[2]; try(pipe(peer1_pipe_local_write)) || oops_fatal("failed to create pipe");
@@ -248,13 +249,11 @@ void test6() {
     int peer2_pipe_to_peer1[2];    try(pipe(peer2_pipe_to_peer1))    || oops_fatal("failed to create pipe");
     
     // Start with "expected value" available for reading from peer1's local pipe
-    const char from_peer1_local_str[] = "from_peer1_local";
-    try(uninterruptable_write(write, peer1_pipe_local_read[1], from_peer1_local_str, strlen(from_peer1_local_str)+1)) || oops_fatal("write");
+    try(uninterruptable_write(write, peer1_pipe_local_read[1], from_peer1_local_str, from_peer1_local_str_len)) || oops_fatal("write");
     try(close(peer1_pipe_local_read[1])) || oops_fatal("close");
     
     // Start with "expected value" available for reading from peer2's local pipe
-    const char from_peer2_local_str[] = "from_peer2_local";
-    try(uninterruptable_write(write, peer2_pipe_local_read[1], from_peer2_local_str, strlen(from_peer2_local_str)+1)) || oops_fatal("write");
+    try(uninterruptable_write(write, peer2_pipe_local_read[1], from_peer2_local_str, from_peer2_local_str_len)) || oops_fatal("write");
     try(close(peer2_pipe_local_read[1])) || oops_fatal("close");
     
     // Initialize thread contexts
@@ -296,7 +295,16 @@ void test6() {
     pthread_join(thread2, NULL);
     
     log_debug("threads done");
+}
 
+// Bidirectional saltunnel test
+void test6() {
+    
+    const char from_peer1_local_str[] = "from_peer1_local";
+    const char from_peer2_local_str[] = "from_peer2_local";
+    
+    bidirectional_test(from_peer1_local_str, strlen(from_peer1_local_str)+1,
+                       from_peer2_local_str, strlen(from_peer2_local_str)+1);
 }
 
 static void run(void (*the_test)(void), const char *test_name) {
