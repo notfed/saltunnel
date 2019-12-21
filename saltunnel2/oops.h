@@ -6,9 +6,15 @@
 #ifndef oops_h
 #define oops_h
 
+#include "log.h"
+#include <errno.h>
+#include <string.h>
+
 #define try(rc) (rc>=0)
 
-int oops_fatal(char*);
-int oops_warn(char*);
+int intexit(int);
+
+#define oops_fatal(msg) ((errno == 0 ? log_fatal(msg) : log_fatal("%s: %s", msg, strerror(errno))), intexit(1))
+#define oops_warn(msg) (errno == 0 ? log_warn(msg) : log_warn("%s: %s", msg, strerror(errno)))
 
 #endif /* oops_h */
