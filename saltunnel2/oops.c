@@ -3,6 +3,7 @@
 //  saltunnel2
 //
 
+#include "log.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -11,15 +12,14 @@
 int oops_fatal(char* msg)
 {
     if(errno == 0)
-        fprintf(stderr, "saltunnel2: fatal: %s\n", msg);
+        log_fatal(msg);
     else
-        fprintf(stderr, "saltunnel2: fatal: %s: %s\n", msg, strerror(errno));
+        log_fatal("%s: %s", msg, strerror(errno));
     exit(1);
-    return 0;
 }
 
 int oops_warn(char* msg)
 {
-    fprintf(stderr, "saltunnel2: warn: %s\n", msg);
+    log_warn("%s", msg);
     return 0;
 }
