@@ -25,13 +25,19 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
         { .fd = ingress->from_fd, .events = POLLIN },
         { .fd = egress->from_fd,  .events = POLLIN }
     };
+    int isclosed[] = { 0, 0 };
     
-    for(;;) {
+    while(!isclosed[0] && !isclosed[1]) {
         
         /* Poll */
-        log_debug("poll: polling...%d", 5);
+        log_debug("poll: polling [%d,%d]...", pfds[0].fd, pfds[1].fd);
         try(poll(pfds,2,-1)) || oops_fatal("poll: failed to poll");
-        log_debug("poll: returned from poll");
+        
+        /* If both fds are closed, exit */
+        if(pfds[0].revents & POLLHUP && pfds[1].revents & POLLHUP) {
+            log_debug("poll: both fds closed; done");
+            break;
+        }
         
         // Handle ingress data
         if (pfds[0].revents & POLLIN) {
@@ -39,7 +45,7 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
             int r;
             try((r=ingress->op(ingress,key))) || oops_fatal("failed to feed ingress");
             if(r==0) {
-                try(close(egress->to_fd)) || oops_fatal("failed to close fd");
+                isclosed[0] = 1;
             }
         }
         
@@ -49,14 +55,8 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
             int r;
             try((r=egress->op(egress,key))) || oops_fatal("failed to feed egress");
             if(r==0) {
-                try(close(ingress->to_fd)) || oops_fatal("failed to close fd");
+                isclosed[1] = 1;
             }
-        }
-        
-        /* If both fds are closed, exit */
-        if(pfds[0].revents & POLLHUP && pfds[1].revents & POLLHUP) {
-            log_debug("poll: both fds closed; done");
-            break;
         }
     }
     

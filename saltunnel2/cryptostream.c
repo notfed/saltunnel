@@ -48,8 +48,11 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
     ))) || oops_fatal("failed to read");
     
     // If we got zero bytes, it means the fd is closed
-    if(readbytes==0)
+    if(readbytes==0) {
+        log_debug("closing fd %d", cs->to_fd);
+        try(close(cs->to_fd)) || oops_fatal("failed to close fd");
         return 0;
+    }
     
     log_debug("cryptostream_encrypt_feed: got %d bytes from local",(int)readbytes);
     
@@ -122,8 +125,11 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
     cs->cipherbufbytes += bytesread;
 
     // If we got zero bytes, it means the fd is closed
-    if(bytesread==0)
+    if(bytesread==0) {
+        log_debug("closing fd %d", cs->to_fd);
+        try(close(cs->to_fd)) || oops_fatal("failed to close fd");
         return 0;
+    }
     
     log_debug("cryptostream_decrypt_feed: got +%d bytes (total %d) from net",(int)bytesread,(int)cs->cipherbufbytes);
 
@@ -164,36 +170,5 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
         // TBD: Shift cipherbuf to the left by 512
         cs->cipherbufbytes -= packetsize;
     }
-    return 0;
-//
-//    // Encrypt chunk
-//
-//    // crypto_secretbox:
-//    // - signature: crypto_secretbox(c,m,mlen,n,k);
-//    // - input structure:
-//    //   - [0..32] == zero
-//    //   - [32..]  == plaintext
-//    // - output structure:
-//    //   - [0..16] == zero
-//    //   - [16..]  == ciphertext
-//    crypto_secretbox_open(cipherchunk,plainchunk,maxchunksize,cs->nonce,k);
-//
-//    // Increment nonce
-//    nonce24_increment(cs->nonce);
-//
-//    // Repeatedly write packets (each sized packetsize)
-//    for(unsigned short startofpacket = 0; startofpacket < chunksize; startofpacket+=packetsize) {
-//
-//        // Send next chunk
-//        try(uninterruptable_write(write,
-//                                  cs->to_fd,                              // fd
-//                                  (const char*)cipherchunk+startofpacket, // src
-//                                  (unsigned int)(packetsize))             // len
-//        ) || oops_fatal("failed to write");
-//
-//        fprintf(stderr,"cryptostream_encrypt_feed: wrote %d bytes\n",(int)packetsize);
-//    }
-//
-//    return chunksize;
     return 0;
 }

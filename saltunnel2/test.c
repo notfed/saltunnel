@@ -309,8 +309,8 @@ int test() {
 //    run(test2, "test2");
 //    run(test3, "test3");
 //    run(test4, "test4");
-//    run(test5, "test5");
-    run(test6, "test6");
+    run(test5, "test5");
+//    run(test6, "test6");
     log_info("all tests passed");
     return 0;
 }
