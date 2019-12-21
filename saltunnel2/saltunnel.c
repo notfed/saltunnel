@@ -25,9 +25,8 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
         { .fd = ingress->from_fd, .events = POLLIN },
         { .fd = egress->from_fd,  .events = POLLIN }
     };
-    int isclosed[] = { 0, 0 };
     
-    while(!isclosed[0] && !isclosed[1]) {
+    while(pfds[0].events!=0 || pfds[1].events!=0) {
         
         /* Poll */
         log_debug("poll: polling [%d,%d]...", pfds[0].fd, pfds[1].fd);
@@ -35,25 +34,25 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
         
         // Handle ingress data
         if (pfds[0].revents & POLLIN) {
-            log_debug("poll: fd %d is ready for reading", pfds[0].fd);
+            log_debug("poll: net fd %d is ready for reading", pfds[0].fd);
             int r;
             try((r=ingress->op(ingress,key))) || oops_fatal("failed to feed ingress");
             if(r==0) {
-                isclosed[0] = 1;
+                pfds[0].events = 0;
             }
         }
         
         // Handle egress data
         if (pfds[1].revents & POLLIN) {
-            log_debug("poll: fd %d is ready for reading", pfds[1].fd);
+            log_debug("poll: local fd %d is ready for reading", pfds[1].fd);
             int r;
             try((r=egress->op(egress,key))) || oops_fatal("failed to feed egress");
             if(r==0) {
-                isclosed[1] = 1;
+                pfds[1].events = 0;
             }
         }
     }
-    
+    log_debug("both fds are closed [%d,%d]; done polling", pfds[0].fd, pfds[1].fd);
 }
 
 void saltunnel(cryptostream* ingress, cryptostream* egress)

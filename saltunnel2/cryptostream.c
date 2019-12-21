@@ -40,27 +40,27 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
     unsigned char zerosAndPacket[16+packetsize] = {0}; // First 16 bytes are always zero; next 16 are auth
     
     // Read a chunk of bytes (up to 65536 bytes)
-    unsigned short readbytes;
-    try((readbytes = (unsigned short)uninterruptable_read(read,
+    unsigned short bytesread;
+    try((bytesread = (unsigned short)uninterruptable_read(read,
                                                           cs->from_fd,                       // fd
                                                           (const char*)plainbuffer + 32 + 2, // dest
                                                           maxbufferlen-2                     // maxreadbytes
     ))) || oops_fatal("failed to read");
     
     // If we got zero bytes, it means the fd is closed
-    if(readbytes==0) {
-        log_debug("closing fd %d", cs->to_fd);
-        try(close(cs->to_fd)) || oops_fatal("failed to close fd");
+    if(bytesread==0) {
+        log_debug("closing net fd (%d)", cs->to_fd);
+        try(close(cs->to_fd)) || oops_fatal("failed to close net fd");
         return 0;
     }
     
-    log_debug("cryptostream_encrypt_feed: got %d bytes from local",(int)readbytes);
+    log_debug("cryptostream_encrypt_feed: got %d bytes from local",(int)bytesread);
     
     // Divide the bytes read into chunks of size (packetsize-16-2)
-    for(unsigned short chunkstart = 0; chunkstart < readbytes; chunkstart += (packetsize-16-2)) {
+    for(unsigned short chunkstart = 0; chunkstart < bytesread; chunkstart += (packetsize-16-2)) {
         
         // The size of the current chunk is less than or equal to packetsize
-        unsigned short chunksize = MIN(packetsize-16-2, readbytes - chunkstart);
+        unsigned short chunksize = MIN(packetsize-16-2, bytesread - chunkstart);
         
         // The first 2 bytes of the chunk are the chunksize
         *(plainbuffer + chunkstart + 32) = chunksize;
@@ -93,10 +93,10 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
                                   (unsigned int)packetsize)      // len
         ) || oops_fatal("failed to write");
         
-        log_debug("cryptostream_encrypt_feed: wrote %d bytes to net",(int)packetsize);
+        log_debug("cryptostream_encrypt_feed: wrote %d bytes to net (fd %d)",(int)packetsize,cs->to_fd);
     }
     
-    return readbytes;
+    return bytesread;
 }
 
 //
@@ -110,7 +110,7 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
     unsigned char plainbuf[32+packetsize] = {0};
     unsigned short plainbufbytes = 0;
     
-    log_debug("cryptostream_decrypt_feed: about to read from fd %d", cs->from_fd);
+    log_debug("cryptostream_decrypt_feed: about to read from net (fd %d)", cs->from_fd);
     
     // Append bytes to cumulative bytes read
     unsigned short bytesread;
@@ -120,18 +120,18 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
                                                           maxbufferlen - cs->cipherbufbytes                     // maxlen
     ))) || oops_fatal("failed to read");
     
-    log_debug("cryptostream_decrypt_feed: done reading from fd %d", cs->from_fd);
+    log_debug("cryptostream_decrypt_feed: done reading from net (fd %d)", cs->from_fd);
 
     cs->cipherbufbytes += bytesread;
 
     // If we got zero bytes, it means the fd is closed
     if(bytesread==0) {
-        log_debug("closing fd %d", cs->to_fd);
-        try(close(cs->to_fd)) || oops_fatal("failed to close fd");
+        log_debug("closing local fd (%d)", cs->to_fd);
+        try(close(cs->to_fd)) || oops_fatal("failed to close local fd");
         return 0;
     }
     
-    log_debug("cryptostream_decrypt_feed: got +%d bytes (total %d) from net",(int)bytesread,(int)cs->cipherbufbytes);
+    log_debug("cryptostream_decrypt_feed: got +%d bytes (total %d) from net (fd %d)",(int)bytesread,(int)cs->cipherbufbytes,cs->from_fd);
 
     // If we have enough bytes for a packet, send it
     while(cs->cipherbufbytes>=packetsize)
@@ -156,7 +156,7 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
         // The first 2 bytes of the chunk are the chunksize
         unsigned short chunksize = *(plainbuf + 32);
         
-        log_debug("cryptostream_decrypt_feed: about to write %d bytes to fd %d",(int)chunksize, cs->to_fd);
+        log_debug("cryptostream_decrypt_feed: about to write %d bytes to local (fd %d)",(int)chunksize, cs->to_fd);
         
         // Write to local
         try(uninterruptable_write(write,
@@ -165,10 +165,10 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
                                   (unsigned int)chunksize)     // len
         ) || oops_fatal("cryptostream_decrypt_feed: failed to write");
         
-        log_debug("cryptostream_decrypt_feed: wrote %d bytes to local",(int)chunksize);
+        log_debug("cryptostream_decrypt_feed: wrote %d bytes to local (fd %d)",(int)chunksize,cs->to_fd);
         
         // TBD: Shift cipherbuf to the left by 512
         cs->cipherbufbytes -= packetsize;
     }
-    return 0;
+    return bytesread;
 }

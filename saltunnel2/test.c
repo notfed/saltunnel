@@ -294,6 +294,20 @@ void bidirectional_test(const char* from_peer1_local_str, unsigned int from_peer
     pthread_join(thread1, NULL);
     pthread_join(thread2, NULL);
     
+    // Read from outputs
+    
+    // Read "actual value" from peer1's local pipe
+    char from_peer1_local_str_actual[4096] = {0};
+    try(uninterruptable_read(read, peer1_pipe_local_write[0], from_peer1_local_str_actual, from_peer1_local_str_len)) || oops_fatal("read");
+    
+    // Read "actual value" from peer2's local pipe
+    char from_peer2_local_str_actual[4096] = {0};
+    try(uninterruptable_read(read, peer2_pipe_local_write[0], from_peer2_local_str_actual, from_peer2_local_str_len)) || oops_fatal("read");
+    
+    // Compare actual to expected
+    strcmp(from_peer1_local_str,from_peer2_local_str_actual)==0 || oops_fatal("peer1 strs differed");
+    strcmp(from_peer2_local_str,from_peer1_local_str_actual)==0 || oops_fatal("peer2 strs differed");
+    
     log_debug("threads done");
 }
 
