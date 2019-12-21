@@ -8,15 +8,12 @@
 
 #include <stdio.h>
 
-char* log_filename_idempotent_fill(char* log_filename, char* log_filename_from_macro, int len, int* log_filename_filled);
-
-#define STATIC_ASSERT(COND,MSG) typedef char static_assertion_##MSG[(COND)?1:-1]
-STATIC_ASSERT(sizeof(__FILE_NAME__)<256,FILENAME_TOO_LONG);
+char* log_filename_idempotent_fill(char* log_filename, char* log_filename_from_macro, int len, char* log_filename_filled);
 
 static char log_filename[256];
-static int log_filename_filled = 0;
+static char log_filename_filled = 0;
 
-#define LOG_NAME(log_filename) (log_filename_filled ? log_filename : log_filename_idempotent_fill(log_filename, __FILE_NAME__, sizeof(__FILE_NAME__), &log_filename_filled))
+#define LOG_NAME(log_filename) (log_filename_filled ? log_filename : log_filename_idempotent_fill(log_filename, __FILE__, sizeof(__FILE__), &log_filename_filled))
  
 #define LOG_0(level)                 !error
 #define LOG_1(level,x1)              fprintf(stderr, "saltunnel: " level ": %s:%d: %s\n",     LOG_NAME(log_filename), __LINE__, x1)
