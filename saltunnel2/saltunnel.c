@@ -33,12 +33,6 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
         log_debug("poll: polling [%d,%d]...", pfds[0].fd, pfds[1].fd);
         try(poll(pfds,2,-1)) || oops_fatal("poll: failed to poll");
         
-        /* If both fds are closed, exit */
-        if(pfds[0].revents & POLLHUP && pfds[1].revents & POLLHUP) {
-            log_debug("poll: both fds closed; done");
-            break;
-        }
-        
         // Handle ingress data
         if (pfds[0].revents & POLLIN) {
             log_debug("poll: fd %d is ready for reading", pfds[0].fd);

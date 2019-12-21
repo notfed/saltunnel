@@ -192,8 +192,52 @@ void *saltunnel_peer_thread(void *contextptr)
     return 0;
 }
 
-// Bidirectional saltunnel test (WORK IN PROGRESS)
+
 void test5() {
+    {
+        char log_name[256];
+        char* log_filename_from_macro = "test.c";
+        int len = sizeof("test.c");
+        char log_name_filled = 0;
+        
+        log_filename_idempotent_fill(log_name, log_filename_from_macro, len, &log_name_filled);
+        
+        strcmp(log_name, "test") == 0 || oops_fatal("log test, assertion 1 failed");
+    }
+    {
+        char log_name[256];
+        char* log_filename_from_macro = "/a/b/c/test.c";
+        int len = sizeof("/a/b/c/test.c");
+        char log_name_filled = 0;
+        
+        log_filename_idempotent_fill(log_name, log_filename_from_macro, len, &log_name_filled);
+        
+        strcmp(log_name, "test") == 0 || oops_fatal("log test, assertion 2 failed");
+    }
+    {
+        char log_name[256];
+        char* log_filename_from_macro = "C:\\Program Files (x86)\\log\\ger\\test.c";
+        int len = sizeof("C:\\Program Files (x86)\\log\\ger\\test.c");
+        char log_name_filled = 0;
+        
+        log_filename_idempotent_fill(log_name, log_filename_from_macro, len, &log_name_filled);
+        
+        strcmp(log_name, "test") == 0 || oops_fatal("log test, assertion 2 failed");
+    }
+    {
+        char log_name[256];
+        char* log_filename_from_macro = "test";
+        int len = sizeof("test");
+        char log_name_filled = 0;
+        
+        log_filename_idempotent_fill(log_name, log_filename_from_macro, len, &log_name_filled);
+        
+        strcmp(log_name, "test") == 0 || oops_fatal("log test, assertion 2 failed");
+    }
+}
+
+// Bidirectional saltunnel test
+void test6() {
     
     int peer1_pipe_local_read[2];  try(pipe(peer1_pipe_local_read))  || oops_fatal("failed to create pipe");
     int peer1_pipe_local_write[2]; try(pipe(peer1_pipe_local_write)) || oops_fatal("failed to create pipe");
@@ -261,56 +305,14 @@ static void run(void (*the_test)(void), const char *test_name) {
     log_debug("%s: succeeded.", test_name);
 }
 
-void test6() {
-    {
-        char log_name[256];
-        char* log_filename_from_macro = "test.c";
-        int len = sizeof("test.c");
-        char log_name_filled = 0;
-        
-        log_filename_idempotent_fill(log_name, log_filename_from_macro, len, &log_name_filled);
-        
-        strcmp(log_name, "test") == 0 || oops_fatal("log test, assertion 1 failed");
-    }
-    {
-        char log_name[256];
-        char* log_filename_from_macro = "/a/b/c/test.c";
-        int len = sizeof("/a/b/c/test.c");
-        char log_name_filled = 0;
-        
-        log_filename_idempotent_fill(log_name, log_filename_from_macro, len, &log_name_filled);
-        
-        strcmp(log_name, "test") == 0 || oops_fatal("log test, assertion 2 failed");
-    }
-    {
-        char log_name[256];
-        char* log_filename_from_macro = "C:\\Program Files (x86)\\log\\ger\\test.c";
-        int len = sizeof("C:\\Program Files (x86)\\log\\ger\\test.c");
-        char log_name_filled = 0;
-        
-        log_filename_idempotent_fill(log_name, log_filename_from_macro, len, &log_name_filled);
-        
-        strcmp(log_name, "test") == 0 || oops_fatal("log test, assertion 2 failed");
-    }
-    {
-        char log_name[256];
-        char* log_filename_from_macro = "test";
-        int len = sizeof("test");
-        char log_name_filled = 0;
-        
-        log_filename_idempotent_fill(log_name, log_filename_from_macro, len, &log_name_filled);
-        
-        strcmp(log_name, "test") == 0 || oops_fatal("log test, assertion 2 failed");
-    }
-}
-
 int test() {
-//    run(test1, "test1");
-//    run(test2, "test2");
-//    run(test3, "test3");
-//    run(test4, "test4");
+    run(test1, "test1");
+    run(test2, "test2");
+    run(test3, "test3");
+    run(test4, "test4");
     run(test5, "test5");
-//    run(test6, "test6");
+    run(test6, "test6");
     log_info("all tests passed");
     return 0;
 }
+
