@@ -32,3 +32,13 @@ ssize_t uninterruptable_read(ssize_t (*op)(int,void*,size_t),int fd,const char* 
   }
 }
 
+ssize_t uninterruptable_readv(int fd, const struct iovec *vector, int count)
+{
+  ssize_t r;
+  for (;;) {
+    r = readv(fd,vector,count);
+    if (r == -1) if (errno == EINTR) continue;
+    return r;
+  }
+}
+
