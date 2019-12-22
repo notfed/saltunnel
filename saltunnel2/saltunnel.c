@@ -22,8 +22,8 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
     
     // Configure poll (we will poll both "readable" fds)
     struct pollfd pfds[] = {
-        { .fd = ingress->from_fd, .events = POLLIN },
-        { .fd = egress->from_fd,  .events = POLLIN }
+        { .fd = ingress->from_fd, .events = POLLIN|POLLHUP },
+        { .fd = egress->from_fd,  .events = POLLIN|POLLHUP }
     };
     
     while(pfds[0].events!=0 || pfds[1].events!=0) {
@@ -33,7 +33,7 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
         try(poll(pfds,2,-1)) || oops_fatal("poll: failed to poll");
         
         // Handle ingress data
-        if (pfds[0].revents & POLLIN) {
+        if (pfds[0].revents & (POLLIN|POLLHUP)) {
             log_debug("poll: net fd %d is ready for reading", pfds[0].fd);
             int r;
             try((r=ingress->op(ingress,key))) || oops_fatal("failed to feed ingress");
@@ -43,7 +43,7 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
         }
         
         // Handle egress data
-        if (pfds[1].revents & POLLIN) {
+        if (pfds[1].revents & (POLLIN|POLLHUP)) {
             log_debug("poll: local fd %d is ready for reading", pfds[1].fd);
             int r;
             try((r=egress->op(egress,key))) || oops_fatal("failed to feed egress");
