@@ -53,16 +53,12 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
         cs->readvector_is_initialized = 1;
     }
     
-    struct iovec writevector[128] = {0};
-    for(int i = 0; i<128; i++) {
-        writevector[i].iov_base = cs->ciphertext + (32+2+494)*i + 16;
-        writevector[i].iov_len  = 512;
-    }
+    struct iovec writevector[128];
     
     // Read chunks of bytes (up to 128 chunks; each chunk is size 494)
     int bytesread;
     try((bytesread = (int)uninterruptable_readv(cs->from_fd, // fd
-                                                cs->greadvector,  // vector
+                                                cs->readvector,  // vector
                                                 128          // count
     ))) || oops_fatal("failed to read");
     
@@ -110,6 +106,10 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
         
         // Increment nonce
         nonce24_increment(cs->nonce);
+        
+        // Setup writevector[packeti]
+        writevector[packeti].iov_base = cs->ciphertext + (32+2+494)*packeti + 16;
+        writevector[packeti].iov_len  = 512;
     }
     
     // Send packets to net
@@ -202,7 +202,7 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
         uint16 chunklen_current = 0;
         uint16_unpack((char*)cs->plaintext + (32+2+494)*packeti + 32, &chunklen_current);
         
-        // Update writevector[packeti] lengths
+        // Setup writevector[packeti]
         writevector[packeti].iov_base = cs->plaintext + (32+2+494)*packeti + 32+2;
         writevector[packeti].iov_len = chunklen_current;
         
