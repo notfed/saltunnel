@@ -45,8 +45,8 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
     //    - u8[494] packet;
     //    - ... (x128 packets) ...
     
-    unsigned char plaintext[(32+2+494)*128] = {0};
-    unsigned char ciphertext[(32+2+494)*128] = {0};
+    unsigned char plaintext[(32+2+494)*128];
+    unsigned char ciphertext[(32+2+494)*128];
     
     struct iovec readvector[128] = {0};
     for(int i = 0; i<128; i++) {
@@ -81,12 +81,14 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
     int chunklen_total_remaining = bytesread;
     for(int packeti = 0; chunklen_total_remaining > 0; packeti++, chunkcount++, chunklen_total_remaining-=494)
     {
+        // Fill zeros (32 bytes)
+        memset(plaintext, 0, 32);
         
-        // Fill packet length
+        // Fill chunk length (2 bytes)
         unsigned short chunklen_current = MIN(494, chunklen_total_remaining);
         uint16_pack((char*)plaintext + (32+2+494)*packeti + 32, chunklen_current);
         
-        // Encrypt chunk (from plaintext to ciphertext)
+        // Encrypt chunk from plaintext to ciphertext (494 bytes)
         
         // crypto_secretbox:
         // - signature: crypto_secretbox(c,m,mlen,n,k);
@@ -164,7 +166,7 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
     
     // Iterate over bytes as packets of 512
     int packetcount = 0;
-    int packetlen_total_remaining = bytesread;
+    int packetlen_total_remaining = cs->ciphertext_packet_size_in_progress + bytesread;
     for(int packeti = 0; packetlen_total_remaining > 0; packeti++, packetlen_total_remaining-=512)
     {
         // Current packet will be either 512 or less
