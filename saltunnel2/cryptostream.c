@@ -76,12 +76,15 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
     int chunklen_total_remaining = bytesread;
     for(int packeti = 0; chunklen_total_remaining > 0; packeti++, chunkcount++, chunklen_total_remaining-=494)
     {
-        // Fill zeros (32 bytes)
+        // Fill pre-zeros (32 bytes)
         memset(cs->plaintext, 0, 32);
         
         // Fill chunk length (2 bytes)
         unsigned short chunklen_current = MIN(494, chunklen_total_remaining);
         uint16_pack((char*)cs->plaintext + (32+2+494)*packeti + 32, chunklen_current);
+        
+        // Fill post-zeros (494-chunklen bytes)
+        memset(cs->plaintext+32+2+chunklen_current, 0, 494-chunklen_current);
         
         // Encrypt chunk from plaintext to ciphertext (494 bytes)
         

@@ -240,6 +240,8 @@ void test5() {
 void bidirectional_test(const char* from_peer1_local_str, unsigned int from_peer1_local_str_len,
                         const char* from_peer2_local_str, unsigned int from_peer2_local_str_len) {
     
+    int len = from_peer1_local_str_len;
+    
     int peer1_pipe_local_read[2];  try(pipe(peer1_pipe_local_read))  || oops_fatal("failed to create pipe");
     int peer1_pipe_local_write[2]; try(pipe(peer1_pipe_local_write)) || oops_fatal("failed to create pipe");
     int peer1_pipe_to_peer2[2];    try(pipe(peer1_pipe_to_peer2))    || oops_fatal("failed to create pipe");
@@ -297,18 +299,35 @@ void bidirectional_test(const char* from_peer1_local_str, unsigned int from_peer
     // Read from outputs
     
     // Read "actual value" from peer1's local pipe
-    char from_peer1_local_str_actual[4096] = {0};
+    char* from_peer1_local_str_actual = malloc(from_peer1_local_str_len);
     try(uninterruptable_read(read, peer1_pipe_local_write[0], from_peer1_local_str_actual, from_peer1_local_str_len)) || oops_fatal("read");
     
     // Read "actual value" from peer2's local pipe
-    char from_peer2_local_str_actual[4096] = {0};
+    char* from_peer2_local_str_actual = malloc(from_peer2_local_str_len);
     try(uninterruptable_read(read, peer2_pipe_local_write[0], from_peer2_local_str_actual, from_peer2_local_str_len)) || oops_fatal("read");
     
     // Compare actual to expected
-    strcmp(from_peer1_local_str,from_peer2_local_str_actual)==0 || oops_fatal("peer1 strs differed");
-    strcmp(from_peer2_local_str,from_peer1_local_str_actual)==0 || oops_fatal("peer2 strs differed");
+    int r = memcmp(from_peer1_local_str,from_peer2_local_str_actual,from_peer1_local_str_len);
+    if(r!=0) {
+        log_fatal("bidirectional test (%d) failed: peer1 strs differed",len);
+        _exit(1);
+    }
+    if(memcmp(from_peer2_local_str,from_peer1_local_str_actual,from_peer2_local_str_len)!=0) {
+        log_fatal("bidirectional test (%d) failed: peer2 strs differed",len);
+        _exit(1);
+    }
     
-    log_debug("threads done");
+    free(from_peer1_local_str_actual);
+    free(from_peer2_local_str_actual);
+
+    close(peer1_pipe_local_read[0]); close(peer1_pipe_local_read[1]);
+    close(peer1_pipe_local_write[0]); close(peer1_pipe_local_write[1]);
+    close(peer1_pipe_to_peer2[0]); close(peer1_pipe_to_peer2[1]);
+    close(peer2_pipe_local_read[0]); close(peer2_pipe_local_read[1]);
+    close(peer2_pipe_local_write[0]); close(peer2_pipe_local_write[1]);
+    close(peer2_pipe_to_peer1[0]); close(peer2_pipe_to_peer1[1]);
+
+    log_debug("bidirectional test (%d) passed",len);
 }
 
 // Bidirectional saltunnel test
@@ -335,6 +354,28 @@ void test7() {
                        from_peer2_local_str, sizeof(from_peer2_local_str));
 }
 
+// Bidirectional saltunnel test; multi-packet, various sizes
+void test8() {
+    
+    for(int s = 1; s < 16777216; s++)
+    {
+        char* from_peer1_local_str = malloc(s);
+        char* from_peer2_local_str = malloc(s);
+        
+        for(int i = 0; i < s; i++) {
+            from_peer1_local_str[i] = i+1;
+            from_peer2_local_str[i] = i+1;
+        }
+        
+        bidirectional_test(from_peer1_local_str, s,
+                           from_peer2_local_str, s);
+        
+        free(from_peer1_local_str);
+        free(from_peer2_local_str);
+    }
+}
+
+
 static void run(void (*the_test)(void), const char *test_name) {
     log_debug("%s: started...", test_name);
     the_test();
@@ -348,7 +389,8 @@ int test() {
 //    run(test4, "test4");
 //    run(test5, "test5");
 //    run(test6, "test6");
-    run(test7, "test7");
+//    run(test7, "test7");
+    run(test8, "test8");
     log_info("all tests passed");
     return 0;
 }
