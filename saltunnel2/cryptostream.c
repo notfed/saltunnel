@@ -45,18 +45,15 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
     //    - u8[494] packet;
     //    - ... (x128 packets) ...
     
-    unsigned char plaintext[(32+2+494)*128];
-    unsigned char ciphertext[(32+2+494)*128];
-    
     struct iovec readvector[128] = {0};
     for(int i = 0; i<128; i++) {
-        readvector[i].iov_base = plaintext + (32+2+494)*i + 32+2;
+        readvector[i].iov_base = cs->plaintext + (32+2+494)*i + 32+2;
         readvector[i].iov_len  = 494;
     }
     
     struct iovec writevector[128] = {0};
     for(int i = 0; i<128; i++) {
-        writevector[i].iov_base = ciphertext + (32+2+494)*i + 16;
+        writevector[i].iov_base = cs->ciphertext + (32+2+494)*i + 16;
         writevector[i].iov_len  = 512;
     }
     
@@ -82,11 +79,11 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
     for(int packeti = 0; chunklen_total_remaining > 0; packeti++, chunkcount++, chunklen_total_remaining-=494)
     {
         // Fill zeros (32 bytes)
-        memset(plaintext, 0, 32);
+        memset(cs->plaintext, 0, 32);
         
         // Fill chunk length (2 bytes)
         unsigned short chunklen_current = MIN(494, chunklen_total_remaining);
-        uint16_pack((char*)plaintext + (32+2+494)*packeti + 32, chunklen_current);
+        uint16_pack((char*)cs->plaintext + (32+2+494)*packeti + 32, chunklen_current);
         
         // Encrypt chunk from plaintext to ciphertext (494 bytes)
         
@@ -99,8 +96,8 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
         //   - [0..16]  == zero
         //   - [16..32] == auth
         //   - [32..]   == ciphertext
-        try(crypto_secretbox(ciphertext + (32+2+494)*packeti,
-                             plaintext + (32+2+494)*packeti,
+        try(crypto_secretbox(cs->ciphertext + (32+2+494)*packeti,
+                             cs->plaintext + (32+2+494)*packeti,
                              32+2+494, cs->nonce, key)) || oops_fatal("failed to encrypt");
         
 //        // TRIAL DECRYPT
