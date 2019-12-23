@@ -38,8 +38,6 @@ int cryptostream_identity_feed(cryptostream* cs, unsigned char* key) {
 //
 int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
     
-    //////////////////////////////
-    
     // BUFFER USAGE:
     // Read bytes into the following format:
     //    - u8[32]  zeros;
