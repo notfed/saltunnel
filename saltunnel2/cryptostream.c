@@ -131,17 +131,17 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
 int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
     
     // Iniitalize read vector
-    struct iovec readvector[128];
-    for(int i = 0; i<128; i++) {
-        readvector[i].iov_base = cs->ciphertext + (32+2+494)*i + 16;
-        readvector[i].iov_len  = 512;
+    if(!cs->readvector_is_initialized) {
+        for(int i = 0; i<128; i++) {
+            cs->readvector[i].iov_base = cs->ciphertext + (32+2+494)*i + 16;
+            cs->readvector[i].iov_len  = 512;
+        }
+        cs->readvector_is_initialized = 1;
     }
     
     // If we're currently in the middle of reading a packet, update the first read vector
-    if(cs->ciphertext_packet_size_in_progress>0) {
-        readvector[0].iov_base += cs->ciphertext_packet_size_in_progress;
-        readvector[0].iov_len  -= cs->ciphertext_packet_size_in_progress;
-    }
+    cs->readvector[0].iov_base = (cs->ciphertext + (32+2+494)*0 + 16) + cs->ciphertext_packet_size_in_progress;
+    cs->readvector[0].iov_len  = (512) - cs->ciphertext_packet_size_in_progress;
     
     // The write vector be filled out later
     struct iovec writevector[128];
@@ -149,7 +149,7 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
     // Read chunks of bytes (up to 128 chunks; each chunk is size 512)
     int bytesread;
     try((bytesread = (int)uninterruptable_readv(cs->from_fd, // fd
-                                                readvector,  // vector
+                                                cs->readvector,  // vector
                                                 128          // count
     ))) || oops_fatal("failed to read");
 
