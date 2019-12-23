@@ -17,8 +17,16 @@ typedef struct cryptostream {
     int from_fd;
     int to_fd;
     nonce24 nonce;
-    unsigned char cipherbuf[32+maxbufferlen];
+    /* Old Decrypt */
+    unsigned char zeros[16];
+    unsigned char cipherbuf[maxbufferlen];
+    unsigned short cipherbufstart;
     unsigned short cipherbufbytes;
+    
+    /* New Decrypt */
+    unsigned char ciphertext[(32+2+494)*128];
+    unsigned int ciphertext_packet_size_in_progress;
+    unsigned char plaintext[(32+2+494)*128];
 } cryptostream;
 
 int cryptostream_identity_feed(cryptostream*,unsigned char*);

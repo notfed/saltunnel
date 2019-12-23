@@ -9,6 +9,7 @@
 #include "tweetnacl.h"
 #include "nonce.h"
 #include "log.h"
+#include "uint16.h"
 #include <unistd.h>
 #include <stdio.h>
 
@@ -30,22 +31,45 @@ int cryptostream_identity_feed(cryptostream* cs, unsigned char* key) {
 
 //
 // Algorithm:
-// - Read up to 65536 bytes
-// - Split into 494-byte chunks
-// - For each chunk, write a 512-byte packet (16-byte auth, 2-byte size, up to 494-byte data)
+// - Read up to 63232 (128*494) bytes
+// - Split into 128 494-byte chunks
+// - Each chunk must be prefixed with 32 zero-bytes
+// - Encrypt each chunk into a 512-byte packet (16-byte auth, 2-byte size, and 494-byte data)
 //
 int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
     
-    unsigned char plainbuffer[32+maxbufferlen] = {0};
-    unsigned char zerosAndPacket[16+packetsize] = {0}; // First 16 bytes are always zero; next 16 are auth
+    //////////////////////////////
     
-    // Read a chunk of bytes (up to 65536 bytes)
-    unsigned short bytesread;
-    try((bytesread = (unsigned short)uninterruptable_read(read,
-                                                          cs->from_fd,                       // fd
-                                                          (const char*)plainbuffer + 32 + 2, // dest
-                                                          maxbufferlen-2                     // maxreadbytes
+    // BUFFER USAGE:
+    // Read bytes into the following format:
+    //    - u8[32]  zeros;
+    //    - u16     packetlen;
+    //    - u8[494] packet;
+    //    - ... (x128 packets) ...
+    
+    unsigned char plaintext[(32+2+494)*128] = {0};
+    unsigned char ciphertext[(32+2+494)*128] = {0};
+    
+    struct iovec readvector[128] = {0};
+    for(int i = 0; i<128; i++) {
+        readvector[i].iov_base = plaintext + (32+2+494)*i + 32+2;
+        readvector[i].iov_len  = 494;
+    }
+    
+    struct iovec writevector[128] = {0};
+    for(int i = 0; i<128; i++) {
+        writevector[i].iov_base = ciphertext + (32+2+494)*i + 16;
+        writevector[i].iov_len  = 512;
+    }
+    
+    // Read chunks of bytes (up to 128 chunks; each chunk is size 494)
+    int bytesread;
+    try((bytesread = (int)uninterruptable_readv(cs->from_fd, // fd
+                                                readvector,  // vector
+                                                128          // count
     ))) || oops_fatal("failed to read");
+    
+    log_debug("cryptostream_encrypt_feed: got %d bytes from local",(int)bytesread);
     
     // If we got zero bytes, it means the fd is closed
     if(bytesread==0) {
@@ -54,18 +78,17 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
         return 0;
     }
     
-    log_debug("cryptostream_encrypt_feed: got %d bytes from local",(int)bytesread);
-    
-    // Divide the bytes read into chunks of size (packetsize-16-2)
-    for(unsigned short chunkstart = 0; chunkstart < bytesread; chunkstart += (packetsize-16-2)) {
+    // Iterate over bytes as chunks of 494
+    int chunkcount = 0;
+    int chunklen_total_remaining = bytesread;
+    for(int packeti = 0; chunklen_total_remaining > 0; packeti++, chunkcount++, chunklen_total_remaining-=494)
+    {
         
-        // The size of the current chunk is less than or equal to packetsize
-        unsigned short chunksize = MIN(packetsize-16-2, bytesread - chunkstart);
+        // Fill packet length
+        unsigned short chunklen_current = MIN(494, chunklen_total_remaining);
+        uint16_pack((char*)plaintext + (32+2+494)*packeti + 32, chunklen_current);
         
-        // The first 2 bytes of the chunk are the chunksize
-        *(plainbuffer + chunkstart + 32) = chunksize;
-        
-        // Encrypt chunk (to get a packet)
+        // Encrypt chunk (from plaintext to ciphertext)
         
         // crypto_secretbox:
         // - signature: crypto_secretbox(c,m,mlen,n,k);
@@ -76,53 +99,61 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
         //   - [0..16]  == zero
         //   - [16..32] == auth
         //   - [32..]   == ciphertext
-
-        try(crypto_secretbox(zerosAndPacket, plainbuffer + chunkstart, 16+packetsize, cs->nonce, key)) || oops_fatal("failed to encrypt");
+        try(crypto_secretbox(ciphertext + (32+2+494)*packeti,
+                             plaintext + (32+2+494)*packeti,
+                             32+2+494, cs->nonce, key)) || oops_fatal("failed to encrypt");
         
-        // TRIAL DECRYPT
-        // crypto_secretbox_open(m,c,clen,n,k)
-        try(crypto_secretbox_open(plainbuffer + chunkstart,zerosAndPacket,16+packetsize,cs->nonce,key)) || oops_fatal("failed to decrypt");
+//        // TRIAL DECRYPT
+//        // crypto_secretbox_open(m,c,clen,n,k)
+//        try(crypto_secretbox_open(plaintext + (32+2+494)*packeti,
+//                                  ciphertext + (32+2+494)*packeti,
+//                                  32+2+494,cs->nonce,key)) || oops_fatal("failed to decrypt");
         
         // Increment nonce
         nonce24_increment(cs->nonce);
-        
-        // Send packet to net
-        try(uninterruptable_write(write,
-                                  cs->to_fd,                     // fd
-                                  (const char*)zerosAndPacket+16, // src
-                                  (unsigned int)packetsize)      // len
-        ) || oops_fatal("failed to write");
-        
-        log_debug("cryptostream_encrypt_feed: wrote %d bytes to net (fd %d)",(int)packetsize,cs->to_fd);
     }
+    
+    // Send packets to net
+    try(uninterruptable_writev(cs->to_fd,   // fd
+                               writevector, // vector
+                               chunkcount) // count
+     ) || oops_fatal("failed to write");
+     
+     log_debug("cryptostream_encrypt_feed: wrote %d bytes to net (fd %d)",(int)chunkcount*512,cs->to_fd);
     
     return bytesread;
 }
 
 //
 // Algorithm:
-// - Cumulatively read up to 65536 bytes from net
+// - Cumulatively read up to 65536 (128*512) bytes from net
 // - Split into 512-byte packets
-// - For each packet, decrypt, deconstruct to {chunksize,data}, then write data
+// - For each full packet, decrypt, deconstruct to {auth,size,data}, then write data to local
 //
 int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
-
-    unsigned char plainbuf[32+packetsize] = {0};
-    unsigned short plainbufbytes = 0;
     
-    log_debug("cryptostream_decrypt_feed: about to read from net (fd %d)", cs->from_fd);
+    // Iniitalize read vector
+    struct iovec readvector[128];
+    for(int i = 0; i<128; i++) {
+        readvector[i].iov_base = cs->ciphertext + (32+2+494)*i + 16;
+        readvector[i].iov_len  = 512;
+    }
     
-    // Append bytes to cumulative bytes read
-    unsigned short bytesread;
-    try((bytesread = (unsigned short)uninterruptable_read(read,
-                                                          cs->from_fd,                                          // fd
-                                                          (const char*)cs->cipherbuf + 16 + cs->cipherbufbytes, // dest
-                                                          maxbufferlen - cs->cipherbufbytes                     // maxlen
+    // If we're currently in the middle of reading a packet, update the first read vector
+    if(cs->ciphertext_packet_size_in_progress>0) {
+        readvector[0].iov_base += cs->ciphertext_packet_size_in_progress;
+        readvector[0].iov_len  -= cs->ciphertext_packet_size_in_progress;
+    }
+    
+    // The write vector be filled out later
+    struct iovec writevector[128];
+    
+    // Read chunks of bytes (up to 128 chunks; each chunk is size 512)
+    int bytesread;
+    try((bytesread = (int)uninterruptable_readv(cs->from_fd, // fd
+                                                readvector,  // vector
+                                                128          // count
     ))) || oops_fatal("failed to read");
-    
-    log_debug("cryptostream_decrypt_feed: done reading from net (fd %d)", cs->from_fd);
-
-    cs->cipherbufbytes += bytesread;
 
     // If we got zero bytes, it means the fd is closed
     if(bytesread==0) {
@@ -131,13 +162,26 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
         return 0;
     }
     
-    log_debug("cryptostream_decrypt_feed: got +%d bytes (total %d) from net (fd %d)",(int)bytesread,(int)cs->cipherbufbytes,cs->from_fd);
-
-    // If we have enough bytes for a packet, send it
-    while(cs->cipherbufbytes>=packetsize)
+    log_debug("cryptostream_decrypt_feed: got %d bytes from net",(int)bytesread);
+    
+    // Iterate over bytes as packets of 512
+    int packetcount = 0;
+    int packetlen_total_remaining = bytesread;
+    for(int packeti = 0; packetlen_total_remaining > 0; packeti++, packetlen_total_remaining-=512)
     {
+        // Current packet will be either 512 or less
+        unsigned short packetlen_current = MIN(512, packetlen_total_remaining);
         
-        // Decrypt packet (to get a chunk)i
+        // If the current packet is less than 512, it's incomplete; we'll deal with this below
+        if(packetlen_current < 512) {
+            cs->ciphertext_packet_size_in_progress = packetlen_current;
+            break;
+        } else {
+            cs->ciphertext_packet_size_in_progress = 0;
+        }
+        
+        // We have a full-size packet, so decrypt the packet (to get a chunk)
+        packetcount++;
     
         // crypto_secretbox_open:
         // - signature: crypto_secretbox_open(m,c,clen,n,k)
@@ -148,27 +192,37 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
         // - output structure:
         //   - [0..32] == zero
         //   - [32..]  == plaintext
-        try(crypto_secretbox_open(plainbuf,cs->cipherbuf,16+packetsize,cs->nonce,key)) || oops_fatal("failed to decrypt");
-    
+        try(crypto_secretbox_open(cs->plaintext + (32+2+494)*packeti,
+                                  cs->ciphertext + (32+2+494)*packeti,
+                                  32+2+494, cs->nonce, key)) || oops_fatal("failed to decrypt");
+        
         // Increment nonce
         nonce24_increment(cs->nonce);
         
-        // The first 2 bytes of the chunk are the chunksize
-        unsigned short chunksize = *(plainbuf + 32);
+        // Extract chunk size
+        uint16 chunklen_current = 0;
+        uint16_unpack((char*)cs->plaintext + (32+2+494)*packeti + 32, &chunklen_current);
         
-        log_debug("cryptostream_decrypt_feed: about to write %d bytes to local (fd %d)",(int)chunksize, cs->to_fd);
+        // Update writevector[packeti] lengths
+        writevector[packeti].iov_base = cs->plaintext + (32+2+494)*packeti + 32+2;
+        writevector[packeti].iov_len = chunklen_current;
         
-        // Write to local
-        try(uninterruptable_write(write,
-                                  cs->to_fd,                   // fd
-                                  (const char*)plainbuf+32+2,  // src
-                                  (unsigned int)chunksize)     // len
-        ) || oops_fatal("cryptostream_decrypt_feed: failed to write");
-        
-        log_debug("cryptostream_decrypt_feed: wrote %d bytes to local (fd %d)",(int)chunksize,cs->to_fd);
-        
-        // TBD: Shift cipherbuf to the left by 512
-        cs->cipherbufbytes -= packetsize;
     }
+    
+    // Send chunks to local
+    try(uninterruptable_writev(cs->to_fd,   // fd
+                               writevector, // vector
+                               packetcount)  // count
+     ) || oops_fatal("failed to write");
+     
+     log_debug("cryptostream_encrypt_feed: wrote %d bytes to net (fd %d)",(int)packetcount*512,cs->to_fd);
+    
+    // If last packet was less than 512 bytes, deal with it by copying it to the beginning of the buffer
+    if(cs->ciphertext_packet_size_in_progress>0) {
+        memcpy(cs->ciphertext + (32+2+494)*0 + 16,
+               cs->ciphertext + (32+2+494)*packetcount,
+               cs->ciphertext_packet_size_in_progress);
+    }
+    
     return bytesread;
 }

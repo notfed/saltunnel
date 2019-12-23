@@ -42,3 +42,12 @@ ssize_t uninterruptable_readv(int fd, const struct iovec *vector, int count)
   }
 }
 
+ssize_t uninterruptable_writev(int fd, const struct iovec *vector, int count)
+{
+  ssize_t r;
+  for (;;) {
+    r = writev(fd,vector,count);
+    if (r == -1) if (errno == EINTR) continue;
+    return r;
+  }
+}

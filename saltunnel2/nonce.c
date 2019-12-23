@@ -14,7 +14,8 @@ void nonce8_clear(nonce8 nonce) {
 void nonce8_increment(nonce8 nonce) {
     unsigned char carry = 1;
     for(int i = 0; i < 8; i++) {
-        carry = (nonce[i] += carry) == 0;
+        nonce[i] += carry;
+        carry &= (nonce[i] == 0);
     }
 }
 
@@ -27,6 +28,7 @@ void nonce24_clear(nonce24 nonce) {
 void nonce24_increment(nonce24 nonce) {
     unsigned char carry = 1;
     for(int i = 0; i < 24; i++) {
-        carry = (nonce[i] += carry) == 0;
+        nonce[i] += carry;
+        carry &= (nonce[i] == 0);
     }
 }

@@ -321,6 +321,20 @@ void test6() {
                        from_peer2_local_str, strlen(from_peer2_local_str)+1);
 }
 
+// Bidirectional saltunnel test; multi-packet
+void test7() {
+    
+    char from_peer1_local_str[700];
+    char from_peer2_local_str[700];
+    for(int i = 0; i < sizeof(from_peer1_local_str); i++) {
+        from_peer1_local_str[i] = i+1;
+        from_peer2_local_str[i] = i+1;
+    }
+    
+    bidirectional_test(from_peer1_local_str, sizeof(from_peer1_local_str),
+                       from_peer2_local_str, sizeof(from_peer2_local_str));
+}
+
 static void run(void (*the_test)(void), const char *test_name) {
     log_debug("%s: started...", test_name);
     the_test();
@@ -328,12 +342,13 @@ static void run(void (*the_test)(void), const char *test_name) {
 }
 
 int test() {
-    run(test1, "test1");
-    run(test2, "test2");
-    run(test3, "test3");
-    run(test4, "test4");
-    run(test5, "test5");
-    run(test6, "test6");
+//    run(test1, "test1");
+//    run(test2, "test2");
+//    run(test3, "test3");
+//    run(test4, "test4");
+//    run(test5, "test5");
+//    run(test6, "test6");
+    run(test7, "test7");
     log_info("all tests passed");
     return 0;
 }
