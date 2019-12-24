@@ -132,8 +132,8 @@ void test3() {
 
 void create_test_pipe(int fds[2]) {
     try(pipe(fds)) || oops_fatal("failed to create pipe");
-    try(fcntl(fds[0], F_SETFL, O_NONBLOCK)) || oops_fatal("failed to configure pipe");
-    try(fcntl(fds[1], F_SETFL, O_NONBLOCK)) || oops_fatal("failed to configure pipe");
+//    try(fcntl(fds[0], F_SETFL, O_NONBLOCK)) || oops_fatal("failed to configure pipe");
+//    try(fcntl(fds[1], F_SETFL, O_NONBLOCK)) || oops_fatal("failed to configure pipe");
 }
 
 // test4: saltunnel works with cryptostream
@@ -237,8 +237,35 @@ void test5() {
     }
 }
 
+typedef struct uninterruptable_write_thread_context {
+    ssize_t (*op)(int,const void*,size_t);
+    int fd;
+    const char *buf;
+    unsigned int len;
+} uninterruptable_write_thread_context;
+
+static void* uninterruptable_write_thread(void* v)
+{
+    uninterruptable_write_thread_context* c = (uninterruptable_write_thread_context*)v;
+    try(uninterruptable_write(c->op, c->fd, c->buf, c->len)) || oops_fatal("write");
+    try(close(c->fd)) || oops_fatal("close");
+    free(v);
+    return 0;
+}
+
+static void uninterruptable_write_thread_spawn(ssize_t (*op)(int,const void*,size_t),int fd,const char *buf,unsigned int len)
+{
+    pthread_t thread;
+    uninterruptable_write_thread_context* c = malloc(sizeof(uninterruptable_write_thread_context));
+    c->op = op;
+    c->fd = fd;
+    c->buf = buf;
+    c->len = len;
+    pthread_create(&thread, NULL, uninterruptable_write_thread, (void*)c)==0 || oops_fatal("pthread_create failed");
+}
+
 // Bidirectional saltunnel test
-void bidirectional_test(const char* from_peer1_local_str, unsigned int from_peer1_local_str_len,
+static void bidirectional_test(const char* from_peer1_local_str, unsigned int from_peer1_local_str_len,
                         const char* from_peer2_local_str, unsigned int from_peer2_local_str_len) {
     
     int len = from_peer1_local_str_len;
@@ -252,12 +279,10 @@ void bidirectional_test(const char* from_peer1_local_str, unsigned int from_peer
     int peer2_pipe_to_peer1[2];    create_test_pipe(peer2_pipe_to_peer1);
     
     // Start with "expected value" available for reading from peer1's local pipe
-    try(uninterruptable_write(write, peer1_pipe_local_read[1], from_peer1_local_str, from_peer1_local_str_len)) || oops_fatal("write");
-    try(close(peer1_pipe_local_read[1])) || oops_fatal("close");
+    uninterruptable_write_thread_spawn(write, peer1_pipe_local_read[1], from_peer1_local_str, from_peer1_local_str_len);
     
     // Start with "expected value" available for reading from peer2's local pipe
-    try(uninterruptable_write(write, peer2_pipe_local_read[1], from_peer2_local_str, from_peer2_local_str_len)) || oops_fatal("write");
-    try(close(peer2_pipe_local_read[1])) || oops_fatal("close");
+    uninterruptable_write_thread_spawn(write, peer2_pipe_local_read[1], from_peer2_local_str, from_peer2_local_str_len);
     
     // Initialize thread contexts
     saltunnel_thread_context context1 = {
@@ -301,11 +326,11 @@ void bidirectional_test(const char* from_peer1_local_str, unsigned int from_peer
     
     // Read "actual value" from peer1's local pipe
     char* from_peer1_local_str_actual = malloc(from_peer1_local_str_len);
-    try(uninterruptable_read(read, peer1_pipe_local_write[0], from_peer1_local_str_actual, from_peer1_local_str_len)) || oops_fatal("read");
+    try(uninterruptable_readn(read, peer1_pipe_local_write[0], from_peer1_local_str_actual, from_peer1_local_str_len)) || oops_fatal("read");
     
     // Read "actual value" from peer2's local pipe
     char* from_peer2_local_str_actual = malloc(from_peer2_local_str_len);
-    try(uninterruptable_read(read, peer2_pipe_local_write[0], from_peer2_local_str_actual, from_peer2_local_str_len)) || oops_fatal("read");
+    try(uninterruptable_readn(read, peer2_pipe_local_write[0], from_peer2_local_str_actual, from_peer2_local_str_len)) || oops_fatal("read");
     
     // Compare actual to expected
     int r = memcmp(from_peer1_local_str,from_peer2_local_str_actual,from_peer1_local_str_len);
