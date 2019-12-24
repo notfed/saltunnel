@@ -133,6 +133,7 @@ void test3() {
 void create_test_pipe(int fds[2]) {
     try(pipe(fds)) || oops_fatal("failed to create pipe");
     try(fcntl(fds[0], F_SETFL, O_NONBLOCK)) || oops_fatal("failed to configure pipe");
+    try(fcntl(fds[1], F_SETFL, O_NONBLOCK)) || oops_fatal("failed to configure pipe");
 }
 
 // test4: saltunnel works with cryptostream
@@ -242,13 +243,13 @@ void bidirectional_test(const char* from_peer1_local_str, unsigned int from_peer
     
     int len = from_peer1_local_str_len;
     
-    int peer1_pipe_local_read[2];  try(pipe(peer1_pipe_local_read))  || oops_fatal("failed to create pipe");
-    int peer1_pipe_local_write[2]; try(pipe(peer1_pipe_local_write)) || oops_fatal("failed to create pipe");
-    int peer1_pipe_to_peer2[2];    try(pipe(peer1_pipe_to_peer2))    || oops_fatal("failed to create pipe");
+    int peer1_pipe_local_read[2];  create_test_pipe(peer1_pipe_local_read);
+    int peer1_pipe_local_write[2]; create_test_pipe(peer1_pipe_local_write);
+    int peer1_pipe_to_peer2[2];    create_test_pipe(peer1_pipe_to_peer2);
     
-    int peer2_pipe_local_read[2];  try(pipe(peer2_pipe_local_read))  || oops_fatal("failed to create pipe");
-    int peer2_pipe_local_write[2]; try(pipe(peer2_pipe_local_write)) || oops_fatal("failed to create pipe");
-    int peer2_pipe_to_peer1[2];    try(pipe(peer2_pipe_to_peer1))    || oops_fatal("failed to create pipe");
+    int peer2_pipe_local_read[2];  create_test_pipe(peer2_pipe_local_read);
+    int peer2_pipe_local_write[2]; create_test_pipe(peer2_pipe_local_write);
+    int peer2_pipe_to_peer1[2];    create_test_pipe(peer2_pipe_to_peer1);
     
     // Start with "expected value" available for reading from peer1's local pipe
     try(uninterruptable_write(write, peer1_pipe_local_read[1], from_peer1_local_str, from_peer1_local_str_len)) || oops_fatal("write");
@@ -327,7 +328,7 @@ void bidirectional_test(const char* from_peer1_local_str, unsigned int from_peer
     close(peer2_pipe_local_write[0]); close(peer2_pipe_local_write[1]);
     close(peer2_pipe_to_peer1[0]); close(peer2_pipe_to_peer1[1]);
 
-    log_debug("bidirectional test (%d) passed",len);
+    log_info("bidirectional test (%d) passed",len);
 }
 
 // Bidirectional saltunnel test
@@ -357,22 +358,20 @@ void test7() {
 // Bidirectional saltunnel test; multi-packet, various sizes
 void test8() {
     
-    for(int s = 1; s < 16777216; s++)
-    {
-        char* from_peer1_local_str = malloc(s);
-        char* from_peer2_local_str = malloc(s);
-        
-        for(int i = 0; i < s; i++) {
-            from_peer1_local_str[i] = i+1;
-            from_peer2_local_str[i] = i+1;
-        }
-        
-        bidirectional_test(from_peer1_local_str, s,
-                           from_peer2_local_str, s);
-        
-        free(from_peer1_local_str);
-        free(from_peer2_local_str);
+    int s = 65537;
+    char* from_peer1_local_str = malloc(s);
+    char* from_peer2_local_str = malloc(s);
+    
+    for(int i = 0; i < s; i++) {
+        from_peer1_local_str[i] = i+1;
+        from_peer2_local_str[i] = i+1;
     }
+    
+    bidirectional_test(from_peer1_local_str, s,
+                       from_peer2_local_str, s);
+    
+    free(from_peer1_local_str);
+    free(from_peer2_local_str);
 }
 
 

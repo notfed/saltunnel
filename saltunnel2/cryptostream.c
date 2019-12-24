@@ -80,7 +80,7 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
         memset(cs->plaintext, 0, 32);
         
         // Fill chunk length (2 bytes)
-        unsigned short chunklen_current = MIN(494, chunklen_total_remaining);
+        uint16 chunklen_current = MIN(494, chunklen_total_remaining);
         uint16_pack((char*)cs->plaintext + (32+2+494)*packeti + 32, chunklen_current);
         
         // Fill post-zeros (494-chunklen bytes)
@@ -172,7 +172,7 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
     for(int packeti = 0; packetlen_total_remaining > 0; packeti++, packetlen_total_remaining-=512)
     {
         // Current packet will be either 512 or less
-        unsigned short packetlen_current = MIN(512, packetlen_total_remaining);
+        int packetlen_current = MIN(512, packetlen_total_remaining);
         
         // If the current packet is less than 512, it's incomplete; we'll deal with this below
         if(packetlen_current < 512) {

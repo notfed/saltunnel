@@ -9,9 +9,6 @@
 #include "nonce.h"
 #include <unistd.h>
 
-#define packetsize 512
-#define maxchunksize (packetsize-16-2)
-#define maxbufferlen 65536
 
 typedef struct cryptostream {
     int (*op)(struct cryptostream*,unsigned char*);
