@@ -336,10 +336,6 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     pthread_t thread1 = saltunnel_thread(&context1_ingress, &context1_egress);
     pthread_t thread2 = saltunnel_thread(&context2_ingress, &context2_egress);
     
-    // Don't wait for thread completion; simply read from output pipes
-//    pthread_join(thread1, NULL);
-//    pthread_join(thread2, NULL);
-    
     // Read from outputs
     
     // Read "actual value" from peer1's local pipe
@@ -360,7 +356,12 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
         log_fatal("bidirectional test (%d) failed: peer2 strs differed",len);
         _exit(1);
     }
-    
+
+    // Clean up the threads
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
+        
+    // Clean up resources
     free(from_peer1_local_str_actual);
     free(from_peer2_local_str_actual);
 
@@ -401,20 +402,24 @@ void test7() {
 // Bidirectional saltunnel test; multi-packet, various sizes
 void test8() {
     
-    int s = 494*133+3;
-    char* from_peer1_local_str = malloc(s);
-    char* from_peer2_local_str = malloc(s);
-    
-    for(int i = 0; i < s; i++) {
+    int low  = 200000;
+    int high = 200000;
+    for(int i = low; i <= high; i++) {
+        
+        log_info("---- iteration %d ----", i);
+            
+        char* from_peer1_local_str = malloc(i);
+        char* from_peer2_local_str = malloc(i);
+        
         from_peer1_local_str[i] = i+1;
         from_peer2_local_str[i] = i+1;
+        
+        bidirectional_test(from_peer1_local_str, i,
+                           from_peer2_local_str, i);
+        
+        free(from_peer1_local_str);
+        free(from_peer2_local_str);
     }
-    
-    bidirectional_test(from_peer1_local_str, s,
-                       from_peer2_local_str, s);
-    
-    free(from_peer1_local_str);
-    free(from_peer2_local_str);
 }
 
 
