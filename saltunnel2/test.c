@@ -175,23 +175,23 @@ void test4() {
     // Assert "expected value" equals "actual value"
     strcmp(local_teststr_actual, "from_net_pipe") == 0 || oops_fatal("local teststr did not match");
 }
-
-typedef struct saltunnel_thread_context {
-    cryptostream ingress;
-    cryptostream egress;
-} saltunnel_thread_context;
-
-void *saltunnel_peer_thread(void *contextptr)
-{
-    // Get reference to context
-    saltunnel_thread_context* context =
-        (saltunnel_thread_context*)contextptr;
-    
-    // Run saltunnel
-    saltunnel(&context->ingress, &context->egress);
-    
-    return 0;
-}
+//
+//typedef struct saltunnel_thread_context {
+//    cryptostream ingress;
+//    cryptostream egress;
+//} saltunnel_thread_context;
+//
+//void *saltunnel_peer_thread(void *contextptr)
+//{
+//    // Get reference to context
+//    saltunnel_thread_context* context =
+//        (saltunnel_thread_context*)contextptr;
+//
+//    // Run saltunnel
+//    saltunnel(&context->ingress, &context->egress);
+//
+//    return 0;
+//}
 
 
 void test5() {
@@ -235,29 +235,30 @@ void test5() {
         
         strcmp(log_name, "test") == 0 || oops_fatal("log test, assertion 2 failed");
     }
-//}
-//
-//typedef struct saltunnel_thread_context {
-//    cryptostream* ingress;
-//    cryptostream* egress;
-//} saltunnel_thread_context;
-//
-//static void* saltunnel_thread(void* v)
-//{
-//    saltunnel_thread_context* c = (saltunnel_thread_context*)v;
-//    saltunnel(c->ingress, c->egress);
-//    free(v);
-//    return 0;
-//}
-//
-//static void saltunnel_thread_spawn(cryptostream* ingress, cryptostream* egress)
-//{
-//    saltunnel_thread_context* c = malloc(sizeof(saltunnel_thread_context));
-//    c->ingress = *ingress;
-//    c->egress = *egress;
-//    pthread_t thread;
-//    pthread_create(&thread, NULL, saltunnel_thread, (void*)c)==0 || oops_fatal("pthread_create failed");
-//}
+}
+
+typedef struct saltunnel_thread_context {
+    cryptostream* ingress;
+    cryptostream* egress;
+} saltunnel_thread_context;
+
+static void* saltunnel_thread_inner(void* v)
+{
+    saltunnel_thread_context* c = (saltunnel_thread_context*)v;
+    saltunnel(c->ingress, c->egress);
+    free(v);
+    return 0;
+}
+
+static pthread_t saltunnel_thread(cryptostream* ingress, cryptostream* egress)
+{
+    saltunnel_thread_context* c = malloc(sizeof(saltunnel_thread_context));
+    c->ingress = ingress;
+    c->egress = egress;
+    pthread_t thread;
+    pthread_create(&thread, NULL, saltunnel_thread_inner, (void*)c)==0 || oops_fatal("pthread_create failed");
+    return thread;
+}
 
 typedef struct uninterruptable_write_thread_context {
     ssize_t (*op)(int,const void*,size_t);
@@ -266,7 +267,7 @@ typedef struct uninterruptable_write_thread_context {
     unsigned int len;
 } uninterruptable_write_thread_context;
 
-static void* uninterruptable_write_thread(void* v)
+static void* uninterruptable_write_thread_inner(void* v)
 {
     uninterruptable_write_thread_context* c = (uninterruptable_write_thread_context*)v;
     int w;
@@ -277,7 +278,7 @@ static void* uninterruptable_write_thread(void* v)
     return 0;
 }
 
-static void uninterruptable_write_thread_spawn(ssize_t (*op)(int,const void*,size_t),int fd,const char *buf,unsigned int len)
+static void uninterruptable_write_thread(ssize_t (*op)(int,const void*,size_t),int fd,const char *buf,unsigned int len)
 {
     uninterruptable_write_thread_context* c = malloc(sizeof(uninterruptable_write_thread_context));
     c->op = op;
@@ -285,7 +286,7 @@ static void uninterruptable_write_thread_spawn(ssize_t (*op)(int,const void*,siz
     c->buf = buf;
     c->len = len;
     pthread_t thread;
-    pthread_create(&thread, NULL, uninterruptable_write_thread, (void*)c)==0 || oops_fatal("pthread_create failed");
+    pthread_create(&thread, NULL, uninterruptable_write_thread_inner, (void*)c)==0 || oops_fatal("pthread_create failed");
 }
 
 // Bidirectional saltunnel test
@@ -303,48 +304,41 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     int peer2_pipe_to_peer1[2];    create_test_pipe(peer2_pipe_to_peer1);
     
     // Start with "expected value" available for reading from peer1's local pipe
-    uninterruptable_write_thread_spawn(write, peer1_pipe_local_read[1], from_peer1_local_str, from_peer1_local_str_len);
+    uninterruptable_write_thread(write, peer1_pipe_local_read[1], from_peer1_local_str, from_peer1_local_str_len);
     
     // Start with "expected value" available for reading from peer2's local pipe
-    uninterruptable_write_thread_spawn(write, peer2_pipe_local_read[1], from_peer2_local_str, from_peer2_local_str_len);
+    uninterruptable_write_thread(write, peer2_pipe_local_read[1], from_peer2_local_str, from_peer2_local_str_len);
     
     // Initialize thread contexts
-    saltunnel_thread_context context1 = {
-        .ingress = {
-            .op = cryptostream_decrypt_feed,
-            .from_fd = peer2_pipe_to_peer1[0],
-            .to_fd = peer1_pipe_local_write[1]
-        },
-        .egress = {
-            .op = cryptostream_encrypt_feed,
-            .from_fd = peer1_pipe_local_read[0],
-            .to_fd = peer1_pipe_to_peer2[1]
-        }
+    cryptostream context1_ingress = {
+        .op = cryptostream_decrypt_feed,
+        .from_fd = peer2_pipe_to_peer1[0],
+        .to_fd = peer1_pipe_local_write[1]
+    };
+    cryptostream context1_egress = {
+        .op = cryptostream_encrypt_feed,
+        .from_fd = peer1_pipe_local_read[0],
+        .to_fd = peer1_pipe_to_peer2[1]
     };
     
-    saltunnel_thread_context context2 = {
-        .ingress = {
-            .op = cryptostream_decrypt_feed,
-            .from_fd = peer1_pipe_to_peer2[0],
-            .to_fd = peer2_pipe_local_write[1]
-        },
-        .egress = {
-            .op = cryptostream_encrypt_feed,
-            .from_fd = peer2_pipe_local_read[0],
-            .to_fd = peer2_pipe_to_peer1[1]
-        }
+    cryptostream context2_ingress = {
+        .op = cryptostream_decrypt_feed,
+        .from_fd = peer1_pipe_to_peer2[0],
+        .to_fd = peer2_pipe_local_write[1]
+    };
+    cryptostream context2_egress = {
+        .op = cryptostream_encrypt_feed,
+        .from_fd = peer2_pipe_local_read[0],
+        .to_fd = peer2_pipe_to_peer1[1]
     };
     
     // Spawn threads
-    pthread_t thread1;
-    pthread_t thread2;
+    pthread_t thread1 = saltunnel_thread(&context1_ingress, &context1_egress);
+    pthread_t thread2 = saltunnel_thread(&context2_ingress, &context2_egress);
     
-    pthread_create(&thread1, NULL, saltunnel_peer_thread, (void*)&context1)==0 || oops_fatal("pthread_create failed");
-    pthread_create(&thread2, NULL, saltunnel_peer_thread, (void*)&context2)==0 || oops_fatal("pthread_create failed");
-    
-    // Wait for thread completion
-    pthread_join(thread1, NULL);
-    pthread_join(thread2, NULL);
+    // Don't wait for thread completion; simply read from output pipes
+//    pthread_join(thread1, NULL);
+//    pthread_join(thread2, NULL);
     
     // Read from outputs
     
