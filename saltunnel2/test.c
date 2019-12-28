@@ -235,7 +235,29 @@ void test5() {
         
         strcmp(log_name, "test") == 0 || oops_fatal("log test, assertion 2 failed");
     }
-}
+//}
+//
+//typedef struct saltunnel_thread_context {
+//    cryptostream* ingress;
+//    cryptostream* egress;
+//} saltunnel_thread_context;
+//
+//static void* saltunnel_thread(void* v)
+//{
+//    saltunnel_thread_context* c = (saltunnel_thread_context*)v;
+//    saltunnel(c->ingress, c->egress);
+//    free(v);
+//    return 0;
+//}
+//
+//static void saltunnel_thread_spawn(cryptostream* ingress, cryptostream* egress)
+//{
+//    saltunnel_thread_context* c = malloc(sizeof(saltunnel_thread_context));
+//    c->ingress = *ingress;
+//    c->egress = *egress;
+//    pthread_t thread;
+//    pthread_create(&thread, NULL, saltunnel_thread, (void*)c)==0 || oops_fatal("pthread_create failed");
+//}
 
 typedef struct uninterruptable_write_thread_context {
     ssize_t (*op)(int,const void*,size_t);
@@ -247,7 +269,9 @@ typedef struct uninterruptable_write_thread_context {
 static void* uninterruptable_write_thread(void* v)
 {
     uninterruptable_write_thread_context* c = (uninterruptable_write_thread_context*)v;
-    try(uninterruptable_write(c->op, c->fd, c->buf, c->len)) || oops_fatal("write");
+    int w;
+    try((w=uninterruptable_write(c->op, c->fd, c->buf, c->len))) || oops_fatal("write");
+    log_info("uninterruptable_write_thread wrote %d bytes",w);
     try(close(c->fd)) || oops_fatal("close");
     free(v);
     return 0;
@@ -255,12 +279,12 @@ static void* uninterruptable_write_thread(void* v)
 
 static void uninterruptable_write_thread_spawn(ssize_t (*op)(int,const void*,size_t),int fd,const char *buf,unsigned int len)
 {
-    pthread_t thread;
     uninterruptable_write_thread_context* c = malloc(sizeof(uninterruptable_write_thread_context));
     c->op = op;
     c->fd = fd;
     c->buf = buf;
     c->len = len;
+    pthread_t thread;
     pthread_create(&thread, NULL, uninterruptable_write_thread, (void*)c)==0 || oops_fatal("pthread_create failed");
 }
 
@@ -383,7 +407,7 @@ void test7() {
 // Bidirectional saltunnel test; multi-packet, various sizes
 void test8() {
     
-    int s = 65537;
+    int s = 494*133+3;
     char* from_peer1_local_str = malloc(s);
     char* from_peer2_local_str = malloc(s);
     

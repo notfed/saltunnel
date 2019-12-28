@@ -23,6 +23,7 @@ typedef struct cryptostream {
     unsigned int ciphertext_packet_size_in_progress;
     unsigned char plaintext[(32+2+494)*128];
     
+    int ctr;
 } cryptostream;
 
 int cryptostream_identity_feed(cryptostream*,unsigned char*);

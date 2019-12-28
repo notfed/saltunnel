@@ -121,7 +121,7 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
                                chunkcount) // count
      ) || oops_fatal("failed to write");
      
-     log_debug("cryptostream_encrypt_feed: wrote %d bytes to net (fd %d)",(int)chunkcount*512,cs->to_fd);
+     log_debug("cryptostream_encrypt_feed: wrote %d total bytes to net (fd %d)",(int)chunkcount*512,cs->to_fd);
     
     return bytesread;
 }
@@ -166,6 +166,8 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
     
     log_debug("cryptostream_decrypt_feed: got %d bytes from net",(int)bytesread);
     
+    unsigned int totalchunkbytes = 0; // Just for debug logging
+    
     // Iterate over bytes as packets of 512
     int packetcount = 0;
     int packetlen_total_remaining = cs->ciphertext_packet_size_in_progress + bytesread;
@@ -205,21 +207,29 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
         uint16 chunklen_current = 0;
         uint16_unpack((char*)cs->plaintext + (32+2+494)*packeti + 32, &chunklen_current);
         
+        log_debug("cryptostream_decrypt_feed: decrypted packet -> %d bytes (#%d,%d)",(int)chunklen_current,packeti,cs->ctr++);
+        
+        if(cs->ctr==132) {
+            int x = 0;
+        }
+        
         // Setup writevector[packeti]
         writevector[packeti].iov_base = cs->plaintext + (32+2+494)*packeti + 32+2;
         writevector[packeti].iov_len = chunklen_current;
+        totalchunkbytes += chunklen_current;
         
     }
     
     // Send chunks to local
+    // TODO: This is blocking b/c it is writing 65536+ bytes while no other thread is reading
     try(uninterruptable_writev(cs->to_fd,   // fd
                                writevector, // vector
                                packetcount)  // count
-     ) || oops_fatal("failed to write");
+    ) || oops_fatal("failed to write");
      
-     log_debug("cryptostream_encrypt_feed: wrote %d bytes to net (fd %d)",(int)packetcount*512,cs->to_fd);
+    log_debug("cryptostream_decrypt_feed: wrote %d total bytes to net (fd %d)",(int)totalchunkbytes,cs->to_fd);
     
-    // If last packet was less than 512 bytes, deal with it by copying it to the beginning of the buffer
+    // If last packet was less than 512 bytes (and therefore unprocessed), deal with it by copying it to the beginning of the buffer
     if(cs->ciphertext_packet_size_in_progress>0) {
         memcpy(cs->ciphertext + (32+2+494)*0 + 16,
                cs->ciphertext + (32+2+494)*packetcount,
