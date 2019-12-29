@@ -227,7 +227,7 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
                                packetcount)  // count
     ) || oops_fatal("failed to write");
      
-    log_debug("cryptostream_decrypt_feed: wrote %d total bytes to net (fd %d)",(int)totalchunkbytes,cs->to_fd);
+    log_debug("cryptostream_decrypt_feed: wrote %d total bytes to local (fd %d)",(int)totalchunkbytes,cs->to_fd);
     
     // If last packet was less than 512 bytes (and therefore unprocessed), deal with it by copying it to the beginning of the buffer
     if(cs->ciphertext_packet_size_in_progress>0) {
