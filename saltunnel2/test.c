@@ -269,9 +269,8 @@ typedef struct write_thread_context {
 static void* write_thread_inner(void* v)
 {
     write_thread_context* c = (write_thread_context*)v;
-    ssize_t w;
-    try((w=write(c->fd, c->buf, c->len))) || oops_fatal("write");
-    log_info("uninterruptable_write_thread wrote %d bytes",(int)w);
+    if(c->len != write(c->fd, c->buf, c->len)) oops_fatal("write");
+    log_info("write_thread wrote %d bytes",(int)c->len);
     try(close(c->fd)) || oops_fatal("close");
     free(v);
     return 0;
@@ -299,6 +298,14 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     int peer2_pipe_local_input[2];  create_test_pipe(peer2_pipe_local_input);
     int peer2_pipe_local_output[2]; create_test_pipe(peer2_pipe_local_output);
     int peer2_pipe_to_peer1[2];     create_test_pipe(peer2_pipe_to_peer1);
+    
+    log_debug("created pipe: peer1_pipe_local_input[%d,%d]", peer1_pipe_local_input[0], peer1_pipe_local_input[1]);
+    log_debug("created pipe: peer1_pipe_local_output[%d,%d]", peer1_pipe_local_output[0], peer1_pipe_local_output[1]);
+    log_debug("created pipe: peer1_pipe_to_peer2[%d,%d]", peer1_pipe_to_peer2[0], peer1_pipe_to_peer2[1]);
+    
+    log_debug("created pipe: peer2_pipe_local_input[%d,%d]", peer2_pipe_local_input[0], peer2_pipe_local_input[1]);
+    log_debug("created pipe: peer2_pipe_local_output[%d,%d]", peer2_pipe_local_output[0], peer2_pipe_local_output[1]);
+    log_debug("created pipe: peer2_pipe_to_peer1[%d,%d]", peer2_pipe_to_peer1[0], peer2_pipe_to_peer1[1]);
     
     // Start with "expected value" available for reading from peer1's local pipe
     pthread_t write_thread_1 = write_thread(peer1_pipe_local_input[1], from_peer1_local_str, from_peer1_local_str_len);
@@ -417,8 +424,8 @@ void test8() {
             from_peer2_local_str[j] = 'a'+(j%26);
         }
         
-        bidirectional_test(from_peer1_local_str, 100000,
-                           from_peer2_local_str, 100000);
+        bidirectional_test(from_peer1_local_str, 150000,
+                           from_peer2_local_str, 150000);
         
         free(from_peer1_local_str);
         free(from_peer2_local_str);

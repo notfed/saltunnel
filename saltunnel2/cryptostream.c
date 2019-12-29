@@ -62,13 +62,12 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
                                 128              // count
     ))) || oops_fatal("failed to read");
     
-    log_debug("cryptostream_encrypt_feed: got %d bytes from local",(int)bytesread);
+    log_debug("cryptostream_encrypt_feed: got %d bytes from egress local",(int)bytesread);
     
     // If we got zero bytes, it means the fd is closed
     if(bytesread==0) {
-        log_debug("closing net fd (%d)", cs->to_fd);
-        try(close(cs->to_fd)) ||
-            oops_fatal("failed to close net fd");
+        log_debug("closing egress net fd (%d)", cs->to_fd);
+        try(close(cs->to_fd)) || oops_fatal("failed to close egress net fd");
         return 0;
     }
     
@@ -122,7 +121,7 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
                chunkcount)  // count
      ) || oops_fatal("failed to write");
      
-     log_debug("cryptostream_encrypt_feed: wrote %d total bytes to net (fd %d)",(int)chunkcount*512,cs->to_fd);
+     log_debug("cryptostream_encrypt_feed: wrote %d total bytes to egress net (fd %d)",(int)chunkcount*512,cs->to_fd);
     
     return bytesread;
 }
@@ -160,12 +159,12 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
 
     // If we got zero bytes, it means the fd is closed
     if(bytesread==0) {
-        log_debug("closing local fd (%d)", cs->to_fd);
-        try(close(cs->to_fd)) || oops_fatal("failed to close local fd");
+        log_debug("closing ingress local fd (%d)", cs->to_fd);
+        try(close(cs->to_fd)) || oops_fatal("failed to close ingress local fd");
         return 0;
     }
     
-    log_debug("cryptostream_decrypt_feed: got %d bytes from net",(int)bytesread);
+    log_debug("cryptostream_decrypt_feed: got %d bytes from ingress net",(int)bytesread);
     
     unsigned int totalchunkbytes = 0; // Just for debug logging
     
@@ -208,7 +207,7 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
         uint16 chunklen_current = 0;
         uint16_unpack((char*)cs->plaintext + (32+2+494)*packeti + 32, &chunklen_current);
         
-        log_debug("cryptostream_decrypt_feed: decrypted packet -> %d bytes (#%d,%d)",(int)chunklen_current,packeti,cs->ctr++);
+//        log_debug("cryptostream_decrypt_feed: decrypted packet -> %d bytes (#%d,%d)",(int)chunklen_current,packeti,cs->ctr++);
         
         if(cs->ctr==132) {
             int x = 0;
@@ -227,7 +226,7 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
                packetcount)  // count
     ) || oops_fatal("failed to write");
      
-    log_debug("cryptostream_decrypt_feed: wrote %d total bytes to local (fd %d)",(int)totalchunkbytes,cs->to_fd);
+    log_debug("cryptostream_decrypt_feed: wrote %d total bytes to ingress local (fd %d)",(int)totalchunkbytes,cs->to_fd);
     
     // If last packet was less than 512 bytes (and therefore unprocessed), deal with it by copying it to the beginning of the buffer
     if(cs->ciphertext_packet_size_in_progress>0) {

@@ -32,25 +32,26 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
         /* Poll */
         log_debug("poll: polling [%d,%d]...", pfds[0].fd, pfds[1].fd);
         try(poll(pfds,2,-1)) || oops_fatal("poll: failed to poll");
+        log_debug("poll: got");
         
         // Handle ingress data
         if (pfds[0].revents & (POLLIN|POLLHUP)) {
-            log_debug("poll: net fd %d is ready for reading", pfds[0].fd);
+            log_debug("poll: ingress net fd %d is ready for reading", pfds[0].fd);
             int r;
             try((r=ingress->op(ingress,key))) || oops_fatal("failed to feed ingress");
             if(r==0) {
-                log_debug("poll: closing fd %d", pfds[0].fd);
+                log_debug("poll: no longer polling ingress net fd %d", pfds[0].fd);
                 pfds[0].fd = -1;
             }
         }
         
         // Handle egress data
         if (pfds[1].revents & (POLLIN|POLLHUP)) {
-            log_debug("poll: local fd %d is ready for reading", pfds[1].fd);
+            log_debug("poll: egress local fd %d is ready for reading", pfds[1].fd);
             int r;
             try((r=egress->op(egress,key))) || oops_fatal("failed to feed egress");
             if(r==0) {
-                log_debug("poll: closing fd %d", pfds[1].fd);
+                log_debug("poll: no longer polling egress local fd %d", pfds[1].fd);
                 pfds[1].fd = -1;
             }
         }
