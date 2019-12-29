@@ -343,6 +343,13 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     char* from_peer2_local_str_actual = malloc(from_peer1_local_str_len);
     try(allread(peer2_pipe_local_output[0], from_peer2_local_str_actual, from_peer1_local_str_len)) || oops_fatal("read");
     
+
+    // Clean up threads
+    pthread_join(write_thread_1, NULL);
+    pthread_join(write_thread_2, NULL);
+    pthread_join(saltunnel_thread_1, NULL);
+    pthread_join(saltunnel_thread_2, NULL);
+
     // Compare actual peer1 local data
     if(memcmp(from_peer2_local_str,from_peer1_local_str_actual,from_peer2_local_str_len)!=0) {
         log_fatal("bidirectional test (%d,%d) failed: peer2 strs differed",from_peer1_local_str_len,from_peer2_local_str_len);
@@ -353,13 +360,7 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
         log_fatal("bidirectional test (%d,%dd) failed: peer1 strs differed",from_peer1_local_str_len,from_peer2_local_str_len);
         _exit(1);
     }
-
-    // Clean up threads
-    pthread_join(write_thread_1, NULL);
-    pthread_join(write_thread_2, NULL);
-    pthread_join(saltunnel_thread_1, NULL);
-    pthread_join(saltunnel_thread_2, NULL);
-        
+    
     // Clean up memory
     free(from_peer1_local_str_actual);
     free(from_peer2_local_str_actual);
@@ -402,7 +403,7 @@ void test7() {
 // Bidirectional saltunnel test; multi-packet, various sizes
 void test8() {
     
-    int low  = 1000;
+    int low  = 300000;
     int high = low;
     for(int i = low; i <= high; i++) {
         
@@ -416,8 +417,8 @@ void test8() {
             from_peer2_local_str[j] = 'a'+(j%26);
         }
         
-        bidirectional_test(from_peer1_local_str, 2,
-                           from_peer2_local_str, 13);
+        bidirectional_test(from_peer1_local_str, 200000,
+                           from_peer2_local_str, 0);
         
         free(from_peer1_local_str);
         free(from_peer2_local_str);
