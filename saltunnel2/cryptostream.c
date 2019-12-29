@@ -17,10 +17,10 @@ int cryptostream_identity_feed(cryptostream* cs, unsigned char* key) {
     char buf[512];
     ssize_t n;
 
-    try((n = uninterruptable_read(read, cs->from_fd, buf, sizeof(buf)))) || oops_fatal("failed to read");
+    try((n = read(cs->from_fd, buf, sizeof(buf)))) || oops_fatal("failed to read");
     if(n==0)
         return 0;
-    try(uninterruptable_write(write, cs->to_fd, buf, (unsigned int)(n))) || oops_fatal("failed to write");
+    try(write(cs->to_fd, buf, (unsigned int)(n))) || oops_fatal("failed to write");
     fprintf(stderr,"cryptostream: fed %d bytes\n",(int)n);
     
     return 0;
@@ -57,9 +57,9 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
     
     // Read chunks of bytes (up to 128 chunks; each chunk is size 494)
     int bytesread;
-    try((bytesread = (int)uninterruptable_readv(cs->from_fd, // fd
-                                                cs->readvector,  // vector
-                                                128          // count
+    try((bytesread = (int)readv(cs->from_fd,     // fd
+                                cs->readvector,  // vector
+                                128              // count
     ))) || oops_fatal("failed to read");
     
     log_debug("cryptostream_encrypt_feed: got %d bytes from local",(int)bytesread);
@@ -116,9 +116,9 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
     }
     
     // Send packets to net
-    try(uninterruptable_writev(cs->to_fd,   // fd
-                               writevector, // vector
-                               chunkcount) // count
+    try(writev(cs->to_fd,   // fd
+               writevector, // vector
+               chunkcount)  // count
      ) || oops_fatal("failed to write");
      
      log_debug("cryptostream_encrypt_feed: wrote %d total bytes to net (fd %d)",(int)chunkcount*512,cs->to_fd);
@@ -152,9 +152,9 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
     
     // Read chunks of bytes (up to 128 chunks; each chunk is size 512)
     int bytesread;
-    try((bytesread = (int)uninterruptable_readv(cs->from_fd, // fd
-                                                cs->readvector,  // vector
-                                                128          // count
+    try((bytesread = (int)readv(cs->from_fd,     // fd
+                                cs->readvector,  // vector
+                                128              // count
     ))) || oops_fatal("failed to read");
 
     // If we got zero bytes, it means the fd is closed
@@ -221,10 +221,9 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
     }
     
     // Send chunks to local
-    // TODO: This is blocking b/c it is writing 65536+ bytes while no other thread is reading
-    try(uninterruptable_writev(cs->to_fd,   // fd
-                               writevector, // vector
-                               packetcount)  // count
+    try(writev(cs->to_fd,    // fd
+               writevector,  // vector
+               packetcount)  // count
     ) || oops_fatal("failed to write");
      
     log_debug("cryptostream_decrypt_feed: wrote %d total bytes to local (fd %d)",(int)totalchunkbytes,cs->to_fd);

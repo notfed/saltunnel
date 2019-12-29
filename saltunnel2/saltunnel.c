@@ -46,7 +46,7 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
         if (pfds[1].revents & (POLLIN|POLLHUP)) {
             log_debug("poll: local fd %d is ready for reading", pfds[1].fd);
             int r;
-            try((r=egress->op(egress,key))) || oops_fatal("failed to feed egress");
+             try((r=egress->op(egress,key))) || oops_fatal("failed to feed egress");
             if(r==0) {
                 pfds[1].events = 0;
             }

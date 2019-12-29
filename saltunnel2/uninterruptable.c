@@ -6,6 +6,7 @@
 #include "uninterruptable.h"
 #include <errno.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 ssize_t uninterruptable_write(ssize_t (*op)(int,const void*,size_t),int fd,const char *buf,unsigned int len)
 {
@@ -31,6 +32,24 @@ ssize_t uninterruptable_read(ssize_t (*op)(int,void*,size_t),int fd,const char* 
     if (r == -1) if (errno == EINTR) continue;
     return r;
   }
+}
+
+size_t allread(int fd, char *buf, size_t len)
+{
+  size_t written = 0 ;
+  while (len)
+  {
+    ssize_t w = read(fd, buf, len) ;
+    if (w <= 0)
+    {
+      if (!w) errno = 0 ;
+      break ;
+    }
+    written += w ;
+    buf += w ;
+    len -= w ;
+  }
+  return written ;
 }
 
 ssize_t uninterruptable_readn(ssize_t (*op)(int,void*,size_t),int fd,const char* buf,unsigned int len)

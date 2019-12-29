@@ -260,119 +260,119 @@ static pthread_t saltunnel_thread(cryptostream* ingress, cryptostream* egress)
     return thread;
 }
 
-typedef struct uninterruptable_write_thread_context {
-    ssize_t (*op)(int,const void*,size_t);
+typedef struct write_thread_context {
     int fd;
     const char *buf;
     unsigned int len;
-} uninterruptable_write_thread_context;
+} write_thread_context;
 
-static void* uninterruptable_write_thread_inner(void* v)
+static void* write_thread_inner(void* v)
 {
-    uninterruptable_write_thread_context* c = (uninterruptable_write_thread_context*)v;
-    int w;
-    try((w=uninterruptable_write(c->op, c->fd, c->buf, c->len))) || oops_fatal("write");
-    log_info("uninterruptable_write_thread wrote %d bytes",w);
+    write_thread_context* c = (write_thread_context*)v;
+    ssize_t w;
+    try((w=write(c->fd, c->buf, c->len))) || oops_fatal("write");
+    log_info("uninterruptable_write_thread wrote %d bytes",(int)w);
     try(close(c->fd)) || oops_fatal("close");
     free(v);
     return 0;
 }
 
-static void uninterruptable_write_thread(ssize_t (*op)(int,const void*,size_t),int fd,const char *buf,unsigned int len)
+static pthread_t write_thread(int fd,const char *buf,unsigned int len)
 {
-    uninterruptable_write_thread_context* c = malloc(sizeof(uninterruptable_write_thread_context));
-    c->op = op;
+    write_thread_context* c = malloc(sizeof(write_thread_context));
     c->fd = fd;
     c->buf = buf;
     c->len = len;
     pthread_t thread;
-    pthread_create(&thread, NULL, uninterruptable_write_thread_inner, (void*)c)==0 || oops_fatal("pthread_create failed");
+    pthread_create(&thread, NULL, write_thread_inner, (void*)c)==0 || oops_fatal("pthread_create failed");
+    return thread;
 }
 
 // Bidirectional saltunnel test
 static void bidirectional_test(const char* from_peer1_local_str, unsigned int from_peer1_local_str_len,
-                        const char* from_peer2_local_str, unsigned int from_peer2_local_str_len) {
+                               const char* from_peer2_local_str, unsigned int from_peer2_local_str_len) {
     
-    int len = from_peer1_local_str_len;
+    int peer1_pipe_local_input[2];  create_test_pipe(peer1_pipe_local_input);
+    int peer1_pipe_local_output[2]; create_test_pipe(peer1_pipe_local_output);
+    int peer1_pipe_to_peer2[2];     create_test_pipe(peer1_pipe_to_peer2);
     
-    int peer1_pipe_local_read[2];  create_test_pipe(peer1_pipe_local_read);
-    int peer1_pipe_local_write[2]; create_test_pipe(peer1_pipe_local_write);
-    int peer1_pipe_to_peer2[2];    create_test_pipe(peer1_pipe_to_peer2);
-    
-    int peer2_pipe_local_read[2];  create_test_pipe(peer2_pipe_local_read);
-    int peer2_pipe_local_write[2]; create_test_pipe(peer2_pipe_local_write);
-    int peer2_pipe_to_peer1[2];    create_test_pipe(peer2_pipe_to_peer1);
+    int peer2_pipe_local_input[2];  create_test_pipe(peer2_pipe_local_input);
+    int peer2_pipe_local_output[2]; create_test_pipe(peer2_pipe_local_output);
+    int peer2_pipe_to_peer1[2];     create_test_pipe(peer2_pipe_to_peer1);
     
     // Start with "expected value" available for reading from peer1's local pipe
-    uninterruptable_write_thread(write, peer1_pipe_local_read[1], from_peer1_local_str, from_peer1_local_str_len);
+    pthread_t write_thread_1 = write_thread(peer1_pipe_local_input[1], from_peer1_local_str, from_peer1_local_str_len);
     
     // Start with "expected value" available for reading from peer2's local pipe
-    uninterruptable_write_thread(write, peer2_pipe_local_read[1], from_peer2_local_str, from_peer2_local_str_len);
+    pthread_t write_thread_2 = write_thread(peer2_pipe_local_input[1], from_peer2_local_str, from_peer2_local_str_len);
     
     // Initialize thread contexts
     cryptostream context1_ingress = {
         .op = cryptostream_decrypt_feed,
         .from_fd = peer2_pipe_to_peer1[0],
-        .to_fd = peer1_pipe_local_write[1]
+        .to_fd = peer1_pipe_local_output[1]
     };
     cryptostream context1_egress = {
         .op = cryptostream_encrypt_feed,
-        .from_fd = peer1_pipe_local_read[0],
+        .from_fd = peer1_pipe_local_input[0],
         .to_fd = peer1_pipe_to_peer2[1]
     };
     
     cryptostream context2_ingress = {
         .op = cryptostream_decrypt_feed,
         .from_fd = peer1_pipe_to_peer2[0],
-        .to_fd = peer2_pipe_local_write[1]
+        .to_fd = peer2_pipe_local_output[1]
     };
     cryptostream context2_egress = {
         .op = cryptostream_encrypt_feed,
-        .from_fd = peer2_pipe_local_read[0],
+        .from_fd = peer2_pipe_local_input[0],
         .to_fd = peer2_pipe_to_peer1[1]
     };
     
     // Spawn threads
-    pthread_t thread1 = saltunnel_thread(&context1_ingress, &context1_egress);
-    pthread_t thread2 = saltunnel_thread(&context2_ingress, &context2_egress);
+    pthread_t saltunnel_thread_1 = saltunnel_thread(&context1_ingress, &context1_egress);
+    pthread_t saltunnel_thread_2 = saltunnel_thread(&context2_ingress, &context2_egress);
     
     // Read from outputs
     
     // Read "actual value" from peer1's local pipe
-    char* from_peer1_local_str_actual = malloc(from_peer1_local_str_len);
-    try(uninterruptable_readn(read, peer1_pipe_local_write[0], from_peer1_local_str_actual, from_peer1_local_str_len)) || oops_fatal("read");
+    char* from_peer1_local_str_actual = malloc(from_peer2_local_str_len);
+    try(allread(peer1_pipe_local_output[0], from_peer1_local_str_actual, from_peer2_local_str_len)) || oops_fatal("read");
     
     // Read "actual value" from peer2's local pipe
-    char* from_peer2_local_str_actual = malloc(from_peer2_local_str_len);
-    try(uninterruptable_readn(read, peer2_pipe_local_write[0], from_peer2_local_str_actual, from_peer2_local_str_len)) || oops_fatal("read");
+    char* from_peer2_local_str_actual = malloc(from_peer1_local_str_len);
+    try(allread(peer2_pipe_local_output[0], from_peer2_local_str_actual, from_peer1_local_str_len)) || oops_fatal("read");
     
-    // Compare actual to expected
-    int r = memcmp(from_peer1_local_str,from_peer2_local_str_actual,from_peer1_local_str_len);
-    if(r!=0) {
-        log_fatal("bidirectional test (%d) failed: peer1 strs differed",len);
+    // Compare actual peer1 local data
+    if(memcmp(from_peer2_local_str,from_peer1_local_str_actual,from_peer2_local_str_len)!=0) {
+        log_fatal("bidirectional test (%d,%d) failed: peer2 strs differed",from_peer1_local_str_len,from_peer2_local_str_len);
         _exit(1);
     }
-    if(memcmp(from_peer2_local_str,from_peer1_local_str_actual,from_peer2_local_str_len)!=0) {
-        log_fatal("bidirectional test (%d) failed: peer2 strs differed",len);
+    // Compare actual peer2 local data
+    if(memcmp(from_peer1_local_str,from_peer2_local_str_actual,from_peer1_local_str_len)!=0) {
+        log_fatal("bidirectional test (%d,%dd) failed: peer1 strs differed",from_peer1_local_str_len,from_peer2_local_str_len);
         _exit(1);
     }
 
-    // Clean up the threads
-    pthread_join(thread1, NULL);
-    pthread_join(thread2, NULL);
+    // Clean up threads
+    pthread_join(write_thread_1, NULL);
+    pthread_join(write_thread_2, NULL);
+    pthread_join(saltunnel_thread_1, NULL);
+    pthread_join(saltunnel_thread_2, NULL);
         
-    // Clean up resources
+    // Clean up memory
     free(from_peer1_local_str_actual);
     free(from_peer2_local_str_actual);
-
-    close(peer1_pipe_local_read[0]); close(peer1_pipe_local_read[1]);
-    close(peer1_pipe_local_write[0]); close(peer1_pipe_local_write[1]);
+    
+    // Clean up pipes
+    close(peer1_pipe_local_input[0]); close(peer1_pipe_local_input[1]);
+    close(peer1_pipe_local_output[0]); close(peer1_pipe_local_output[1]);
     close(peer1_pipe_to_peer2[0]); close(peer1_pipe_to_peer2[1]);
-    close(peer2_pipe_local_read[0]); close(peer2_pipe_local_read[1]);
-    close(peer2_pipe_local_write[0]); close(peer2_pipe_local_write[1]);
+    close(peer2_pipe_local_input[0]); close(peer2_pipe_local_input[1]);
+    close(peer2_pipe_local_output[0]); close(peer2_pipe_local_output[1]);
     close(peer2_pipe_to_peer1[0]); close(peer2_pipe_to_peer1[1]);
 
-    log_info("bidirectional test (%d) passed",len);
+    log_info("bidirectional test (%d,%d) passed",from_peer1_local_str_len,from_peer2_local_str_len);
 }
 
 // Bidirectional saltunnel test
@@ -402,7 +402,7 @@ void test7() {
 // Bidirectional saltunnel test; multi-packet, various sizes
 void test8() {
     
-    int low  = 127000;
+    int low  = 1000;
     int high = low;
     for(int i = low; i <= high; i++) {
         
@@ -411,11 +411,13 @@ void test8() {
         char* from_peer1_local_str = malloc(i);
         char* from_peer2_local_str = malloc(i);
         
-        from_peer1_local_str[i] = i+1;
-        from_peer2_local_str[i] = i+1;
+        for(int j = 0; j < i; j++) {
+            from_peer1_local_str[j] = 'a'+(j%26);
+            from_peer2_local_str[j] = 'a'+(j%26);
+        }
         
-        bidirectional_test(from_peer1_local_str, i,
-                           from_peer2_local_str, i);
+        bidirectional_test(from_peer1_local_str, 2,
+                           from_peer2_local_str, 13);
         
         free(from_peer1_local_str);
         free(from_peer2_local_str);
