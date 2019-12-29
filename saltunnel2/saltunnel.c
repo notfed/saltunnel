@@ -26,7 +26,8 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
         { .fd = egress->from_fd,  .events = POLLIN|POLLHUP }
     };
     
-    while(pfds[0].events!=0 || pfds[1].events!=0) {
+    while((pfds[0].fd!=-1) || (pfds[1].fd!=-1)) {
+//    while(pfds[0].events!=0 || pfds[1].events!=0) {
         
         /* Poll */
         log_debug("poll: polling [%d,%d]...", pfds[0].fd, pfds[1].fd);
@@ -38,7 +39,8 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
             int r;
             try((r=ingress->op(ingress,key))) || oops_fatal("failed to feed ingress");
             if(r==0) {
-                pfds[0].events = 0;
+                log_debug("poll: closing fd %d", pfds[0].fd);
+                pfds[0].fd = -1;
             }
         }
         
@@ -46,9 +48,10 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
         if (pfds[1].revents & (POLLIN|POLLHUP)) {
             log_debug("poll: local fd %d is ready for reading", pfds[1].fd);
             int r;
-             try((r=egress->op(egress,key))) || oops_fatal("failed to feed egress");
+            try((r=egress->op(egress,key))) || oops_fatal("failed to feed egress");
             if(r==0) {
-                pfds[1].events = 0;
+                log_debug("poll: closing fd %d", pfds[1].fd);
+                pfds[1].fd = -1;
             }
         }
     }

@@ -67,7 +67,8 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
     // If we got zero bytes, it means the fd is closed
     if(bytesread==0) {
         log_debug("closing net fd (%d)", cs->to_fd);
-        try(close(cs->to_fd)) || oops_fatal("failed to close net fd");
+        try(close(cs->to_fd)) ||
+            oops_fatal("failed to close net fd");
         return 0;
     }
     

@@ -417,8 +417,8 @@ void test8() {
             from_peer2_local_str[j] = 'a'+(j%26);
         }
         
-        bidirectional_test(from_peer1_local_str, 200000,
-                           from_peer2_local_str, 0);
+        bidirectional_test(from_peer1_local_str, 100000,
+                           from_peer2_local_str, 100000);
         
         free(from_peer1_local_str);
         free(from_peer2_local_str);
