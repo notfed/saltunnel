@@ -18,12 +18,14 @@ int cryptostream_identity_feed(cryptostream* cs, unsigned char* key) {
     ssize_t n;
 
     try((n = read(cs->from_fd, buf, sizeof(buf)))) || oops_fatal("failed to read");
-    if(n==0)
+    if(n==0) {
+        try(close(cs->to_fd)) || oops_fatal("failed to close egress net fd");
         return 0;
+    }
     try(write(cs->to_fd, buf, (unsigned int)(n))) || oops_fatal("failed to write");
     fprintf(stderr,"cryptostream: fed %d bytes\n",(int)n);
     
-    return 0;
+    return (int)n;
 }
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
