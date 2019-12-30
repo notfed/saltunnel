@@ -40,8 +40,8 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
         { .fd = egress->to_fd,    .events = POLLOUT        },
     };
 
-    fd_nonblock(ingress->to_fd);
-    fd_nonblock(egress->to_fd);
+//    fd_nonblock(ingress->to_fd);
+//    fd_nonblock(egress->to_fd);
     
     while((pfds[0].fd != FD_EOF) || pfds[2].fd != FD_EOF) {
         

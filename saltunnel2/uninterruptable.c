@@ -49,6 +49,51 @@ ssize_t allread(int fd, char *buf, size_t len)
   return bytesread;
 }
 
+size_t siovec_len (struct iovec const *v, unsigned int n)
+{
+  size_t w = 0 ;
+  while (n--) w += v[n].iov_len ;
+  return w ;
+}
+
+size_t siovec_seek (struct iovec *v, unsigned int n, size_t len)
+{
+  size_t w = 0 ;
+  unsigned int i = 0 ;
+  for (; i < n ; i++)
+  {
+    if (len < v[i].iov_len) break ;
+    w += v[i].iov_len ;
+    len -= v[i].iov_len ;
+    v[i].iov_base = 0 ;
+    v[i].iov_len = 0 ;
+  }
+  if (i < n)
+  {
+    v[i].iov_base = (char *)v[i].iov_base + len ;
+    v[i].iov_len -= len ;
+    w += len ;
+  }
+  return w ;
+}
+
+ssize_t allwritev(int fd, struct iovec const *v, unsigned int vlen)
+{
+    ssize_t written = 0 ;
+    struct iovec vv[vlen ? vlen : 1] ;
+    unsigned int i = vlen ;
+    while (i--) vv[i] = v[i] ;
+    while (siovec_len(vv, vlen))
+    {
+      ssize_t w = writev(fd, vv, vlen) ;
+      if(w==-1) { return -1; }
+      if(w==0)  { errno = EIO; return -1; }
+      w = siovec_seek(vv, vlen, w) ;
+      written += w ;
+    }
+    return written ;
+}
+
 ssize_t uninterruptable_readn(int fd,const char* buf,unsigned int len)
 {
   ssize_t w;

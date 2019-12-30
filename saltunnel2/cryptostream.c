@@ -220,16 +220,22 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
         // Setup writevector[packeti]
         writevector[packeti].iov_base = cs->plaintext + (32+2+494)*packeti + 32+2;
         writevector[packeti].iov_len = chunklen_current;
+        log_debug("totalchunkbytes (%d) = totalchunkbytes (%d) + chunklen_current (%d)", totalchunkbytes, totalchunkbytes+chunklen_current, chunklen_current);
         totalchunkbytes += chunklen_current;
         
     }
     
     // Send chunks to local
     int w;
-    try((w=writev(cs->to_fd,    // fd
+    try((w=allwritev(cs->to_fd,    // fd
                writevector,  // vector
                packetcount))  // count
     ) || oops_fatal("failed to write");
+    
+    if(w != totalchunkbytes) {
+        log_debug("w (%d) != totalchunkbytes (%d)", w, totalchunkbytes);
+        oops_fatal("w != totalchunkbytes"); // TODO: Can this ever happen?
+    }
      
     log_debug("cryptostream_decrypt_feed: wrote %d total bytes to ingress local (fd %d)",(int)totalchunkbytes,cs->to_fd);
     
