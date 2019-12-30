@@ -225,9 +225,10 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
     }
     
     // Send chunks to local
-    try(writev(cs->to_fd,    // fd
+    int w;
+    try((w=writev(cs->to_fd,    // fd
                writevector,  // vector
-               packetcount)  // count
+               packetcount))  // count
     ) || oops_fatal("failed to write");
      
     log_debug("cryptostream_decrypt_feed: wrote %d total bytes to ingress local (fd %d)",(int)totalchunkbytes,cs->to_fd);

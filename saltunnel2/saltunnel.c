@@ -58,7 +58,7 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
         
         // Handle ingress data
         if (pfds[0].fd == FD_READY && pfds[1].fd == FD_READY) {
-            log_debug("poll: ingress net fd %d is ready for reading", ingress->from_fd);
+//            log_debug("poll: ingress net fd %d is ready for reading", ingress->from_fd);
             int r;
             try((r=ingress->op(ingress,key))) || oops_fatal("failed to feed ingress");
             if(r==0) {
@@ -73,7 +73,7 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
         
         // Handle egress data
         if (pfds[2].fd == FD_READY && pfds[3].fd == FD_READY) {
-            log_debug("poll: egress local fd %d is ready for reading", egress->from_fd);
+//            log_debug("poll: egress local fd %d is ready for reading", egress->from_fd);
             int r;
             try((r=egress->op(egress,key))) || oops_fatal("failed to feed egress");
             if(r==0) {
