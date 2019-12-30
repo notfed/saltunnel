@@ -65,6 +65,9 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
                 log_debug("poll: no longer polling ingress net fd %d", ingress->from_fd);
                 pfds[0].fd = FD_EOF;
                 pfds[1].fd = FD_EOF;
+            } else if(r<0 && errno==EINPROGRESS) {
+                pfds[0].fd = FD_READY;
+                pfds[1].fd = ingress->to_fd;
             } else {
                 pfds[0].fd = ingress->from_fd;
                 pfds[1].fd = ingress->to_fd;
@@ -80,7 +83,11 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
                 log_debug("poll: no longer polling egress local fd %d", egress->from_fd);
                 pfds[2].fd = FD_EOF;
                 pfds[3].fd = FD_EOF;
-            } else {
+            } else if(r<0 && errno==EINPROGRESS) {
+                pfds[2].fd = FD_READY;
+                pfds[3].fd = egress->to_fd;
+            }
+            else {
                 pfds[2].fd = egress->from_fd;
                 pfds[3].fd = egress->to_fd;
             }
