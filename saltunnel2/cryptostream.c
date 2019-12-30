@@ -30,6 +30,37 @@ int cryptostream_identity_feed(cryptostream* cs, unsigned char* key) {
     return (int)n;
 }
 
+static int cryptostream_flush(const char *source, cryptostream* cs) {
+    int w;
+    try((w=writev(cs->to_fd,   // fd
+               cs->writevector,   // vector
+               cs->packetcount))  // count
+    ) || oops_fatal("failed to write");
+    
+    cs->flush_progress_bytesleft -= w;
+    
+    log_debug("%s: flushing progress: wrote %d bytes to ingress local (fd %d)",source,(int)w,cs->to_fd);
+    
+    if(w < cs->flush_progress_bytesleft) {
+        log_debug("%s: flushing progress: w (%d) != totalchunkbytes (%d); will try more later", source, w, cs->flush_progress_bytesleft);
+        errno = EINPROGRESS;
+        return -1;
+    } else {
+        // Flushing complete.
+        log_debug("%s: flushing complete (to fd %d)", source, cs->to_fd);
+
+        // But, account for possible remaining partial packet.
+        // If last packet was less than 512 bytes (and therefore unprocessed), deal with it by copying it to the beginning of the buffer
+        if(cs->ciphertext_packet_size_in_progress>0) {
+            memcpy(cs->ciphertext + (32+2+494)*0 + 16,
+                   cs->ciphertext + (32+2+494)*cs->packetcount,
+                   cs->ciphertext_packet_size_in_progress);
+        }
+        
+        return w;
+    }
+}
+
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
@@ -41,6 +72,17 @@ int cryptostream_identity_feed(cryptostream* cs, unsigned char* key) {
 // - Encrypt each chunk into a 512-byte packet (16-byte auth, 2-byte size, and 494-byte data)
 //
 int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
+    
+    // Are we still flushing? If so, complete the flush.
+    if(cs->flush_progress_bytesleft>0) {
+        int f;
+        // If we attempt to flush, and it's still in progress, then we'll try again later
+        if((f=cryptostream_flush("cryptostream_encrypt_feed", cs))<0)
+            return -1;
+        // If the flushing was successful, we'll need to go back and re-poll
+        else
+            return f;
+    }
     
     // BUFFER USAGE:
     // Read bytes into the following format:
@@ -74,9 +116,9 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
     }
     
     // Iterate over bytes as chunks of 494
-    int chunkcount = 0;
+    cs->packetcount = 0;
     int chunklen_total_remaining = bytesread;
-    for(int packeti = 0; chunklen_total_remaining > 0; packeti++, chunkcount++, chunklen_total_remaining-=494)
+    for(int packeti = 0; chunklen_total_remaining > 0; packeti++, cs->packetcount++, chunklen_total_remaining-=494)
     {
         // Fill pre-zeros (32 bytes)
         memset(cs->plaintext, 0, 32);
@@ -117,13 +159,17 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
         cs->writevector[packeti].iov_len  = 512;
     }
     
-    // Send packets to net
-    try(writev(cs->to_fd,   // fd
-               cs->writevector, // vector
-               chunkcount)  // count
-     ) || oops_fatal("failed to write");
-     
-     log_debug("cryptostream_encrypt_feed: wrote %d total bytes to egress net (fd %d)",(int)chunkcount*512,cs->to_fd);
+    // Flush. This means:
+    // - We plan to flush 'flush_progress_totalbytes' bytes
+    // - If we do a short write, then we'll try again later
+    cs->flush_progress_totalbytes  = cs->packetcount*512;
+    cs->flush_progress_bytesleft = cs->packetcount*512;
+    log_debug("cryptostream_encrypt_feed: flushing started: writing %d total bytes to ingress local (fd %d)", cs->flush_progress_totalbytes,cs->to_fd);
+    if(cryptostream_flush("cryptostream_decrypt_feed", cs)<0) { errno = EINPROGRESS; return -1; }
+    
+    // Flush complete.
+    
+    log_debug("cryptostream_encrypt_feed: wrote %d total bytes to egress net (fd %d)",(int)cs->packetcount*512,cs->to_fd);
     
     return bytesread;
 }
@@ -135,6 +181,17 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
 // - For each full packet, decrypt, deconstruct to {auth,size,data}, then write data to local
 //
 int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
+    
+    // Are we still flushing? If so, complete the flush.
+    if(cs->flush_progress_bytesleft>0) {
+        int f;
+        // If we attempt to flush, and it's still in progress, then we'll try again later
+        if((f=cryptostream_flush("cryptostream_decrypt_feed", cs))<0)
+            return -1;
+        // If the flushing was successful, we'll need to go back and re-poll
+        else
+            return f;
+    }
     
     // Iniitalize read vector
     if(!cs->readvector_is_initialized) {
@@ -168,7 +225,7 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
     unsigned int totalchunkbytes = 0; // Just for debug logging
     
     // Iterate over bytes as packets of 512
-    int packetcount = 0;
+    cs->packetcount = 0;
     int packetlen_total_remaining = cs->ciphertext_packet_size_in_progress + bytesread;
     for(int packeti = 0; packetlen_total_remaining > 0; packeti++, packetlen_total_remaining-=512)
     {
@@ -184,7 +241,7 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
         }
         
         // We have a full-size packet, so decrypt the packet (to get a chunk)
-        packetcount++;
+        cs->packetcount++;
     
         // crypto_secretbox_open:
         // - signature: crypto_secretbox_open(m,c,clen,n,k)
@@ -220,26 +277,15 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
         
     }
     
-    // Send chunks to local
-    int w;
-    try((w=allwritev(cs->to_fd,    // fd
-               cs->writevector,  // vector
-               packetcount))  // count
-    ) || oops_fatal("failed to write");
+    // Flush. This means:
+    // - We plan to flush 'flush_progress_totalbytes' bytes
+    // - If we do a short write, then we'll try again later
+    cs->flush_progress_totalbytes  = totalchunkbytes;
+    cs->flush_progress_bytesleft = totalchunkbytes;
+    log_debug("cryptostream_decrypt_feed: flushing started: writing %d total bytes to ingress local (fd %d)", cs->flush_progress_totalbytes,cs->to_fd);
+    if(cryptostream_flush("cryptostream_decrypt_feed", cs)<0) { errno = EINPROGRESS; return -1; }
     
-    if(w != totalchunkbytes) {
-        log_debug("w (%d) != totalchunkbytes (%d)", w, totalchunkbytes);
-        oops_fatal("w != totalchunkbytes"); // TODO: Can this ever happen?
-    }
-     
-    log_debug("cryptostream_decrypt_feed: wrote %d total bytes to ingress local (fd %d)",(int)totalchunkbytes,cs->to_fd);
-    
-    // If last packet was less than 512 bytes (and therefore unprocessed), deal with it by copying it to the beginning of the buffer
-    if(cs->ciphertext_packet_size_in_progress>0) {
-        memcpy(cs->ciphertext + (32+2+494)*0 + 16,
-               cs->ciphertext + (32+2+494)*packetcount,
-               cs->ciphertext_packet_size_in_progress);
-    }
+    // Flush complete.
     
     return bytesread;
 }

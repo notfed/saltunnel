@@ -40,8 +40,8 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
         { .fd = egress->to_fd,    .events = POLLOUT        },
     };
 
-//    fd_nonblock(ingress->to_fd);
-//    fd_nonblock(egress->to_fd);
+    fd_nonblock(ingress->to_fd);
+    fd_nonblock(egress->to_fd);
     
     while((pfds[0].fd != FD_EOF) || pfds[2].fd != FD_EOF) {
         
@@ -51,10 +51,10 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
 //        log_debug("poll: polled  [%2d->D->%2d, %2d->E->%2d].", pfds[0].fd, pfds[1].fd,pfds[2].fd, pfds[3].fd);
         
         /* If an fd is ready, mark it as -2 */
-        if ((pfds[0].fd >=0) && (pfds[0].revents & (POLLIN|POLLHUP))) { pfds[0].fd = FD_READY; }
-        if ((pfds[1].fd >=0) && (pfds[1].revents & (POLLOUT)))        { pfds[1].fd = FD_READY; }
-        if ((pfds[2].fd >=0) && (pfds[2].revents & (POLLIN|POLLHUP))) { pfds[2].fd = FD_READY; }
-        if ((pfds[3].fd >=0) && (pfds[3].revents & (POLLOUT)))        { pfds[3].fd = FD_READY; }
+        if ((pfds[0].fd >=0) && (pfds[0].revents & (POLLIN|POLLHUP))) { log_debug("%d is ready to read from", pfds[0].fd); pfds[0].fd = FD_READY; }
+        if ((pfds[1].fd >=0) && (pfds[1].revents & (POLLOUT)))        { log_debug("%d is ready to write ro",  pfds[1].fd); pfds[1].fd = FD_READY; }
+        if ((pfds[2].fd >=0) && (pfds[2].revents & (POLLIN|POLLHUP))) { log_debug("%d is ready to read from", pfds[2].fd); pfds[2].fd = FD_READY; }
+        if ((pfds[3].fd >=0) && (pfds[3].revents & (POLLOUT)))        { log_debug("%d is ready to write to",  pfds[3].fd); pfds[3].fd = FD_READY; }
         
         // Handle ingress data
         if (pfds[0].fd == FD_READY && pfds[1].fd == FD_READY) {
