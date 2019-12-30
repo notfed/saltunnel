@@ -19,11 +19,13 @@ int cryptostream_identity_feed(cryptostream* cs, unsigned char* key) {
 
     try((n = read(cs->from_fd, buf, sizeof(buf)))) || oops_fatal("failed to read");
     if(n==0) {
+        log_debug("read EOF from fd %d\n",(int)n,cs->from_fd);
         try(close(cs->to_fd)) || oops_fatal("failed to close egress net fd");
         return 0;
     }
+    log_debug("read %d bytes from fd %d\n",(int)n,cs->from_fd);
     try(write(cs->to_fd, buf, (unsigned int)(n))) || oops_fatal("failed to write");
-    fprintf(stderr,"cryptostream: fed %d bytes\n",(int)n);
+    log_debug("wrote %d bytes to fd %d\n",(int)n,cs->to_fd);
     
     return (int)n;
 }
