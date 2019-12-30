@@ -18,6 +18,7 @@ typedef struct cryptostream {
     
     int readvector_is_initialized;
     struct iovec readvector[128];
+    struct iovec writevector[128];
     
     unsigned char ciphertext[(32+2+494)*128];
     unsigned int ciphertext_packet_size_in_progress;

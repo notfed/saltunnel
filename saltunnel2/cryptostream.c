@@ -57,8 +57,6 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
         cs->readvector_is_initialized = 1;
     }
     
-    struct iovec writevector[128];
-    
     // Read chunks of bytes (up to 128 chunks; each chunk is size 494)
     int bytesread;
     try((bytesread = (int)readv(cs->from_fd,     // fd
@@ -115,13 +113,13 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
         nonce24_increment(cs->nonce);
         
         // Setup writevector[packeti]
-        writevector[packeti].iov_base = cs->ciphertext + (32+2+494)*packeti + 16;
-        writevector[packeti].iov_len  = 512;
+        cs->writevector[packeti].iov_base = cs->ciphertext + (32+2+494)*packeti + 16;
+        cs->writevector[packeti].iov_len  = 512;
     }
     
     // Send packets to net
     try(writev(cs->to_fd,   // fd
-               writevector, // vector
+               cs->writevector, // vector
                chunkcount)  // count
      ) || oops_fatal("failed to write");
      
@@ -150,9 +148,6 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
     // If we're currently in the middle of reading a packet, update the first read vector
     cs->readvector[0].iov_base = (cs->ciphertext + (32+2+494)*0 + 16) + cs->ciphertext_packet_size_in_progress;
     cs->readvector[0].iov_len  = (512) - cs->ciphertext_packet_size_in_progress;
-    
-    // The write vector be filled out later
-    struct iovec writevector[128];
     
     // Read chunks of bytes (up to 128 chunks; each chunk is size 512)
     int bytesread;
@@ -218,8 +213,8 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
         }
         
         // Setup writevector[packeti]
-        writevector[packeti].iov_base = cs->plaintext + (32+2+494)*packeti + 32+2;
-        writevector[packeti].iov_len = chunklen_current;
+        cs->writevector[packeti].iov_base = cs->plaintext + (32+2+494)*packeti + 32+2;
+        cs->writevector[packeti].iov_len = chunklen_current;
         log_debug("totalchunkbytes (%d) = totalchunkbytes (%d) + chunklen_current (%d)", totalchunkbytes, totalchunkbytes+chunklen_current, chunklen_current);
         totalchunkbytes += chunklen_current;
         
@@ -228,7 +223,7 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
     // Send chunks to local
     int w;
     try((w=allwritev(cs->to_fd,    // fd
-               writevector,  // vector
+               cs->writevector,  // vector
                packetcount))  // count
     ) || oops_fatal("failed to write");
     
