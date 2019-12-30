@@ -276,6 +276,8 @@ static void* write_thread_inner(void* v)
     write_thread_context* c = (write_thread_context*)v;
     log_set_thread_name(c->thread_name);
     int w;
+    if(c->len!=65537) oops_fatal("WHAT c->len!=65537"); // TODO: Temporary
+    if(c->buf[65536]!='q') oops_fatal("WHAT c->buf[65536]!=q"); // TODO: Temporary
     w = (int)write(c->fd, c->buf, c->len);
     if(w != c->len) oops_fatal("write");
     try(close(c->fd)) || oops_fatal("close");
@@ -364,18 +366,27 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     
 
     // Clean up threads
-    pthread_join(write_thread_1, NULL);
-    pthread_join(write_thread_2, NULL);
-    pthread_join(saltunnel_thread_1, NULL);
-    pthread_join(saltunnel_thread_2, NULL);
+    try(pthread_join(write_thread_1, NULL)) || oops_fatal("pthread_join");
+    try(pthread_join(write_thread_2, NULL)) || oops_fatal("pthread_join");
+    try(pthread_join(saltunnel_thread_1, NULL)) || oops_fatal("pthread_join");
+    try(pthread_join(saltunnel_thread_2, NULL)) || oops_fatal("pthread_join");
 
     // Compare actual peer1 local data
-    if(memcmp(from_peer2_local_str,from_peer1_local_str_actual,from_peer2_local_str_len)!=0) {
+    int cmp1 = memcmp(from_peer2_local_str,from_peer1_local_str_actual,from_peer2_local_str_len);
+    if(cmp1 != 0) {
         log_fatal("bidirectional test (%d,%d) failed: peer2 strs differed",from_peer1_local_str_len,from_peer2_local_str_len);
         _exit(1);
     }
     // Compare actual peer2 local data
-    if(memcmp(from_peer1_local_str,from_peer2_local_str_actual,from_peer1_local_str_len)!=0) {
+    int cmp2 = memcmp(from_peer1_local_str,from_peer2_local_str_actual,from_peer1_local_str_len);
+    if(cmp2 != 0) {
+        for(int i = 0; i < from_peer1_local_str_len; i++) {
+            char c1 = from_peer1_local_str[i];
+            char c2 = from_peer2_local_str_actual[i];
+            if(c1 != c2) {
+                log_fatal("str differed ('%c'!='%c') at index %d",c1,c2,i);
+            }
+        }
         log_fatal("bidirectional test (%d,%d) failed: peer1 strs differed",from_peer1_local_str_len,from_peer2_local_str_len);
         _exit(1);
     }

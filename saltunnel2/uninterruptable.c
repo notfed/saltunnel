@@ -34,29 +34,26 @@ ssize_t uninterruptable_read(ssize_t (*op)(int,void*,size_t),int fd,const char* 
   }
 }
 
-size_t allread(int fd, char *buf, size_t len)
+ssize_t allread(int fd, char *buf, size_t len)
 {
-  size_t written = 0 ;
+  ssize_t bytesread = 0;
   while (len)
   {
-    ssize_t w = read(fd, buf, len) ;
-    if (w <= 0)
-    {
-      if (!w) errno = 0 ;
-      break ;
-    }
-    written += w ;
-    buf += w ;
-    len -= w ;
+    ssize_t r = read(fd, buf, len);
+    if(r==-1) { return -1; }
+    if(r==0)  { errno = EIO; return -1; }
+    bytesread += r;
+    buf += r;
+    len -= r;
   }
-  return written ;
+  return bytesread;
 }
 
-ssize_t uninterruptable_readn(ssize_t (*op)(int,void*,size_t),int fd,const char* buf,unsigned int len)
+ssize_t uninterruptable_readn(int fd,const char* buf,unsigned int len)
 {
   ssize_t w;
   while(len) {
-    w = op(fd,(void*)buf,len);
+    w = read(fd,(void*)buf,len);
     if (w == -1) {
         if (errno == EINTR) continue;
         return (ssize_t)(-1); /* note that some data may have been read */
