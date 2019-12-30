@@ -46,23 +46,23 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
     while((pfds[0].fd != FD_EOF) || pfds[2].fd != FD_EOF) {
         
         /* Poll */
-        log_debug("poll: polling [%2d->D->%2d, %2d->E->%2d]...", pfds[0].fd, pfds[1].fd,pfds[2].fd, pfds[3].fd);
+//        log_debug("poll: polling [%2d->D->%2d, %2d->E->%2d]...", pfds[0].fd, pfds[1].fd,pfds[2].fd, pfds[3].fd);
         try(poll(pfds,4,-1)) || oops_fatal("poll: failed to poll");
-        log_debug("poll: polled  [%2d->D->%2d, %2d->E->%2d].", pfds[0].fd, pfds[1].fd,pfds[2].fd, pfds[3].fd);
+//        log_debug("poll: polled  [%2d->D->%2d, %2d->E->%2d].", pfds[0].fd, pfds[1].fd,pfds[2].fd, pfds[3].fd);
         
         /* If an fd is ready, mark it as -2 */
-        if ((pfds[0].fd >=0) && (pfds[0].revents & (POLLIN|POLLHUP))) { log_debug("fd %d is ready", pfds[0].fd); pfds[0].fd = FD_READY; }
-        if ((pfds[1].fd >=0) && (pfds[1].revents & (POLLOUT)))        { log_debug("fd %d is ready", pfds[1].fd); pfds[1].fd = FD_READY; }
-        if ((pfds[2].fd >=0) && (pfds[2].revents & (POLLIN|POLLHUP))) { log_debug("fd %d is ready", pfds[2].fd); pfds[2].fd = FD_READY; }
-        if ((pfds[3].fd >=0) && (pfds[3].revents & (POLLOUT)))        { log_debug("fd %d is ready", pfds[3].fd); pfds[3].fd = FD_READY; }
+        if ((pfds[0].fd >=0) && (pfds[0].revents & (POLLIN|POLLHUP))) { pfds[0].fd = FD_READY; }
+        if ((pfds[1].fd >=0) && (pfds[1].revents & (POLLOUT)))        { pfds[1].fd = FD_READY; }
+        if ((pfds[2].fd >=0) && (pfds[2].revents & (POLLIN|POLLHUP))) { pfds[2].fd = FD_READY; }
+        if ((pfds[3].fd >=0) && (pfds[3].revents & (POLLOUT)))        { pfds[3].fd = FD_READY; }
         
         // Handle ingress data
         if (pfds[0].fd == FD_READY && pfds[1].fd == FD_READY) {
-            log_debug("poll: ingress net fd %d is ready for reading", pfds[0].fd);
+            log_debug("poll: ingress net fd %d is ready for reading", ingress->from_fd);
             int r;
             try((r=ingress->op(ingress,key))) || oops_fatal("failed to feed ingress");
             if(r==0) {
-                log_debug("poll: no longer polling ingress net fd %d", pfds[0].fd);
+                log_debug("poll: no longer polling ingress net fd %d", ingress->from_fd);
                 pfds[0].fd = FD_EOF;
                 pfds[1].fd = FD_EOF;
             } else {
@@ -73,11 +73,11 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
         
         // Handle egress data
         if (pfds[2].fd == FD_READY && pfds[3].fd == FD_READY) {
-            log_debug("poll: egress local fd %d is ready for reading", pfds[1].fd);
+            log_debug("poll: egress local fd %d is ready for reading", egress->from_fd);
             int r;
             try((r=egress->op(egress,key))) || oops_fatal("failed to feed egress");
             if(r==0) {
-                log_debug("poll: no longer polling egress local fd %d", pfds[1].fd);
+                log_debug("poll: no longer polling egress local fd %d", egress->from_fd);
                 pfds[2].fd = FD_EOF;
                 pfds[3].fd = FD_EOF;
             } else {
@@ -86,7 +86,7 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
             }
         }
     }
-    log_debug("both fds are closed [%d,%d]; done polling", pfds[0].fd, pfds[1].fd);
+    log_debug("both read fds are closed [%d,%d]; done polling", ingress->from_fd, egress->from_fd);
 }
 
 void saltunnel(cryptostream* ingress, cryptostream* egress)

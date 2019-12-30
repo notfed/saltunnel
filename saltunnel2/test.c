@@ -279,7 +279,7 @@ static void* write_thread_inner(void* v)
     w = (int)write(c->fd, c->buf, c->len);
     if(w != c->len) oops_fatal("write");
     try(close(c->fd)) || oops_fatal("close");
-    log_info("write_thread wrote %d bytes to fd %d (and closed it)",(int)w,c->fd);
+    log_debug("write_thread wrote %d bytes to fd %d (and closed it)",(int)w,c->fd);
     free(v);
     return 0;
 }
@@ -325,23 +325,23 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     
     // Initialize thread contexts
     cryptostream context1_ingress = {
-        .op = cryptostream_identity_feed, // cryptostream_decrypt_feed,
+        .op = cryptostream_decrypt_feed,
         .from_fd = peer2_pipe_to_peer1[0],
         .to_fd = peer1_pipe_local_output[1]
     };
     cryptostream context1_egress = {
-        .op = cryptostream_identity_feed,
+        .op = cryptostream_encrypt_feed,
         .from_fd = peer1_pipe_local_input[0],
         .to_fd = peer1_pipe_to_peer2[1]
     };
     
     cryptostream context2_ingress = {
-        .op = cryptostream_identity_feed, // cryptostream_decrypt_feed,
+        .op = cryptostream_decrypt_feed,
         .from_fd = peer1_pipe_to_peer2[0],
         .to_fd = peer2_pipe_local_output[1]
     };
     cryptostream context2_egress = {
-        .op = cryptostream_identity_feed, // cryptostream_encrypt_feed,
+        .op = cryptostream_encrypt_feed,
         .from_fd = peer2_pipe_local_input[0],
         .to_fd = peer2_pipe_to_peer1[1]
     };
@@ -376,7 +376,7 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     }
     // Compare actual peer2 local data
     if(memcmp(from_peer1_local_str,from_peer2_local_str_actual,from_peer1_local_str_len)!=0) {
-        log_fatal("bidirectional test (%d,%dd) failed: peer1 strs differed",from_peer1_local_str_len,from_peer2_local_str_len);
+        log_fatal("bidirectional test (%d,%d) failed: peer1 strs differed",from_peer1_local_str_len,from_peer2_local_str_len);
         _exit(1);
     }
     
@@ -422,22 +422,26 @@ void test7() {
 // Bidirectional saltunnel test; multi-packet, various sizes
 void test8() {
     
-    int low  = 500000;
-    int high = low;
-    for(int i = low; i <= high; i++) {
+    int low  = 65537;
+    int high = 65537;
+    int inc = 1;
+    for(int i = low; i <= high; i+=inc) {
         
-        log_info("---- iteration %d ----", i);
+        log_debug("---- iteration %d ----", i);
+        
+        int peer1n = i;
+        int peer2n = i;
             
-        char* from_peer1_local_str = malloc(i);
-        char* from_peer2_local_str = malloc(i);
+        char* from_peer1_local_str = malloc(peer1n);
+        char* from_peer2_local_str = malloc(peer2n);
         
         for(int j = 0; j < i; j++) {
             from_peer1_local_str[j] = 'a'+(j%26);
             from_peer2_local_str[j] = 'a'+(j%26);
         }
         
-        bidirectional_test(from_peer1_local_str, 100,
-                           from_peer2_local_str, 1);
+        bidirectional_test(from_peer1_local_str, peer1n,
+                           from_peer2_local_str, peer2n);
         
         free(from_peer1_local_str);
         free(from_peer2_local_str);
