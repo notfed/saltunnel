@@ -42,18 +42,14 @@ char* log_filename_idempotent_fill(char* log_name, char* log_filename_from_macro
     return log_name;
 }
 
-static __thread char log_thread_name[64] = {0};
-static __thread unsigned char log_thread_name_is_populated = 0;
+static __thread char log_thread_name[64] = " [ main ]:";
 
 void log_set_thread_name(const char* str)
 {
     snprintf(log_thread_name,63," [%s]:",str);
-    log_thread_name_is_populated = 1;
 }
 
 const char* log_get_thread_name_formatted()
 {
-    return log_thread_name_is_populated
-        ? log_thread_name
-        : "";
+    return log_thread_name;
 }

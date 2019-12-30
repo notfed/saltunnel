@@ -46,15 +46,15 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
     while((pfds[0].fd != FD_EOF) || pfds[2].fd != FD_EOF) {
         
         /* Poll */
-        log_debug("poll: polling [%d->D->%d, %d->E->%d]...", pfds[0].fd, pfds[1].fd,pfds[2].fd, pfds[3].fd);
-        try(poll(pfds,2,-1)) || oops_fatal("poll: failed to poll");
-        log_debug("poll: polled [%d->D->%d, %d->E->%d].", pfds[0].fd, pfds[1].fd,pfds[2].fd, pfds[3].fd);
+        log_debug("poll: polling [%2d->D->%2d, %2d->E->%2d]...", pfds[0].fd, pfds[1].fd,pfds[2].fd, pfds[3].fd);
+        try(poll(pfds,4,-1)) || oops_fatal("poll: failed to poll");
+        log_debug("poll: polled  [%2d->D->%2d, %2d->E->%2d].", pfds[0].fd, pfds[1].fd,pfds[2].fd, pfds[3].fd);
         
         /* If an fd is ready, mark it as -2 */
-        if ((pfds[0].fd >=0) && (pfds[0].revents & (POLLIN|POLLHUP))) pfds[0].fd = FD_READY;
-        if ((pfds[1].fd >=0) && (pfds[1].revents & (POLLOUT)))        pfds[1].fd = FD_READY;
-        if ((pfds[2].fd >=0) && (pfds[2].revents & (POLLIN|POLLHUP))) pfds[2].fd = FD_READY;
-        if ((pfds[3].fd >=0) && (pfds[3].revents & (POLLOUT)))        pfds[3].fd = FD_READY;
+        if ((pfds[0].fd >=0) && (pfds[0].revents & (POLLIN|POLLHUP))) { log_debug("fd %d is ready", pfds[0].fd); pfds[0].fd = FD_READY; }
+        if ((pfds[1].fd >=0) && (pfds[1].revents & (POLLOUT)))        { log_debug("fd %d is ready", pfds[1].fd); pfds[1].fd = FD_READY; }
+        if ((pfds[2].fd >=0) && (pfds[2].revents & (POLLIN|POLLHUP))) { log_debug("fd %d is ready", pfds[2].fd); pfds[2].fd = FD_READY; }
+        if ((pfds[3].fd >=0) && (pfds[3].revents & (POLLOUT)))        { log_debug("fd %d is ready", pfds[3].fd); pfds[3].fd = FD_READY; }
         
         // Handle ingress data
         if (pfds[0].fd == FD_READY && pfds[1].fd == FD_READY) {

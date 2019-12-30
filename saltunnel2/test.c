@@ -239,6 +239,7 @@ void test5() {
 }
 
 typedef struct saltunnel_thread_context {
+    const char* thread_name;
     cryptostream* ingress;
     cryptostream* egress;
 } saltunnel_thread_context;
@@ -246,14 +247,16 @@ typedef struct saltunnel_thread_context {
 static void* saltunnel_thread_inner(void* v)
 {
     saltunnel_thread_context* c = (saltunnel_thread_context*)v;
+    log_set_thread_name(c->thread_name);
     saltunnel(c->ingress, c->egress);
     free(v);
     return 0;
 }
 
-static pthread_t saltunnel_thread(cryptostream* ingress, cryptostream* egress)
+static pthread_t saltunnel_thread(const char* thread_name, cryptostream* ingress, cryptostream* egress)
 {
     saltunnel_thread_context* c = malloc(sizeof(saltunnel_thread_context));
+    c->thread_name = thread_name;
     c->ingress = ingress;
     c->egress = egress;
     pthread_t thread;
@@ -306,19 +309,19 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     int peer1_pipe_to_peer2[2];     create_test_pipe(peer1_pipe_to_peer2);
     int peer2_pipe_to_peer1[2];     create_test_pipe(peer2_pipe_to_peer1);
     
-    log_debug("created pipe:  peer1_pipe_local_input[%d,%d]", peer1_pipe_local_input[0], peer1_pipe_local_input[1]);
-    log_debug("created pipe: peer1_pipe_local_output[%d,%d]", peer1_pipe_local_output[0], peer1_pipe_local_output[1]);
-    log_debug("created pipe:     peer1_pipe_to_peer2[%d,%d]", peer1_pipe_to_peer2[0], peer1_pipe_to_peer2[1]);
+    log_debug("created pipe: peer1_pipe_local_input [%2d,%2d]", peer1_pipe_local_input[0], peer1_pipe_local_input[1]);
+    log_debug("created pipe: peer1_pipe_local_output[%2d,%2d]", peer1_pipe_local_output[0], peer1_pipe_local_output[1]);
+    log_debug("created pipe: peer1_pipe_to_peer2    [%2d,%2d]", peer1_pipe_to_peer2[0], peer1_pipe_to_peer2[1]);
     
-    log_debug("created pipe:  peer2_pipe_local_input[%d,%d]", peer2_pipe_local_input[0], peer2_pipe_local_input[1]);
-    log_debug("created pipe: peer2_pipe_local_output[%d,%d]", peer2_pipe_local_output[0], peer2_pipe_local_output[1]);
-    log_debug("created pipe:     peer2_pipe_to_peer1[%d,%d]", peer2_pipe_to_peer1[0], peer2_pipe_to_peer1[1]);
+    log_debug("created pipe: peer2_pipe_local_input [%2d,%2d]", peer2_pipe_local_input[0], peer2_pipe_local_input[1]);
+    log_debug("created pipe: peer2_pipe_local_output[%2d,%2d]", peer2_pipe_local_output[0], peer2_pipe_local_output[1]);
+    log_debug("created pipe: peer2_pipe_to_peer1    [%2d,%2d]", peer2_pipe_to_peer1[0], peer2_pipe_to_peer1[1]);
     
     // Start with "expected value" available for reading from peer1's local pipe
-    pthread_t write_thread_1 = write_thread("peer1", peer1_pipe_local_input[1], from_peer1_local_str, from_peer1_local_str_len);
+    pthread_t write_thread_1 = write_thread("wpeer1", peer1_pipe_local_input[1], from_peer1_local_str, from_peer1_local_str_len);
     
     // Start with "expected value" available for reading from peer2's local pipe
-    pthread_t write_thread_2 = write_thread("peer2", peer2_pipe_local_input[1], from_peer2_local_str, from_peer2_local_str_len);
+    pthread_t write_thread_2 = write_thread("wpeer2", peer2_pipe_local_input[1], from_peer2_local_str, from_peer2_local_str_len);
     
     // Initialize thread contexts
     cryptostream context1_ingress = {
@@ -344,16 +347,18 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     };
     
     // Spawn saltunnel threads
-    pthread_t saltunnel_thread_1 = saltunnel_thread(&context1_ingress, &context1_egress);
-    pthread_t saltunnel_thread_2 = saltunnel_thread(&context2_ingress, &context2_egress);
+    pthread_t saltunnel_thread_1 = saltunnel_thread("speer1",&context1_ingress, &context1_egress);
+    pthread_t saltunnel_thread_2 = saltunnel_thread("speer2",&context2_ingress, &context2_egress);
     
     // Read from outputs
     
     // Read "actual value" from peer1's local pipe
+    log_debug("reading %d bytes from %d", from_peer2_local_str_len, peer1_pipe_local_output[0]);
     char* from_peer1_local_str_actual = malloc(from_peer2_local_str_len);
     try(allread(peer1_pipe_local_output[0], from_peer1_local_str_actual, from_peer2_local_str_len)) || oops_fatal("read");
     
     // Read "actual value" from peer2's local pipe
+    log_debug("reading %d bytes from %d", from_peer1_local_str_len, peer2_pipe_local_output[0]);
     char* from_peer2_local_str_actual = malloc(from_peer1_local_str_len);
     try(allread(peer2_pipe_local_output[0], from_peer2_local_str_actual, from_peer1_local_str_len)) || oops_fatal("read");
     
