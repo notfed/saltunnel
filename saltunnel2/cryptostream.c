@@ -30,6 +30,8 @@ int cryptostream_identity_feed(cryptostream* cs, unsigned char* key) {
     return (int)n;
 }
 
+// TODO: Performance improvement: this keeps retrying to consume UP TO n bytes. Instead, it could consume
+//       as many as possible, so if it reaches n, the rest can be picked up later.
 static int cryptostream_flush(const char *source, cryptostream* cs) {
     
     int w;

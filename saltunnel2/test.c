@@ -438,8 +438,8 @@ void test7() {
 // Bidirectional saltunnel test; multi-packet, various sizes
 void test8() {
     
-    int low  = 65536+5;
-    int high = 65536+5;
+    int low  = 458000;
+    int high = 459000;
     int inc = 1;
     for(int i = low; i <= high; i+=inc) {
         
