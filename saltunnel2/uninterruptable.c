@@ -56,6 +56,21 @@ size_t siovec_len (struct iovec const *v, unsigned int n)
   return w ;
 }
 
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+
+ssize_t iovec_skip(struct iovec *v, size_t vlen, unsigned int n)
+{
+    for(int i = 0; i < vlen; i++) {
+        size_t ncur = MIN(v[i].iov_len, n);
+        v[i].iov_len  -= ncur;
+        v[i].iov_base += ncur;
+        n -= ncur;
+        if(n==0) break;
+    }
+    return n;
+}
+
 size_t siovec_seek (struct iovec *v, unsigned int n, size_t len)
 {
   size_t w = 0 ;

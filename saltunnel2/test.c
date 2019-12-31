@@ -276,8 +276,8 @@ static void* write_thread_inner(void* v)
     write_thread_context* c = (write_thread_context*)v;
     log_set_thread_name(c->thread_name);
     int w;
-    if(c->len!=65537) oops_fatal("WHAT c->len!=65537"); // TODO: Temporary
-    if(c->buf[65536]!='q') oops_fatal("WHAT c->buf[65536]!=q"); // TODO: Temporary
+//    if(c->len!=65537) oops_fatal("WHAT c->len!=65537"); // TODO: Temporary
+//    if(c->buf[65536]!='q') oops_fatal("WHAT c->buf[65536]!=q"); // TODO: Temporary
     w = (int)write(c->fd, c->buf, c->len);
     if(w != c->len) oops_fatal("write");
     try(close(c->fd)) || oops_fatal("close");
@@ -381,9 +381,14 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     int cmp2 = memcmp(from_peer1_local_str,from_peer2_local_str_actual,from_peer1_local_str_len);
     if(cmp2 != 0) {
         for(int i = 0; i < from_peer1_local_str_len; i++) {
+
             char c1 = from_peer1_local_str[i];
             char c2 = from_peer2_local_str_actual[i];
             if(c1 != c2) {
+                
+                const char* s1 = from_peer1_local_str+i-5;
+                const char* s2 = from_peer2_local_str_actual+i-5;
+                
                 log_fatal("str differed ('%c'!='%c') at index %d",c1,c2,i);
             }
         }
@@ -396,12 +401,12 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     free(from_peer2_local_str_actual);
     
     // Clean up pipes
-    close(peer1_pipe_local_input[0]); close(peer1_pipe_local_input[1]);
+    close(peer1_pipe_local_input[0]);  close(peer1_pipe_local_input[1]);
     close(peer1_pipe_local_output[0]); close(peer1_pipe_local_output[1]);
-    close(peer1_pipe_to_peer2[0]); close(peer1_pipe_to_peer2[1]);
-    close(peer2_pipe_local_input[0]); close(peer2_pipe_local_input[1]);
+    close(peer1_pipe_to_peer2[0]);     close(peer1_pipe_to_peer2[1]);
+    close(peer2_pipe_local_input[0]);  close(peer2_pipe_local_input[1]);
     close(peer2_pipe_local_output[0]); close(peer2_pipe_local_output[1]);
-    close(peer2_pipe_to_peer1[0]); close(peer2_pipe_to_peer1[1]);
+    close(peer2_pipe_to_peer1[0]);     close(peer2_pipe_to_peer1[1]);
 
     log_info("bidirectional test (%d,%d) passed",from_peer1_local_str_len,from_peer2_local_str_len);
 }
@@ -433,8 +438,8 @@ void test7() {
 // Bidirectional saltunnel test; multi-packet, various sizes
 void test8() {
     
-    int low  = 65537;
-    int high = 65537;
+    int low  = 65536+5;
+    int high = 65536+5;
     int inc = 1;
     for(int i = low; i <= high; i+=inc) {
         

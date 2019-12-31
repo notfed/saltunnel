@@ -31,32 +31,40 @@ int cryptostream_identity_feed(cryptostream* cs, unsigned char* key) {
 }
 
 static int cryptostream_flush(const char *source, cryptostream* cs) {
+    
     int w;
     try((w=writev(cs->to_fd,   // fd
                cs->writevector,   // vector
                cs->packetcount))  // count
     ) || oops_fatal("failed to write");
     
-    cs->flush_progress_bytesleft -= w;
     
     log_debug("%s: flushing progress: wrote %d bytes to ingress local (fd %d)",source,(int)w,cs->to_fd);
     
     if(w < cs->flush_progress_bytesleft) {
-        log_debug("%s: flushing progress: w (%d) != totalchunkbytes (%d); will try more later", source, w, cs->flush_progress_bytesleft);
+        log_debug("%s: flushing progress: w (%d) < bytesleft (%d); will try more later", source, w, cs->flush_progress_bytesleft);
+//        int vector_current_len = (int)siovec_len(cs->writevector, cs->packetcount);
+        iovec_skip(cs->writevector, cs->packetcount, w);
+        cs->flush_progress_bytesleft -= w;
         errno = EINPROGRESS;
         return -1;
-    } else {
+    } else if(w>cs->flush_progress_bytesleft){
+        oops_fatal("impossible?");
+        return -1;
+    } else { // if(w==cs->flush_progress_bytesleft)
         // Flushing complete.
         log_debug("%s: flushing complete (to fd %d)", source, cs->to_fd);
 
         // But, account for possible remaining partial packet.
         // If last packet was less than 512 bytes (and therefore unprocessed), deal with it by copying it to the beginning of the buffer
         if(cs->ciphertext_packet_size_in_progress>0) {
+            oops_fatal("this happened"); // TODO: This shouldn't be an error. I just want to know if this ever happens.
+            log_debug("%s: moving incomplete last-packet", source);
             memcpy(cs->ciphertext + (32+2+494)*0 + 16,
                    cs->ciphertext + (32+2+494)*cs->packetcount,
                    cs->ciphertext_packet_size_in_progress);
         }
-        
+        cs->flush_progress_bytesleft = 0;
         return w;
     }
 }
