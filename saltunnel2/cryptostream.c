@@ -51,7 +51,7 @@ static int cryptostream_flush(const char *source, cryptostream* cs) {
         errno = EINPROGRESS;
         return -1;
     } else if(w>cs->flush_progress_bytesleft){
-        oops_fatal("impossible?");
+        oops_fatal("assertion failed");
         return -1;
     } else { // if(w==cs->flush_progress_bytesleft)
         // Flushing complete.
@@ -126,6 +126,7 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
     }
     
     // Iterate over bytes as chunks of 494
+    log_debug("encryption started");
     cs->packetcount = 0;
     int chunklen_total_remaining = bytesread;
     for(int packeti = 0; chunklen_total_remaining > 0; packeti++, cs->packetcount++, chunklen_total_remaining-=494)
@@ -168,6 +169,7 @@ int cryptostream_encrypt_feed(cryptostream* cs, unsigned char* key) {
         cs->writevector[packeti].iov_base = cs->ciphertext + (32+2+494)*packeti + 16;
         cs->writevector[packeti].iov_len  = 512;
     }
+    log_debug("encryption ended");
     
     // Flush. This means:
     // - We plan to flush 'flush_progress_totalbytes' bytes
@@ -234,6 +236,7 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
     
     unsigned int totalchunkbytes = 0; // Just for debug logging
     
+    log_debug("decryption started");
     // Iterate over bytes as packets of 512
     cs->packetcount = 0;
     int packetlen_total_remaining = cs->ciphertext_packet_size_in_progress + bytesread;
@@ -282,10 +285,11 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
         // Setup writevector[packeti]
         cs->writevector[packeti].iov_base = cs->plaintext + (32+2+494)*packeti + 32+2;
         cs->writevector[packeti].iov_len = chunklen_current;
-        log_debug("totalchunkbytes (%d) = totalchunkbytes (%d) + chunklen_current (%d)", totalchunkbytes, totalchunkbytes+chunklen_current, chunklen_current);
+//        log_debug("totalchunkbytes (%d) = totalchunkbytes (%d) + chunklen_current (%d)", totalchunkbytes, totalchunkbytes+chunklen_current, chunklen_current);
         totalchunkbytes += chunklen_current;
         
     }
+    log_debug("decryption ended");
     
     // Flush. This means:
     // - We plan to flush 'flush_progress_totalbytes' bytes
