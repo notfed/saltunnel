@@ -438,9 +438,9 @@ void test7() {
 // Bidirectional saltunnel test; multi-packet, various sizes
 void test8() {
     
-    int low  = 50000;
-    int high = 300000;
-    int inc = 20000;
+    int low  = 130000;
+    int high = 130000;
+    int inc = 1;
     for(int i = low; i <= high; i+=inc) {
         
         log_debug("---- iteration %d ----", i);
@@ -471,6 +471,27 @@ static void run(void (*the_test)(void), const char *test_name) {
     log_debug("%s: succeeded.", test_name);
 }
 
+static int calculate_filled_buffers(int start, int end, int buffersize) {
+    return end/buffersize - (start-1+buffersize)/buffersize;
+}
+
+void test9() {
+    if(calculate_filled_buffers(5,15,10)!=0) oops_fatal("failed test9.1");
+    if(calculate_filled_buffers(5,25,10)!=1) oops_fatal("failed test9.2");
+    if(calculate_filled_buffers(5,35,10)!=2) oops_fatal("failed test9.3");
+    
+    if(calculate_filled_buffers(0,10,10)!=1) oops_fatal("failed test9.4");
+    if(calculate_filled_buffers(1,10,10)!=0) oops_fatal("failed test9.5");
+    if(calculate_filled_buffers(0,11,10)!=1) oops_fatal("failed test9.6");
+    
+    if(calculate_filled_buffers(10,11,10)!=0) oops_fatal("failed test9.7");
+    if(calculate_filled_buffers(10,19,10)!=0) oops_fatal("failed test9.8");
+    if(calculate_filled_buffers(10,20,10)!=1) oops_fatal("failed test9.9");
+    if(calculate_filled_buffers(10,21,10)!=1) oops_fatal("failed test9.10");
+    if(calculate_filled_buffers(10,29,10)!=1) oops_fatal("failed test9.11");
+    if(calculate_filled_buffers(10,30,10)!=2) oops_fatal("failed test9.12");
+}
+
 int test() {
     log_debug("PIPE_BUF=%d",PIPE_BUF);
     log_debug("_PC_PIPE_BUF=%d",_PC_PIPE_BUF);
@@ -482,6 +503,7 @@ int test() {
 //    run(test6, "test6");
 //    run(test7, "test7");
     run(test8, "test8");
+//    run(test9,"test9");
     log_info("all tests passed");
     return 0;
 }
