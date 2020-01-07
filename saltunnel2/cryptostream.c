@@ -94,9 +94,11 @@ int cryptostream_encrypt_feed(cryptostream* cs,unsigned char* x)
     return 0; // TODO: Get rid of this?
 }
 
-// Is there room in the plaintext span?
+// Is there enough room for 1 buffer of plaintext and 1 buffer of ciphertext?
 int cryptostream_encrypt_feed_canread(cryptostream* cs) {
-    return cs->plaintext_len < CRYPTOSTREAM_SPAN_MAXBYTES_DATA;
+    int plaintext_has_available_buffers = cs->plaintext_len < (CRYPTOSTREAM_SPAN_MAXBYTES_DATA - CRYPTOSTREAM_BUFFER_MAXBYTES_DATA);
+    int ciphertext_has_available_buffers = cs->ciphertext_len < (CRYPTOSTREAM_SPAN_MAXBYTES_CIPHERTEXT - CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT);
+    return plaintext_has_available_buffers && ciphertext_has_available_buffers;
 }
 
 //
@@ -157,19 +159,24 @@ int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key) {
     log_debug("cryptostream_encrypt_feed: got %d bytes from egress local",(int)bytesread);
     
     //
-    //
     // Encrypt
+    //
     
-    // Calculate how many buffers can be encrypted
+    // Calculate which buffer to start at
     int buffer_enc_start = cs->plaintext_start / CRYPTOSTREAM_BUFFER_MAXBYTES_DATA;
-    int buffer_enc_count = (cs->plaintext_len   / CRYPTOSTREAM_BUFFER_MAXBYTES_DATA)+1;
+    
+    // Calculate how many bytes and buffers should be encrypted
+    int bytes_to_encrypt = cs->plaintext_len;
+    int buffer_encryptable_count = ((bytes_to_encrypt-1)  / CRYPTOSTREAM_BUFFER_MAXBYTES_DATA)+1;
+    int buffer_receivable_count  = ((CRYPTOSTREAM_SPAN_MAXBYTES_CIPHERTEXT - cs->ciphertext_len) / CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT);
+    int buffer_enc_count = MIN(buffer_encryptable_count,buffer_receivable_count);
     
     // Iterate the encryptable buffers (if any)
     log_debug("encryption started");
     for(int buffer_i = buffer_enc_start; buffer_i < buffer_enc_count; buffer_i++)
     {
         // Calculate how many bytes to encrypt (for this buffer)
-        uint16 buffer_databytes = (uint16)MIN(cs->plaintext_len, CRYPTOSTREAM_BUFFER_MAXBYTES_DATA);
+        uint16 buffer_databytes = (uint16)MIN(bytes_to_encrypt, CRYPTOSTREAM_BUFFER_MAXBYTES_DATA);
         if(buffer_databytes==0)
             break;
         
@@ -205,16 +212,18 @@ int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key) {
         try(crypto_secretbox_open(plaintext_buffer_ptr, ciphertext_buffer_ptr,
                                   CRYPTOSTREAM_BUFFER_MAXBYTES,cs->nonce,key)) || oops_fatal("failed to trial decrypt");
         
-        log_debug("encrypted %d bytes (buffer index %d)", buffer_databytes, buffer_i);
+        log_debug("cryptostream_encrypt_feed_read: encrypted %d bytes (buffer %d/%d)", buffer_databytes, buffer_i+1, buffer_enc_count);
         
-        // Rotate buffer offsets
-        cs->plaintext_start  = (cs->plaintext_start  + buffer_databytes) % CRYPTOSTREAM_BUFFER_MAXBYTES_DATA;
-        cs->plaintext_len    = (cs->plaintext_len    - buffer_databytes);
-        cs->ciphertext_len   = (cs->ciphertext_len   + CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT);
+        // Rotate buffer offsets (and, if this is the last buffer, round plaintext_start up to next buffer)
+        bytes_to_encrypt      -= buffer_databytes;
+        cs->plaintext_start    = (cs->plaintext_start + CRYPTOSTREAM_BUFFER_MAXBYTES_DATA) % CRYPTOSTREAM_SPAN_MAXBYTES_DATA;
+        cs->plaintext_len     -= CRYPTOSTREAM_BUFFER_MAXBYTES_DATA;
+        cs->ciphertext_len    += CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT;
         
         // Increment nonce
         nonce24_increment(cs->nonce);
     }
+    
     log_debug("encryption ended");
     
     
@@ -261,7 +270,7 @@ int cryptostream_encrypt_feed_write(cryptostream* cs, unsigned char* key) {
     // Rotate the buffer offsets
     cs->ciphertext_start = (cs->ciphertext_start + byteswritten) % CRYPTOSTREAM_SPAN_MAXBYTES_CIPHERTEXT;
     cs->ciphertext_len   = (cs->ciphertext_len   - byteswritten);
-        
+
     return 1;
 }
 
@@ -355,7 +364,7 @@ int cryptostream_decrypt_feed(cryptostream* cs, unsigned char* key) {
         uint16 chunklen_current = 0;
         uint16_unpack((char*)cs->plaintext + (32+2+494)*packeti + 32, &chunklen_current);
         
-//        log_debug("cryptostream_decrypt_feed: decrypted packet -> %d bytes (#%d,%d)",(int)chunklen_current,packeti,cs->ctr++);
+        log_debug("!! cryptostream_decrypt_feed: decrypted packet (#%d) -> %d bytes",cs->ctr++,(int)chunklen_current);
         
         if(cs->ctr==132) {
             int x = 0;
