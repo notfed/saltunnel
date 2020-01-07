@@ -235,6 +235,16 @@ int cryptostream_encrypt_feed_canwrite(cryptostream* cs) {
     return cs->ciphertext_len > 0;
 }
 
+// Only write 1 byte
+static int chaos_writev(int fd, struct iovec* vector, int count) {
+    struct iovec newvector = {
+        .iov_base = vector[0].iov_base,
+        .iov_len = 1
+    };
+    int r = writev(fd,&newvector,1);
+    return r;
+}
+
 //
 // Algorithm:
 // - Write as much ciphertext as possible
@@ -250,12 +260,12 @@ int cryptostream_encrypt_feed_write(cryptostream* cs, unsigned char* key) {
     int buffer_count         = cs->ciphertext_len   / CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT;
 
     // Adjust the start vector according to the buffer_start_offset
-    cs->plaintext_vector[buffer_start_i].iov_base += buffer_start_offset;
-    cs->plaintext_vector[buffer_start_i].iov_len  -= buffer_start_offset;
+    cs->ciphertext_vector[buffer_start_i].iov_base += buffer_start_offset;
+    cs->ciphertext_vector[buffer_start_i].iov_len  -= buffer_start_offset;
     
     // Write as much as possible
     int byteswritten;
-    try((byteswritten = (int)writev(cs->to_fd,                            // fd
+    try((byteswritten = (int)chaos_writev(cs->to_fd,                            // fd
                                  &cs->ciphertext_vector[buffer_start_i],  // vector
                                  buffer_count                             // count
     ))) || oops_fatal("failed to write");
