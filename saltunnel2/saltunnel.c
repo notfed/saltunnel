@@ -59,54 +59,76 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
         if ((pfds[1].fd>=0) && (pfds[1].revents & (POLLOUT)))        { pfds[1].fd = FD_READY; }
         if ((pfds[2].fd>=0) && (pfds[2].revents & (POLLIN|POLLHUP))) { pfds[2].fd = FD_READY; }
         if ((pfds[3].fd>=0) && (pfds[3].revents & (POLLOUT)))        { pfds[3].fd = FD_READY; }
+//
+//        //
+//        // Handle ingress data (old)
+//        //
+//        if (pfds[0].fd == FD_READY && pfds[1].fd == FD_READY) {
+////            log_debug("poll: ingress net fd %d is ready for reading", ingress->from_fd);
+//            int r = ingress->op(ingress,key);
+//            if(r==0) {
+//                log_debug("poll: local fd %d is closed; no longer polling ingress", ingress->from_fd);
+//                pfds[0].fd = FD_EOF;
+//                pfds[1].fd = FD_EOF;
+//            } else if(r<0 && errno != EINPROGRESS) {
+//                oops_fatal("failed to feed ingress");
+//            } else if(r<0 && errno == EINPROGRESS) {
+//                pfds[0].fd = FD_READY;
+//                pfds[1].fd = ingress->to_fd;
+//            } else {
+//                pfds[0].fd = ingress->from_fd;
+//                pfds[1].fd = ingress->to_fd;
+//            }
+//        }
         
-        // Handle ingress data
-        if (pfds[0].fd == FD_READY && pfds[1].fd == FD_READY) {
-//            log_debug("poll: ingress net fd %d is ready for reading", ingress->from_fd);
-            int r = ingress->op(ingress,key);
-            if(r==0) {
-                log_debug("poll: local fd %d is closed; no longer polling ingress", ingress->from_fd);
-                pfds[0].fd = FD_EOF;
-                pfds[1].fd = FD_EOF;
-            } else if(r<0 && errno != EINPROGRESS) {
-                oops_fatal("failed to feed ingress");
-            } else if(r<0 && errno == EINPROGRESS) {
-                pfds[0].fd = FD_READY;
-                pfds[1].fd = ingress->to_fd;
-            } else {
-                pfds[0].fd = ingress->from_fd;
-                pfds[1].fd = ingress->to_fd;
-            }
-        }
-        
+        //
         // Handle egress data
+        //
 
-        // 'from' is ready, and buffers not full => feed_read
-        int egress_from_isready = (pfds[2].fd == FD_READY);
-        int egress_from_notfull = cryptostream_encrypt_feed_canread(egress);
-        if (egress_from_isready && egress_from_notfull) {
+        // read from 'from' when: 'from' is ready, and buffers not full
+        if ((pfds[2].fd == FD_READY) && cryptostream_encrypt_feed_canread(egress)) {
             int r = cryptostream_encrypt_feed_read(egress,key);
             if(r>0) { pfds[2].fd = egress->from_fd; }
             if(r==0) { pfds[2].fd = FD_EOF; }
         }
         
-        // 'to' is ready,  and buffers not empty  => feed_write
-        int egress_to_isready = (pfds[3].fd == FD_READY);
-        int egress_to_notempty = cryptostream_encrypt_feed_canwrite(egress);
-        if(!egress_from_notfull && !egress_to_notempty) oops_fatal("assertion failed: can't read, can't write"); // TODO: Ensure impossible
-        if (egress_to_isready && egress_to_notempty) {
+        // write to 'to' when: 'to' is ready, and buffers not empty
+        if ((pfds[3].fd == FD_READY) && cryptostream_encrypt_feed_canwrite(egress)) {
             cryptostream_encrypt_feed_write(egress,key);
             pfds[3].fd = egress->to_fd;
         }
         
-        // 'from' is EOF, and all buffers are empty => close 'to'
-        if(pfds[2].fd == FD_EOF
-           && !cryptostream_encrypt_feed_canwrite(egress)
-           && pfds[3].fd != FD_EOF) {
+        // close 'to' when: 'from' is EOF, and all buffers are empty
+        if(pfds[2].fd == FD_EOF && pfds[3].fd != FD_EOF && !cryptostream_encrypt_feed_canwrite(egress)) {
             log_debug("egress is done; closing egress->to_fd (%d)", egress->to_fd);
             try(close(egress->to_fd)) || oops_fatal("failed to close");
             pfds[3].fd = FD_EOF;
         }
+
+        //
+        // Handle ingress data
+        //
+
+        // read from 'from' when: 'from' is ready, and buffers not full
+        if ((pfds[0].fd == FD_READY) && cryptostream_decrypt_feed_canread(ingress)) {
+            int r = cryptostream_decrypt_feed_read(ingress,key);
+            if(r>0) { pfds[0].fd = ingress->from_fd; }
+            if(r==0) { pfds[0].fd = FD_EOF; }
+        }
+        
+        // write to 'to' when: 'to' is ready, and buffers not empty
+        if ((pfds[1].fd == FD_READY) && cryptostream_decrypt_feed_canwrite(ingress)) {
+            cryptostream_decrypt_feed_write(ingress,key);
+            pfds[1].fd = ingress->to_fd;
+        }
+        
+        // close 'to' when: 'from' is EOF, and all buffers are empty
+        if(pfds[0].fd == FD_EOF && pfds[1].fd != FD_EOF && !cryptostream_decrypt_feed_canwrite(ingress)) {
+            log_debug("egress is done; closing egress->to_fd (%d)", ingress->to_fd);
+            try(close(ingress->to_fd)) || oops_fatal("failed to close");
+            pfds[1].fd = FD_EOF;
+        }
+        
         
     }
     log_debug("all fds are closed [%d,%d,%d,%d]; done polling", ingress->from_fd, ingress->to_fd, egress->from_fd, egress->to_fd);

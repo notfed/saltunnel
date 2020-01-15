@@ -77,6 +77,7 @@ typedef struct cryptostream {
     struct iovec plaintext_vector[CRYPTOSTREAM_BUFFER_COUNT*2]; // TODO: Rename to 'data_vector' to prevent confusion?
     int plaintext_start;  // TODO: Rename to 'data_start' to prevent confusion?
     int plaintext_len;    // TODO: Rename to 'data_len' to prevent confusion?
+    int plaintext_len_buffers;
     
     unsigned char ciphertext[CRYPTOSTREAM_SPAN_MAXBYTES];
     struct iovec ciphertext_vector[CRYPTOSTREAM_BUFFER_COUNT*2];
@@ -95,5 +96,10 @@ int cryptostream_encrypt_feed_canread(cryptostream* cs);
 int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key);
 int cryptostream_encrypt_feed_canwrite(cryptostream* cs);
 int cryptostream_encrypt_feed_write(cryptostream* cs, unsigned char* key);
+
+int cryptostream_decrypt_feed_canread(cryptostream* cs);
+int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key);
+int cryptostream_decrypt_feed_canwrite(cryptostream* cs);
+int cryptostream_decrypt_feed_write(cryptostream* cs, unsigned char* key);
 
 #endif /* cryptostream_h */

@@ -364,7 +364,6 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     char* from_peer2_local_str_actual = malloc(from_peer1_local_str_len);
     try(allread(peer2_pipe_local_output[0], from_peer2_local_str_actual, from_peer1_local_str_len)) || oops_fatal("read");
     
-
     // Clean up threads
     try(pthread_join(write_thread_1, NULL)) || oops_fatal("pthread_join");
     try(pthread_join(write_thread_2, NULL)) || oops_fatal("pthread_join");
@@ -400,7 +399,7 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     free(from_peer1_local_str_actual);
     free(from_peer2_local_str_actual);
     
-    // Clean up pipes
+    // Clean up pipes // TODO: Not needed?
     close(peer1_pipe_local_input[0]);  close(peer1_pipe_local_input[1]);
     close(peer1_pipe_local_output[0]); close(peer1_pipe_local_output[1]);
     close(peer1_pipe_to_peer2[0]);     close(peer1_pipe_to_peer2[1]);
@@ -439,8 +438,8 @@ void test7() {
 void test8() {
     
     int low  = 1;
-    int high = 100000;
-    int inc = 997;
+    int high = 1;
+    int inc = 1;
     for(int i = low; i <= high; i+=inc) {
         
         log_debug("---- iteration %d ----", i);
@@ -492,6 +491,24 @@ void test9() {
     if(calculate_filled_buffers(10,30,10)!=2) oops_fatal("failed test9.12");
 }
 
+
+// Bidirectional saltunnel test; multi-packet
+void test10() {
+    unsigned char data[30];
+    
+    struct iovec vector[] = {
+        { .iov_base = &data[0], .iov_len = 10 },
+        { .iov_base = &data[10], .iov_len = 10 },
+        { .iov_base = &data[20], .iov_len = 10 }
+    };
+    
+    if(iovec_skip2(vector, 3, 0) != 0) oops_fatal("assertion 7.1 failed; iovec_skip2(vector, 3, 0)");
+    if(iovec_skip2(vector, 3, 1) != 0) oops_fatal("assertion 7.2 failed; iovec_skip2(vector, 3, 1)");
+    if(iovec_skip2(vector, 3, 8) != 0) oops_fatal("assertion 7.3 failed; iovec_skip2(vector, 3, 8)");
+    if(iovec_skip2(vector, 3, 1) != 1) oops_fatal("assertion 7.4 failed; iovec_skip2(vector, 3, 1)");
+    if(iovec_skip2(vector, 3, 20) != 2) oops_fatal("assertion 7.5 failed; iovec_skip2(vector, 3, 20)");
+}
+
 int test() {
     log_debug("PIPE_BUF=%d",PIPE_BUF);
     log_debug("_PC_PIPE_BUF=%d",_PC_PIPE_BUF);
@@ -502,8 +519,10 @@ int test() {
 //    run(test5, "test5");
 //    run(test6, "test6");
 //    run(test7, "test7");
-    run(test8, "test8");
+    run(test8, "test8");  // <<
 //    run(test9,"test9");
+//    run(test10,"test10");
+    
     log_info("all tests passed");
     return 0;
 }

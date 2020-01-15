@@ -41,7 +41,9 @@ ssize_t allread(int fd, char *buf, size_t len)
   {
     ssize_t r = read(fd, buf, len);
     if(r==-1) { return -1; }
-    if(r==0)  { errno = EIO; return -1; }
+    if(r==0)  {
+        errno = EIO; return -1; 
+    }
     bytesread += r;
     buf += r;
     len -= r;
@@ -142,4 +144,21 @@ ssize_t uninterruptable_writev(int fd, const struct iovec *vector, int count)
     if (r == -1) if (errno == EINTR) continue;
     return r;
   }
+}
+
+// Skip n bytes, and return how many iovecs have been filled
+ssize_t iovec_skip2(struct iovec *v, size_t vlen, unsigned int n)
+{
+    int filled=0;
+    for(int i = 0; i < vlen; i++) {
+        int iov_len_was_zero = (v[i].iov_len==0);
+        size_t ncur = MIN(v[i].iov_len, n);
+        v[i].iov_len  -= ncur;
+        v[i].iov_base += ncur;
+        n -= ncur;
+        int iov_len_is_zero = (v[i].iov_len==0);
+        if(!iov_len_was_zero && iov_len_is_zero) filled++;
+        if(n==0) break;
+    }
+    return filled;
 }
