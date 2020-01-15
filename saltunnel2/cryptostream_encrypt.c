@@ -157,7 +157,7 @@ int cryptostream_encrypt_feed_canwrite(cryptostream* cs) {
 static int chaos_writev(int fd, struct iovec* vector, int count) {
     struct iovec newvector = {
         .iov_base = vector[0].iov_base,
-        .iov_len = 1
+        .iov_len = MIN(512,vector[0].iov_len)
     };
     int r = writev(fd,&newvector,1);
     return r;

@@ -82,7 +82,7 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
     struct iovec* readv_vector = &cs->ciphertext_vector[buffer_read_start];
     
     int bytesread;
-    try((bytesread =  (int)chaos_readv(readv_fd, readv_vector, buffer_read_count))) || oops_fatal("error reading from cs->from_fd");
+    try((bytesread =  (int)readv(readv_fd, readv_vector, buffer_read_count))) || oops_fatal("error reading from cs->from_fd");
     
     // If the read returned a 0, it means the read fd is closed
     if(bytesread==0)
@@ -203,15 +203,15 @@ int cryptostream_decrypt_feed_write(cryptostream* cs, unsigned char* key) {
     
     // Write as much as possible
     int byteswritten;
-    try((byteswritten = (int)writev(cs->to_fd,                          // fd
+    try((byteswritten = (int)writev(cs->to_fd,                         // fd
                                  &cs->plaintext_vector[buffer_start],  // vector
-                                 buffer_count                           // count
+                                 buffer_count                          // count
     ))) || oops_fatal("failed to write");
     
     log_debug("cryptostream_decrypt_feed_write: wrote %d bytes", byteswritten);
 
     // Feed the vector forward this many bytes
-    int buffers_filled = (int)iovec_skip2(&cs->ciphertext_vector[buffer_start], buffer_count, byteswritten);
+    int buffers_filled = (int)iovec_skip2(&cs->plaintext_vector[buffer_start], buffer_count, byteswritten);
     
     // Rotate the buffer offsets
     cs->plaintext_start = (cs->plaintext_start + buffers_filled) % CRYPTOSTREAM_SPAN_MAXBYTES_PLAINTEXT;
