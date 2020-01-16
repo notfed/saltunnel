@@ -145,7 +145,7 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
         //   - [0..32] == zero
         //   - [32..]  == plaintext
         try(crypto_secretbox_open(plaintext_buffer_ptr, ciphertext_buffer_ptr,
-                               CRYPTOSTREAM_BUFFER_MAXBYTES,cs->nonce,key)) || oops_fatal("failed to trial decrypt");
+                               CRYPTOSTREAM_BUFFER_MAXBYTES,cs->nonce,key)) || oops_fatal("failed to decrypt");
 
         // Increment nonce
         nonce24_increment(cs->nonce);
@@ -158,9 +158,6 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
         cs->plaintext_vector[buffer_i].iov_len = datalen_current;
 
         log_debug("cryptostream_decrypt_feed_read: decrypted %d bytes (buffer %d/%d)", datalen_current, buffer_i+1, buffer_decrypt_count);
-
-        // Increment nonce
-        nonce24_increment(cs->nonce);
     }
 
     // Rotate buffer offsets
@@ -170,7 +167,7 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
     
     log_debug("decryption ended");
 
-    return 1;
+    return bytesread;
 }
 
 int cryptostream_decrypt_feed_canwrite(cryptostream* cs) {

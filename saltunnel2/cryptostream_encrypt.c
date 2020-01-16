@@ -95,7 +95,7 @@ int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key) {
     for(int buffer_i = buffer_start; buffer_i < buffer_count; buffer_i++)
     {
         // Calculate how many bytes to encrypt (for this buffer)
-        uint16 current_bytes_to_encrypt = (uint16)(bytesread - buffer_i*CRYPTOSTREAM_BUFFER_MAXBYTES_DATA);
+        uint16 current_bytes_to_encrypt = (uint16)MIN(CRYPTOSTREAM_BUFFER_MAXBYTES_DATA, bytesread - buffer_i*CRYPTOSTREAM_BUFFER_MAXBYTES_DATA); 
         
         // Find the pointers to the start of the buffers
         unsigned char* plaintext_buffer_ptr = cs->plaintext_vector[buffer_i].iov_base - 32-2;
