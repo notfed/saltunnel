@@ -22,7 +22,4 @@ ssize_t uninterruptable_writev(int fd, const struct iovec *vector, int count);
 ssize_t allwritev(int fd, struct iovec const *v, unsigned int vlen);
 ssize_t allread(int fd, char *buf, size_t len);
 
-ssize_t iovec_skip(struct iovec *v, size_t vlen, unsigned int n);
-ssize_t iovec_skip2(struct iovec *v, size_t vlen, unsigned int n);
-
 #endif /* uninterruptable_h */

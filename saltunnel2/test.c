@@ -52,45 +52,45 @@ void test1() {
     strcmp(net_teststr_expected, net_teststr_actual) == 0 || oops_fatal("net teststr did not match");
 }
 
-
-// test2: saltunnel works with nullcryptostream
-void test2() {
-    
-    // Create four "fake files" (i.e., pipes)
-    int pipe_local_read[2];  try(pipe(pipe_local_read))  || oops_fatal("failed to create pipe");
-    int pipe_local_write[2]; try(pipe(pipe_local_write)) || oops_fatal("failed to create pipe");
-    int pipe_net_read[2];    try(pipe(pipe_net_read))    || oops_fatal("failed to create pipe");
-    int pipe_net_write[2];   try(pipe(pipe_net_write))   || oops_fatal("failed to create pipe");
-    
-    // Start with "expected value" available in both "readable" pipes
-    const char local_teststr_expected[] = "send_nt_pipe";
-    const char net_teststr_expected[] = "send_lc_pipe";
-    uninterruptable_write(write, pipe_local_read[1], local_teststr_expected, 12); close(pipe_local_read[1]);
-    uninterruptable_write(write, pipe_net_read[1],   net_teststr_expected,   12); close(pipe_net_read[1]);
-    
-    // Run saltunnel
-    cryptostream ingress = {
-        .op = cryptostream_identity_feed,
-        .from_fd = pipe_net_read[0],
-        .to_fd = pipe_local_write[1]
-    };
-    cryptostream egress = {
-        .op = cryptostream_identity_feed,
-        .from_fd = pipe_local_read[0],
-        .to_fd = pipe_net_write[1]
-    };
-    saltunnel(&ingress, &egress);
-    
-    // Read "actual value" from both "write" pipes
-    char local_teststr_actual[12+1] = {0};
-    char net_teststr_actual[12+1] = {0};
-    uninterruptable_read(read, pipe_local_write[0], local_teststr_actual, 12);
-    uninterruptable_read(read, pipe_net_write[0], net_teststr_actual, 12);
-    
-    // Assert "expected value" equals "actual value"
-    strcmp(local_teststr_expected, net_teststr_actual) == 0 || oops_fatal("local teststr did not match");
-    strcmp(net_teststr_expected, local_teststr_actual) == 0 || oops_fatal("net teststr did not match");
-}
+//
+//// test2: saltunnel works with nullcryptostream
+//void test2() {
+//
+//    // Create four "fake files" (i.e., pipes)
+//    int pipe_local_read[2];  try(pipe(pipe_local_read))  || oops_fatal("failed to create pipe");
+//    int pipe_local_write[2]; try(pipe(pipe_local_write)) || oops_fatal("failed to create pipe");
+//    int pipe_net_read[2];    try(pipe(pipe_net_read))    || oops_fatal("failed to create pipe");
+//    int pipe_net_write[2];   try(pipe(pipe_net_write))   || oops_fatal("failed to create pipe");
+//
+//    // Start with "expected value" available in both "readable" pipes
+//    const char local_teststr_expected[] = "send_nt_pipe";
+//    const char net_teststr_expected[] = "send_lc_pipe";
+//    uninterruptable_write(write, pipe_local_read[1], local_teststr_expected, 12); close(pipe_local_read[1]);
+//    uninterruptable_write(write, pipe_net_read[1],   net_teststr_expected,   12); close(pipe_net_read[1]);
+//
+//    // Run saltunnel
+//    cryptostream ingress = {
+//        .op = cryptostream_identity_feed,
+//        .from_fd = pipe_net_read[0],
+//        .to_fd = pipe_local_write[1]
+//    };
+//    cryptostream egress = {
+//        .op = cryptostream_identity_feed,
+//        .from_fd = pipe_local_read[0],
+//        .to_fd = pipe_net_write[1]
+//    };
+//    saltunnel(&ingress, &egress);
+//
+//    // Read "actual value" from both "write" pipes
+//    char local_teststr_actual[12+1] = {0};
+//    char net_teststr_actual[12+1] = {0};
+//    uninterruptable_read(read, pipe_local_write[0], local_teststr_actual, 12);
+//    uninterruptable_read(read, pipe_net_write[0], net_teststr_actual, 12);
+//
+//    // Assert "expected value" equals "actual value"
+//    strcmp(local_teststr_expected, net_teststr_actual) == 0 || oops_fatal("local teststr did not match");
+//    strcmp(net_teststr_expected, local_teststr_actual) == 0 || oops_fatal("net teststr did not match");
+//}
 
 // test3: Can encrypt and decrypt
 void test3() {
@@ -156,12 +156,12 @@ void test4() {
     
     // Run saltunnel
     cryptostream ingress = {
-        .op = cryptostream_decrypt_feed,
+//        .op = cryptostream_decrypt_feed,
         .from_fd = pipe_net_read[0],
         .to_fd = pipe_local_write[1]
     };
     cryptostream egress = {
-        .op = cryptostream_encrypt_feed,
+//        .op = cryptostream_encrypt_feed,
         .from_fd = pipe_local_read[0],
         .to_fd = pipe_net_write[1]
     };
@@ -176,6 +176,7 @@ void test4() {
     // Assert "expected value" equals "actual value"
     strcmp(local_teststr_actual, "from_net_pipe") == 0 || oops_fatal("local teststr did not match");
 }
+
 //
 //typedef struct saltunnel_thread_context {
 //    cryptostream ingress;
@@ -298,6 +299,14 @@ static pthread_t write_thread(const char* thread_name, int fd,const char *buf,un
     return thread;
 }
 
+static int first_difference(const char* str1, const char* str2, unsigned int n) {
+    for(int i = 0; i < n; i++) {
+        if(str1[i] != str2[i])
+            return i;
+    }
+    return -1;
+}
+
 // Bidirectional saltunnel test
 static void bidirectional_test(const char* from_peer1_local_str, unsigned int from_peer1_local_str_len,
                                const char* from_peer2_local_str, unsigned int from_peer2_local_str_len) {
@@ -327,23 +336,23 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     
     // Initialize thread contexts
     cryptostream context1_ingress = {
-        .op = cryptostream_decrypt_feed,
+//        .op = cryptostream_decrypt_feed,
         .from_fd = peer2_pipe_to_peer1[0],
         .to_fd = peer1_pipe_local_output[1]
     };
     cryptostream context1_egress = {
-        .op = cryptostream_encrypt_feed,
+//        .op = cryptostream_encrypt_feed,
         .from_fd = peer1_pipe_local_input[0],
         .to_fd = peer1_pipe_to_peer2[1]
     };
     
     cryptostream context2_ingress = {
-        .op = cryptostream_decrypt_feed,
+//        .op = cryptostream_decrypt_feed,
         .from_fd = peer1_pipe_to_peer2[0],
         .to_fd = peer2_pipe_local_output[1]
     };
     cryptostream context2_egress = {
-        .op = cryptostream_encrypt_feed,
+//        .op = cryptostream_encrypt_feed,
         .from_fd = peer2_pipe_local_input[0],
         .to_fd = peer2_pipe_to_peer1[1]
     };
@@ -373,24 +382,21 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     // Compare actual peer1 local data
     int cmp1 = memcmp(from_peer2_local_str,from_peer1_local_str_actual,from_peer2_local_str_len);
     if(cmp1 != 0) {
-        log_fatal("bidirectional test (%d,%d) failed: peer2 strs differed",from_peer1_local_str_len,from_peer2_local_str_len);
+        int d = first_difference(from_peer2_local_str, from_peer1_local_str_actual, from_peer2_local_str_len);
+        const char* s1 = from_peer1_local_str+d;
+        const char* s2 = from_peer2_local_str_actual+d;
+        log_fatal("str differed ('%c'!='%c') at index %d",*s1,*s2,d);
+        log_fatal("bidirectional test (%d,%d) failed: peer1 strs differed",from_peer1_local_str_len,from_peer2_local_str_len);
         _exit(1);
     }
+    
     // Compare actual peer2 local data
     int cmp2 = memcmp(from_peer1_local_str,from_peer2_local_str_actual,from_peer1_local_str_len);
     if(cmp2 != 0) {
-        for(int i = 0; i < from_peer1_local_str_len; i++) {
-
-            char c1 = from_peer1_local_str[i];
-            char c2 = from_peer2_local_str_actual[i];
-            if(c1 != c2) {
-                
-                const char* s1 = from_peer1_local_str+i-5;
-                const char* s2 = from_peer2_local_str_actual+i-5;
-                
-                log_fatal("str differed ('%c'!='%c') at index %d",c1,c2,i);
-            }
-        }
+        int d = first_difference(from_peer1_local_str, from_peer2_local_str_actual, from_peer1_local_str_len);
+        const char* s1 = from_peer1_local_str+d;
+        const char* s2 = from_peer2_local_str_actual+d;
+        log_fatal("str differed ('%c'!='%c') at index %d",*s1,*s2,d);
         log_fatal("bidirectional test (%d,%d) failed: peer1 strs differed",from_peer1_local_str_len,from_peer2_local_str_len);
         _exit(1);
     }
@@ -437,8 +443,8 @@ void test7() {
 // Bidirectional saltunnel test; multi-packet, various sizes
 void test8() {
     
-    int low  = 62739;
-    int high = 62739;
+    int low  = 1;
+    int high = 50000;
     int inc = 1;
     for(int i = low; i <= high; i+=inc) {
         
@@ -450,9 +456,9 @@ void test8() {
         char* from_peer1_local_str = malloc(peer1n);
         char* from_peer2_local_str = malloc(peer2n);
         
-        for(int j = 0; j < i; j++) {
-            from_peer1_local_str[j] = 'a'+(j%26);
-            from_peer2_local_str[j] = 'a'+(j%26);
+        for(int c = 0; c < i; c++) {
+            from_peer1_local_str[c] = (c%19==4||c%19==9||c%19==14) ? '-' : 'a'+((c/19)%26);
+            from_peer2_local_str[c] = from_peer1_local_str[c];
         }
         
         bidirectional_test(from_peer1_local_str, peer1n,
@@ -502,11 +508,11 @@ void test10() {
         { .iov_base = &data[20], .iov_len = 10 }
     };
     
-    if(iovec_skip2(vector, 3, 0) != 0) oops_fatal("assertion 7.1 failed; iovec_skip2(vector, 3, 0)");
-    if(iovec_skip2(vector, 3, 1) != 0) oops_fatal("assertion 7.2 failed; iovec_skip2(vector, 3, 1)");
-    if(iovec_skip2(vector, 3, 8) != 0) oops_fatal("assertion 7.3 failed; iovec_skip2(vector, 3, 8)");
-    if(iovec_skip2(vector, 3, 1) != 1) oops_fatal("assertion 7.4 failed; iovec_skip2(vector, 3, 1)");
-    if(iovec_skip2(vector, 3, 20) != 2) oops_fatal("assertion 7.5 failed; iovec_skip2(vector, 3, 20)");
+    if(vector_skip(vector, 3, 0) != 0) oops_fatal("assertion 7.1 failed; vector_skip(vector, 3, 0)");
+    if(vector_skip(vector, 3, 1) != 0) oops_fatal("assertion 7.2 failed; vector_skip(vector, 3, 1)");
+    if(vector_skip(vector, 3, 8) != 0) oops_fatal("assertion 7.3 failed; vector_skip(vector, 3, 8)");
+    if(vector_skip(vector, 3, 1) != 1) oops_fatal("assertion 7.4 failed; vector_skip(vector, 3, 1)");
+    if(vector_skip(vector, 3, 20) != 2) oops_fatal("assertion 7.5 failed; vector_skip(vector, 3, 20)");
 }
 
 int test() {
@@ -524,6 +530,11 @@ int test() {
 //    run(test10,"test10");
     
     log_info("all tests passed");
+    return 0;
+}
+
+int main() {
+    test();
     return 0;
 }
 

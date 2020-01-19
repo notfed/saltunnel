@@ -10,36 +10,10 @@
 #include "nonce.h"
 #include "log.h"
 #include "uint16.h"
+#include "chaos.h"
+#include "math.h"
 #include <unistd.h>
 #include <stdio.h>
-
-#define MAX(x, y) (((x) > (y)) ? (x) : (y))
-#define MIN(x, y) (((x) < (y)) ? (x) : (y))
-
-static void vector_init(cryptostream *cs) {
-    for(int j = 0; j<=128; j+=128) {
-        for(int i = 0; i<128; i++) {
-            cs->plaintext_vector[j+i].iov_base = cs->plaintext + CRYPTOSTREAM_BUFFER_MAXBYTES*i + 32+2;
-            cs->plaintext_vector[j+i].iov_len  = CRYPTOSTREAM_BUFFER_MAXBYTES_DATA;
-        }
-    }
-    for(int j = 0; j<=128; j+=128) {
-        for(int i = 0; i<128; i++) {
-            cs->ciphertext_vector[j+i].iov_base = cs->ciphertext + CRYPTOSTREAM_BUFFER_MAXBYTES*i + 16;
-            cs->ciphertext_vector[j+i].iov_len  = CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT;
-        }
-    }
-}
-
-// Only read 1 byte
-static int chaos_readv(int fd, struct iovec* vector, int count) {
-    struct iovec newvector = {
-        .iov_base = vector[0].iov_base,
-        .iov_len = MIN(512,vector[0].iov_len)
-    };
-    int r = (int)readv(fd,&newvector,1);
-    return r;
-}
 
 // Is there enough room for 1 buffer of plaintext and 1 buffer of ciphertext?
 int cryptostream_decrypt_feed_canread(cryptostream* cs) {
@@ -67,7 +41,7 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
     }
 
     //
-    // Read
+    // Read ciphertext
     //
     
     // Perform a scattered read. Read data into the following format:
@@ -82,7 +56,7 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
     struct iovec* readv_vector = &cs->ciphertext_vector[buffer_read_start];
     
     int bytesread;
-    try((bytesread =  (int)readv(readv_fd, readv_vector, buffer_read_count))) || oops_fatal("error reading from cs->from_fd");
+    try((bytesread =  (int)chaos_readv(readv_fd, readv_vector, buffer_read_count))) || oops_fatal("error reading from cs->from_fd");
     
     // If the read returned a 0, it means the read fd is closed
     if(bytesread==0)
@@ -92,12 +66,11 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
     }
     
     // Bump vector
-    int buffers_filled  = (int)iovec_skip2(readv_vector, buffer_read_count, bytesread);
+    int buffers_filled  = (int)vector_skip(readv_vector, buffer_read_count, bytesread);
 
     // Re-initialize the freed-up ciphertext vectors
     for(int buffer_i = buffer_read_start; buffer_i < buffers_filled; buffer_i++) {
-        cs->ciphertext_vector[buffer_i].iov_base = cs->ciphertext + CRYPTOSTREAM_BUFFER_MAXBYTES*buffer_i + 16;
-        cs->ciphertext_vector[buffer_i].iov_len  = CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT;
+        vector_reset_ciphertext(cs->ciphertext_vector, cs->ciphertext, buffer_i);
     }
     
     log_debug("cryptostream_decrypt_feed_read: got %d bytes from egress local",(int)bytesread);
@@ -111,7 +84,7 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
     int xlen = cs->ciphertext_vector[cs->ciphertext_start].iov_len; // JUST TO WATCH
 
     //`
-    // Decrypt
+    // Decrypt ciphertext into plaintext
     //
 //
 //    // Calculate how many buffers are free
@@ -161,8 +134,8 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
     }
 
     // Rotate buffer offsets
-    cs->ciphertext_start = (cs->ciphertext_start + buffer_decrypt_count) % CRYPTOSTREAM_BUFFER_COUNT;
-    cs->ciphertext_len -= buffer_decrypt_count;
+//    cs->ciphertext_start = (cs->ciphertext_start + buffer_decrypt_count) % CRYPTOSTREAM_BUFFER_COUNT;
+    cs->ciphertext_len += buffer_decrypt_count;
     cs->plaintext_len  += buffer_decrypt_count;
     
     log_debug("decryption ended");
@@ -194,13 +167,19 @@ int cryptostream_decrypt_feed_write(cryptostream* cs, unsigned char* key) {
         uint16_unpack((char*)cs->plaintext + 32, &datalen_current);
         
         // Update vector length
-        cs->plaintext_vector[buffer_start+b].iov_base = cs->plaintext + CRYPTOSTREAM_BUFFER_MAXBYTES*(buffer_start+b) + 32+2;
+//        cs->plaintext_vector[buffer_start+b].iov_base = cs->plaintext  + CRYPTOSTREAM_BUFFER_MAXBYTES*(buffer_start+b) + 32+2;
         cs->plaintext_vector[buffer_start+b].iov_len = datalen_current;
     }
     
+    // DEBUG VARIABLES
+    unsigned char* plaintext_first_data_ptr = (unsigned char*)cs->plaintext_vector[0].iov_base - 32-2;
+    char* plaintext_first_buffer = cs->plaintext_vector[0].iov_base;
+    int plaintext_first_buffer_len = (int)cs->plaintext_vector[0].iov_len;
+//    plaintext_first_buffer[plaintext_first_buffer_len] = '!';
+    
     // Write as much as possible
     int byteswritten;
-    try((byteswritten = (int)writev(cs->to_fd,                         // fd
+    try((byteswritten = (int)chaos_writev(cs->to_fd,                         // fd
                                  &cs->plaintext_vector[buffer_start],  // vector
                                  buffer_count                          // count
     ))) || oops_fatal("failed to write");
@@ -208,11 +187,18 @@ int cryptostream_decrypt_feed_write(cryptostream* cs, unsigned char* key) {
     log_debug("cryptostream_decrypt_feed_write: wrote %d bytes", byteswritten);
 
     // Feed the vector forward this many bytes
-    int buffers_filled = (int)iovec_skip2(&cs->plaintext_vector[buffer_start], buffer_count, byteswritten);
+    int buffers_flushed = (int)vector_skip(&cs->plaintext_vector[buffer_start], buffer_count, byteswritten);
+    
+    // Re-initialize the freed-up plaintext vectors
+    for(int buffer_i = buffer_start; buffer_i < buffers_flushed; buffer_i++) {
+        vector_reset_plaintext(cs->plaintext_vector, cs->plaintext, buffer_i);
+    }
     
     // Rotate the buffer offsets
-    cs->plaintext_start = (cs->plaintext_start + buffers_filled) % CRYPTOSTREAM_SPAN_MAXBYTES_PLAINTEXT;
-    cs->plaintext_len   = (cs->plaintext_len   - buffers_filled);
+    cs->ciphertext_start = (cs->ciphertext_start + buffers_flushed) % CRYPTOSTREAM_BUFFER_COUNT;
+    cs->ciphertext_len   = (cs->ciphertext_len   - buffers_flushed);
+    cs->plaintext_start = (cs->plaintext_start + buffers_flushed) % CRYPTOSTREAM_BUFFER_COUNT;
+    cs->plaintext_len   = (cs->plaintext_len   - buffers_flushed);
 
     return 1;
 }

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "exchange_messages:saltunnel.c">
+      </ContextState>
+      <ContextState
+         contextName = "print_message_function:test.c">
+      </ContextState>
+      <ContextState
+         contextName = "uninterruptable_write_thread:test.c">
+      </ContextState>
+      <ContextState
+         contextName = "cryptostream_decrypt_feed_write:cryptostream_decrypt.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "(unsigned char*)cs-&gt;plaintext_vector[0].iov_base - 32-2">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "bidirectional_test:test.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "strlen(from_peer2_local_str_actual)">
+            </PersistentString>
+            <PersistentString
+               value = "*(s1-34)">
+            </PersistentString>
+            <PersistentString
+               value = "*(s2-34)">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "iovec_skip2:uninterruptable.c">
+      </ContextState>
+      <ContextState
+         contextName = "crypto_secretbox_xsalsa20poly1305_tweet_open:tweetnacl.c">
+      </ContextState>
+      <ContextState
+         contextName = "cryptostream_decrypt_feed:cryptostream.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "cs-&gt;cipherbuf">
+            </PersistentString>
+            <PersistentString
+               value = "32+packetsize">
+            </PersistentString>
+            <PersistentString
+               value = "sizeof(plainbuf)">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "cryptostream_encrypt_feed:cryptostream.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "sizeof(packet)">
+            </PersistentString>
+            <PersistentString
+               value = "cs-&gt;nonce">
+            </PersistentString>
+            <PersistentString
+               value = "(unsigned char)key[32]">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "cryptostream_decrypt_feed_read:cryptostream_decrypt.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "readv_vector[0]">
+            </PersistentString>
+            <PersistentString
+               value = "(unsigned char*)cs-&gt;plaintext_vector[0].iov_base-32-2">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "chaos_readv:cryptostream_decrypt.c">
+      </ContextState>
+      <ContextState
+         contextName = "cryptostream_flush:cryptostream.c">
+      </ContextState>
+      <ContextState
+         contextName = "test8:test.c">
+      </ContextState>
+      <ContextState
+         contextName = "siovec_seek:uninterruptable.c">
+      </ContextState>
+      <ContextState
+         contextName = "saltunnel:saltunnel.c">
+      </ContextState>
+      <ContextState
+         contextName = "write_thread_inner:test.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "c-&gt;buf[65536]">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "cryptostream_encrypt_feed_write:cryptostream_encrypt.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "cs-&gt;ciphertext_vector[cs-&gt;ciphertext_start].iov_base">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "cryptostream_encrypt_feed_read:cryptostream.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "plaintext_buffer_ptr+32">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "cryptostream_encrypt_feed_read:cryptostream_encrypt.c">
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>
