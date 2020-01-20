@@ -443,8 +443,8 @@ void test7() {
 // Bidirectional saltunnel test; multi-packet, various sizes
 void test8() {
     
-    int low  = 1;
-    int high = 50000;
+    int low  = 62739;
+    int high = 62739;
     int inc = 1;
     for(int i = low; i <= high; i+=inc) {
         
@@ -508,16 +508,39 @@ void test10() {
         { .iov_base = &data[20], .iov_len = 10 }
     };
     
-    if(vector_skip(vector, 3, 0) != 0) oops_fatal("assertion 7.1 failed; vector_skip(vector, 3, 0)");
-    if(vector_skip(vector, 3, 1) != 0) oops_fatal("assertion 7.2 failed; vector_skip(vector, 3, 1)");
-    if(vector_skip(vector, 3, 8) != 0) oops_fatal("assertion 7.3 failed; vector_skip(vector, 3, 8)");
-    if(vector_skip(vector, 3, 1) != 1) oops_fatal("assertion 7.4 failed; vector_skip(vector, 3, 1)");
-    if(vector_skip(vector, 3, 20) != 2) oops_fatal("assertion 7.5 failed; vector_skip(vector, 3, 20)");
+    if(vector[0].iov_base != &data[0]) oops_fatal("assertion 10.0.1 failed");
+    if(vector[0].iov_len != 10)        oops_fatal("assertion 10.0.2 failed");
+    
+    if(vector_skip(vector, 3, 0) != 0) oops_fatal("assertion 10.0.3 failed; vector_skip(vector, 3, 0)");
+    
+    if(vector_skip(vector, 3, 1) != 0) oops_fatal("assertion 10.2.1 failed; vector_skip(vector, 3, 1)");
+    if(vector[0].iov_base != &data[1]) oops_fatal("assertion 10.2.2 failed");
+    if(vector[0].iov_len  != 9)        oops_fatal("assertion 10.2.3 failed");
+    
+    if(vector_skip(vector, 3, 8) != 0) oops_fatal("assertion 10.3.1 failed; vector_skip(vector, 3, 8)");
+    if(vector[0].iov_base != &data[9]) oops_fatal("assertion 10.3.2 failed");
+    if(vector[0].iov_len  != 1)        oops_fatal("assertion 10.3.3 failed");
+    
+    if(vector_skip(vector, 3, 1) != 1)  oops_fatal("assertion 10.4.1 failed; vector_skip(vector, 3, 1)");
+    if(vector[0].iov_base != &data[10]) oops_fatal("assertion 10.4.2 failed");
+    if(vector[0].iov_len  != 0)        oops_fatal("assertion 10.4.3 failed");
+    
+    int buffers_skipped = 0;
+    for(int i = 0; i < 20; i+=1)
+        buffers_skipped = (int)vector_skip(vector, 3, 1);
+//      if(vector_skip(vector, 3, 20) != 2) oops_fatal("assertion 10.5.1 failed; vector_skip(vector, 3, 20)");
+    if(buffers_skipped != 1) oops_fatal("assertion 10.5.1 failed; vector_skip(vector, 3, 20)");
+    
+    if(vector[0].iov_base != &data[10]) oops_fatal("assertion 10.5.2 failed");
+    if(vector[0].iov_len  != 0)         oops_fatal("assertion 10.5.3 failed");
+    if(vector[1].iov_base != &data[20]) oops_fatal("assertion 10.5.4 failed");
+    if(vector[1].iov_len  != 0)         oops_fatal("assertion 10.5.5 failed");
+    if(vector[2].iov_base != &data[30]) oops_fatal("assertion 10.5.6 failed");
+    if(vector[2].iov_len  != 0)         oops_fatal("assertion 10.5.7 failed");
 }
 
 int test() {
-    log_debug("PIPE_BUF=%d",PIPE_BUF);
-    log_debug("_PC_PIPE_BUF=%d",_PC_PIPE_BUF);
+    log_info("test suite started");
 //    run(test1, "test1");
 //    run(test2, "test2");
 //    run(test3, "test3");

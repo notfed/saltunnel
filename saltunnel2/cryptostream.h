@@ -51,18 +51,18 @@
 #define CRYPTOSTREAM_SPAN_MAXBYTES            (CRYPTOSTREAM_BUFFER_MAXBYTES * CRYPTOSTREAM_BUFFER_COUNT)
 
 typedef struct cryptostream {
-    
-    // Old
-
-    struct iovec readvector[128];
-    struct iovec writevector[128];
-    
-    unsigned int ciphertext_packet_size_in_progress;
-    int packetcount;
-    int flush_progress_bytesleft;
-    int flush_progress_totalbytes;
-    int ctr;
-    int readvector_is_initialized;
+//    
+//    // Old
+//
+//    struct iovec readvector[128];
+//    struct iovec writevector[128];
+//    
+//    unsigned int ciphertext_packet_size_in_progress;
+//    int packetcount;
+//    int flush_progress_bytesleft;
+//    int flush_progress_totalbytes;
+//    int ctr;
+//    int readvector_is_initialized;
     
     // New
     int from_fd;
@@ -75,14 +75,16 @@ typedef struct cryptostream {
     struct iovec plaintext_vector[CRYPTOSTREAM_BUFFER_COUNT*2]; // TODO: Rename to 'data_vector' to prevent confusion?
     int plaintext_start;  // TODO: Rename to 'data_start' to prevent confusion?
     int plaintext_len;    // TODO: Rename to 'data_len' to prevent confusion?
-    int plaintext_len_buffers;
+//    int plaintext_len_buffers;
     
     unsigned char ciphertext[CRYPTOSTREAM_SPAN_MAXBYTES];
     struct iovec ciphertext_vector[CRYPTOSTREAM_BUFFER_COUNT*2];
-    int ciphertext_vector_is_initialized;
+//    int ciphertext_vector_is_initialized;
     int ciphertext_start;
     int ciphertext_len;
     
+    int debug_write_total;
+    int debug_read_total;
     
 } cryptostream;
 

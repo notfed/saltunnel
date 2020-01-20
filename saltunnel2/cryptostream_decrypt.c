@@ -56,13 +56,25 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
     struct iovec* readv_vector = &cs->ciphertext_vector[buffer_read_start];
     
     int bytesread;
-    try((bytesread =  (int)chaos_readv(readv_fd, readv_vector, buffer_read_count))) || oops_fatal("error reading from cs->from_fd");
+    try((bytesread =  (int)readv(readv_fd, readv_vector, buffer_read_count))) || oops_fatal("error reading from cs->from_fd");
     
     // If the read returned a 0, it means the read fd is closed
     if(bytesread==0)
     {
         log_debug("ingress local fd (%d) was closed", cs->from_fd);
         return 0;
+    }
+    
+    unsigned char* x = readv_vector->iov_base; // JUST TO WATCH
+    int xlen = readv_vector->iov_len; // JUST TO WATCH
+    
+    if(bytesread == 1) {
+        log_debug("cryptostream_decrypt_feed_read: got %d bytes from egress local (%x)",(int)bytesread,x[0]);
+        if(x[0] == 0) {
+            int bk = 0;
+        }
+    } else {
+        log_debug("cryptostream_decrypt_feed_read: got %d bytes from egress local",(int)bytesread);
     }
     
     // Bump vector
@@ -73,15 +85,11 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
         vector_reset_ciphertext(cs->ciphertext_vector, cs->ciphertext, buffer_i);
     }
     
-    log_debug("cryptostream_decrypt_feed_read: got %d bytes from egress local",(int)bytesread);
-    
     // If we didn't fill any buffers, nothing to decrypt
     if(buffers_filled==0) {
         return bytesread;
     }
     
-    unsigned char* x = cs->ciphertext_vector[cs->ciphertext_start].iov_base; // JUST TO WATCH
-    int xlen = cs->ciphertext_vector[cs->ciphertext_start].iov_len; // JUST TO WATCH
 
     //`
     // Decrypt ciphertext into plaintext
@@ -125,7 +133,7 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
 
         // Extract datalen
         uint16 datalen_current = 0;
-        uint16_unpack((char*)cs->plaintext + 32, &datalen_current);
+        uint16_unpack((char*)plaintext_buffer_ptr + 32, &datalen_current);
         
         // Update vector length
         cs->plaintext_vector[buffer_i].iov_len = datalen_current;
@@ -156,20 +164,20 @@ int cryptostream_decrypt_feed_canwrite(cryptostream* cs) {
 //
 int cryptostream_decrypt_feed_write(cryptostream* cs, unsigned char* key) {
     
-    // Calculate the index of the first buffer, the offset into the first buffer, and how many buffers to write
-    int buffer_start       = cs->plaintext_start;
-    int buffer_count       = cs->plaintext_len;
+    // Calculate the index of the first writable buffer, and how many buffers to write
+    int buffer_write_start       = cs->plaintext_start;
+    int buffer_write_count       = cs->plaintext_len;
     
-    // Adjust the write-vector lengths to the datalen of each corresponding buffer
-    for(int b = 0; b<buffer_count; b++) {
-        // Extract datalen
-        uint16 datalen_current = 0;
-        uint16_unpack((char*)cs->plaintext + 32, &datalen_current);
-        
-        // Update vector length
-//        cs->plaintext_vector[buffer_start+b].iov_base = cs->plaintext  + CRYPTOSTREAM_BUFFER_MAXBYTES*(buffer_start+b) + 32+2;
-        cs->plaintext_vector[buffer_start+b].iov_len = datalen_current;
-    }
+//    // Adjust the write-vector lengths to the datalen of each corresponding buffer
+//    for(int buffer_i = 0; buffer_i < buffer_write_count; buffer_i++) {
+//        // Extract datalen
+//        uint16 datalen_current = 0;
+//        uint16_unpack((char*)cs->plaintext + 32, &datalen_current);
+//
+//        // Update vector length
+////        cs->plaintext_vector[buffer_start+b].iov_base = cs->plaintext  + CRYPTOSTREAM_BUFFER_MAXBYTES*(buffer_start+b) + 32+2;
+//        cs->plaintext_vector[buffer_write_start+buffer_i].iov_len = datalen_current;
+//    }
     
     // DEBUG VARIABLES
     unsigned char* plaintext_first_data_ptr = (unsigned char*)cs->plaintext_vector[0].iov_base - 32-2;
@@ -179,18 +187,19 @@ int cryptostream_decrypt_feed_write(cryptostream* cs, unsigned char* key) {
     
     // Write as much as possible
     int byteswritten;
-    try((byteswritten = (int)chaos_writev(cs->to_fd,                         // fd
-                                 &cs->plaintext_vector[buffer_start],  // vector
-                                 buffer_count                          // count
+    try((byteswritten = (int)chaos_writev(cs->to_fd,                   // fd
+                                 &cs->plaintext_vector[buffer_write_start],  // vector
+                                 buffer_write_count                          // count
     ))) || oops_fatal("failed to write");
+    cs->debug_write_total += byteswritten;
     
-    log_debug("cryptostream_decrypt_feed_write: wrote %d bytes", byteswritten);
+//    log_debug("cryptostream_decrypt_feed_write: wrote %d bytes (total %d)", byteswritten, cs->debug_write_total);
 
     // Feed the vector forward this many bytes
-    int buffers_flushed = (int)vector_skip(&cs->plaintext_vector[buffer_start], buffer_count, byteswritten);
+    int buffers_flushed = (int)vector_skip(&cs->plaintext_vector[buffer_write_start], buffer_write_count, byteswritten);
     
     // Re-initialize the freed-up plaintext vectors
-    for(int buffer_i = buffer_start; buffer_i < buffers_flushed; buffer_i++) {
+    for(int buffer_i = buffer_write_start; buffer_i < buffers_flushed; buffer_i++) {
         vector_reset_plaintext(cs->plaintext_vector, cs->plaintext, buffer_i);
     }
     
