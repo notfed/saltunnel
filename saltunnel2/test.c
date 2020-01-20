@@ -441,32 +441,57 @@ void test7() {
 }
 
 // Bidirectional saltunnel test; multi-packet, various sizes
+void test8_for(int i) {
+    log_debug("---- iteration %d ----", i);
+    
+    int peer1n = i;
+    int peer2n = i;
+        
+    char* from_peer1_local_str = malloc(peer1n);
+    char* from_peer2_local_str = malloc(peer2n);
+    
+    for(int c = 0; c < i; c++) {
+        from_peer1_local_str[c] = (c%19==4||c%19==9||c%19==14) ? '-' : 'a'+((c/19)%26);
+        from_peer2_local_str[c] = from_peer1_local_str[c];
+    }
+    
+    bidirectional_test(from_peer1_local_str, peer1n,
+                       from_peer2_local_str, peer2n);
+    
+    free(from_peer1_local_str);
+    free(from_peer2_local_str);
+}
 void test8() {
     
-    int low  = 500000;
-    int high = 510000;
-    int inc = 5000;
-    for(int i = low; i <= high; i+=inc) {
-        
-        log_debug("---- iteration %d ----", i);
-        
-        int peer1n = i;
-        int peer2n = i;
-            
-        char* from_peer1_local_str = malloc(peer1n);
-        char* from_peer2_local_str = malloc(peer2n);
-        
-        for(int c = 0; c < i; c++) {
-            from_peer1_local_str[c] = (c%19==4||c%19==9||c%19==14) ? '-' : 'a'+((c/19)%26);
-            from_peer2_local_str[c] = from_peer1_local_str[c];
+    int edges[] = {
+        3,
+        CRYPTOSTREAM_BUFFER_COUNT,
+        CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT,
+        CRYPTOSTREAM_BUFFER_MAXBYTES,
+        CRYPTOSTREAM_BUFFER_MAXBYTES_PLAINTEXT,
+        CRYPTOSTREAM_BUFFER_MAXBYTES_DATA,
+        CRYPTOSTREAM_SPAN_MAXBYTES_DATA,
+        CRYPTOSTREAM_SPAN_MAXBYTES_PLAINTEXT,
+        CRYPTOSTREAM_SPAN_MAXBYTES_CIPHERTEXT,
+        CRYPTOSTREAM_SPAN_MAXBYTES
+    };
+    int multipliers[] = { 1, 2, 3 };
+    int adders[] = { -CRYPTOSTREAM_SPAN_MAXBYTES_DATA-1, -2, -1, 0, 1, 2, CRYPTOSTREAM_SPAN_MAXBYTES_DATA+1};
+    
+    int edges_len = sizeof(edges)/sizeof(edges[0]);
+    int multipliers_len = sizeof(multipliers)/sizeof(multipliers[0]);
+    int adders_len = sizeof(adders)/sizeof(adders[0]);
+    
+    for(int e = 0; e<edges_len; e++) {
+        for(int m = 0; m<multipliers_len; m++) {
+            for(int a = 0; a<adders_len; a++) {
+                int i = edges[e] * multipliers[m] + adders[a];
+                log_info("bidirectional_test (%d = %d * %d + %d) started", i, edges[e], multipliers[m], adders[a]);
+                if(i>0) test8_for(i);
+            }
         }
-        
-        bidirectional_test(from_peer1_local_str, peer1n,
-                           from_peer2_local_str, peer2n);
-        
-        free(from_peer1_local_str);
-        free(from_peer2_local_str);
     }
+    
 }
 
 
