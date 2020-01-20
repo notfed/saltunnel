@@ -17,8 +17,8 @@
 
 // Is there enough room for 1 buffer of plaintext and 1 buffer of ciphertext?
 int cryptostream_decrypt_feed_canread(cryptostream* cs) {
-    int plaintext_has_available_buffers = cs->plaintext_len < (CRYPTOSTREAM_SPAN_MAXBYTES_DATA - CRYPTOSTREAM_BUFFER_MAXBYTES_DATA);
-    int ciphertext_has_available_buffers = cs->ciphertext_len < (CRYPTOSTREAM_SPAN_MAXBYTES_CIPHERTEXT - CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT);
+    int plaintext_has_available_buffers = cs->plaintext_len < (128);
+    int ciphertext_has_available_buffers = cs->ciphertext_len < (128);
     return plaintext_has_available_buffers && ciphertext_has_available_buffers;
 }
 
@@ -81,8 +81,8 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
     int buffers_filled  = (int)vector_skip(readv_vector, buffer_read_count, bytesread);
 
     // Re-initialize the freed-up ciphertext vectors
-    for(int buffer_i = buffer_read_start; buffer_i < buffers_filled; buffer_i++) {
-        vector_reset_ciphertext(cs->ciphertext_vector, cs->ciphertext, buffer_i);
+    for(int buffer_i = 0; buffer_i < buffers_filled; buffer_i++) {
+        vector_reset_ciphertext(cs->ciphertext_vector, cs->ciphertext, buffer_read_start+buffer_i);
     }
     
     // If we didn't fill any buffers, nothing to decrypt
@@ -199,8 +199,8 @@ int cryptostream_decrypt_feed_write(cryptostream* cs, unsigned char* key) {
     int buffers_flushed = (int)vector_skip(&cs->plaintext_vector[buffer_write_start], buffer_write_count, byteswritten);
     
     // Re-initialize the freed-up plaintext vectors
-    for(int buffer_i = buffer_write_start; buffer_i < buffers_flushed; buffer_i++) {
-        vector_reset_plaintext(cs->plaintext_vector, cs->plaintext, buffer_i);
+    for(int buffer_i = 0; buffer_i < buffers_flushed; buffer_i++) {
+        vector_reset_plaintext(cs->plaintext_vector, cs->plaintext, buffer_write_start+buffer_i);
     }
     
     // Rotate the buffer offsets

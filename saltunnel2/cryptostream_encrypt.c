@@ -162,8 +162,8 @@ int cryptostream_encrypt_feed_write(cryptostream* cs, unsigned char* key) {
     log_debug("cryptostream_encrypt_feed_write: wrote %d bytes", byteswritten);
     
     // Re-initialize the freed-up ciphertext vectors
-    for(int buffer_i = buffer_start; buffer_i < buffers_freed; buffer_i++) {
-        vector_reset_ciphertext(cs->ciphertext_vector, cs->ciphertext, buffer_i);
+    for(int buffer_i = 0; buffer_i < buffers_freed; buffer_i++) {
+        vector_reset_ciphertext(cs->ciphertext_vector, cs->ciphertext, buffer_start+buffer_i);
     }
     
     // Rotate the buffer offsets

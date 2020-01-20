@@ -443,9 +443,9 @@ void test7() {
 // Bidirectional saltunnel test; multi-packet, various sizes
 void test8() {
     
-    int low  = 62739;
-    int high = 62739;
-    int inc = 1;
+    int low  = 500000;
+    int high = 510000;
+    int inc = 5000;
     for(int i = low; i <= high; i+=inc) {
         
         log_debug("---- iteration %d ----", i);
