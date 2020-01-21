@@ -22,6 +22,35 @@ int cryptostream_decrypt_feed_canread(cryptostream* cs) {
     return plaintext_has_available_buffers && ciphertext_has_available_buffers;
 }
 
+static void buffer_decrypt(int buffer_i, cryptostream *cs, unsigned char *key) {
+    unsigned char* plaintext_buffer_ptr = cs->plaintext_vector[buffer_i].iov_base - 32-2;
+    unsigned char* ciphertext_buffer_ptr = cs->ciphertext_vector[buffer_i].iov_base - 16;
+    
+    // Decrypt chunk from ciphertext to plaintext (512 bytes)
+    
+    // crypto_secretbox_open:
+    // - signature: crypto_secretbox_open(m,c,clen,n,k)
+    // - input structure:
+    //   - [0..16]  == zero
+    //   - [16..32] == auth
+    //   - [32..]   == ciphertext
+    // - output structure:
+    //   - [0..32] == zero
+    //   - [32..]  == plaintext
+    try(crypto_secretbox_salsa208poly1305_open(plaintext_buffer_ptr, ciphertext_buffer_ptr,
+                              CRYPTOSTREAM_BUFFER_MAXBYTES,cs->nonce,key)) || oops_fatal("failed to decrypt");
+    
+    // Increment nonce
+    nonce8_increment(cs->nonce);
+    
+    // Extract datalen
+    uint16 datalen_current = 0;
+    uint16_unpack((char*)plaintext_buffer_ptr + 32, &datalen_current);
+    
+    // Update vector length
+    cs->plaintext_vector[buffer_i].iov_len = datalen_current;
+}
+
 //
 // Algorithm:
 // - Read up to 65536 (128*512) bytes into 'ciphertext' buffer
@@ -103,34 +132,9 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
     for(int buffer_i = buffer_decrypt_start; buffer_i < buffer_decrypt_count; buffer_i++)
     {
         // Find the pointers to the start of the buffers
-        unsigned char* plaintext_buffer_ptr = cs->plaintext_vector[buffer_i].iov_base - 32-2;
-        unsigned char* ciphertext_buffer_ptr = cs->ciphertext_vector[buffer_i].iov_base - 16;
+        buffer_decrypt(buffer_i, cs, key);
 
-        // Decrypt chunk from ciphertext to plaintext (512 bytes)
-
-        // crypto_secretbox_open:
-        // - signature: crypto_secretbox_open(m,c,clen,n,k)
-        // - input structure:
-        //   - [0..16]  == zero
-        //   - [16..32] == auth
-        //   - [32..]   == ciphertext
-        // - output structure:
-        //   - [0..32] == zero
-        //   - [32..]  == plaintext
-        try(crypto_secretbox_open(plaintext_buffer_ptr, ciphertext_buffer_ptr,
-                               CRYPTOSTREAM_BUFFER_MAXBYTES,cs->nonce,key)) || oops_fatal("failed to decrypt");
-
-        // Increment nonce
-        nonce24_increment(cs->nonce);
-
-        // Extract datalen
-        uint16 datalen_current = 0;
-        uint16_unpack((char*)plaintext_buffer_ptr + 32, &datalen_current);
-        
-        // Update vector length
-        cs->plaintext_vector[buffer_i].iov_len = datalen_current;
-
-        log_debug("cryptostream_decrypt_feed_read: decrypted %d bytes (buffer %d/%d)", datalen_current, buffer_i+1, buffer_decrypt_count);
+//        log_debug("cryptostream_decrypt_feed_read: decrypted %d bytes (buffer %d/%d)", datalen_current, buffer_i+1, buffer_decrypt_count);
     }
 
     // Rotate buffer offsets

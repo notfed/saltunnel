@@ -493,6 +493,8 @@ void test8() {
             }
         }
     }
+    log_info("bidirectional_test (10000000) started");
+    test8_for(10000000);
     
 }
 

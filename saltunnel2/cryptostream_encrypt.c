@@ -21,6 +21,45 @@ int cryptostream_encrypt_feed_canread(cryptostream* cs) {
     return free_buffers>=1;
 }
 
+static void buffer_encrypt(int buffer_i, int bytesread, cryptostream *cs, unsigned char *key) {
+    {
+        // Calculate how many bytes to encrypt (for this buffer)
+        uint16 current_bytes_to_encrypt = (uint16)MIN(CRYPTOSTREAM_BUFFER_MAXBYTES_DATA, bytesread - buffer_i*CRYPTOSTREAM_BUFFER_MAXBYTES_DATA);
+        
+        // Find the pointers to the start of the buffers
+        unsigned char* plaintext_buffer_ptr = cs->plaintext_vector[buffer_i].iov_base - 32-2;
+        unsigned char* ciphertext_buffer_ptr = cs->ciphertext_vector[cs->vector_start + buffer_i].iov_base - 16;
+        
+        // Fill zeros (32 bytes)
+        memset((void*)plaintext_buffer_ptr, 0, 32);
+        
+        // Fill len (2 bytes)
+        uint16_pack(((void*)plaintext_buffer_ptr+32), current_bytes_to_encrypt);
+        
+        // Fill unused data (0-494 bytes)
+        memset((void*)plaintext_buffer_ptr+32+2+current_bytes_to_encrypt, 0, CRYPTOSTREAM_BUFFER_MAXBYTES_DATA-current_bytes_to_encrypt);
+        
+        // Encrypt chunk from plaintext to ciphertext (494 bytes)
+        
+        // crypto_secretbox:
+        // - signature: crypto_secretbox(c,m,mlen,n,k);
+        // - input structure:
+        //   - [0..32] == zero
+        //   - [32..]  == plaintext
+        // - output structure:
+        //   - [0..16]  == zero
+        //   - [16..32] == auth
+        //   - [32..]   == ciphertext
+        try(crypto_secretbox_salsa208poly1305(ciphertext_buffer_ptr, plaintext_buffer_ptr,
+                             CRYPTOSTREAM_BUFFER_MAXBYTES, cs->nonce, key)) || oops_fatal("failed to encrypt");
+        
+//        log_debug("cryptostream_encrypt_feed_read: encrypted %d bytes (buffer %d/%d)", current_bytes_to_encrypt, buffer_i+1, buffer_count);
+        
+        // Increment nonce
+        nonce8_increment(cs->nonce);
+    }
+}
+
 //
 // Algorithm:
 // - Read up to 63232 (128*494) bytes into 'plaintext' buffer
@@ -78,45 +117,7 @@ int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key) {
     log_debug("encryption started");
     for(int buffer_i = buffer_start; buffer_i < buffer_count; buffer_i++)
     {
-        // Calculate how many bytes to encrypt (for this buffer)
-        uint16 current_bytes_to_encrypt = (uint16)MIN(CRYPTOSTREAM_BUFFER_MAXBYTES_DATA, bytesread - buffer_i*CRYPTOSTREAM_BUFFER_MAXBYTES_DATA); 
-        
-        // Find the pointers to the start of the buffers
-        unsigned char* plaintext_buffer_ptr = cs->plaintext_vector[buffer_i].iov_base - 32-2;
-        unsigned char* ciphertext_buffer_ptr = cs->ciphertext_vector[cs->vector_start + buffer_i].iov_base - 16;
-        
-        // Fill zeros (32 bytes)
-        memset((void*)plaintext_buffer_ptr, 0, 32);
-        
-        // Fill len (2 bytes)
-        uint16_pack(((void*)plaintext_buffer_ptr+32), current_bytes_to_encrypt);
-        
-        // Fill unused data (0-494 bytes)
-        memset((void*)plaintext_buffer_ptr+32+2+current_bytes_to_encrypt, 0, CRYPTOSTREAM_BUFFER_MAXBYTES_DATA-current_bytes_to_encrypt);
-        
-        // Encrypt chunk from plaintext to ciphertext (494 bytes)
-        
-        // crypto_secretbox:
-        // - signature: crypto_secretbox(c,m,mlen,n,k);
-        // - input structure:
-        //   - [0..32] == zero
-        //   - [32..]  == plaintext
-        // - output structure:
-        //   - [0..16]  == zero
-        //   - [16..32] == auth
-        //   - [32..]   == ciphertext
-        try(crypto_secretbox(ciphertext_buffer_ptr, plaintext_buffer_ptr,
-                             CRYPTOSTREAM_BUFFER_MAXBYTES, cs->nonce, key)) || oops_fatal("failed to encrypt");
-
-//        // TRIAL DECRYPT  (TODO: Remove this. Just here as a temporary sanity check.)
-//        // crypto_secretbox_open(m,c,clen,n,k)
-//        try(crypto_secretbox_open(plaintext_buffer_ptr, ciphertext_buffer_ptr,
-//                                  CRYPTOSTREAM_BUFFER_MAXBYTES,cs->nonce,key)) || oops_fatal("failed to trial decrypt");
-        
-        log_debug("cryptostream_encrypt_feed_read: encrypted %d bytes (buffer %d/%d)", current_bytes_to_encrypt, buffer_i+1, buffer_count);
-        
-        // Increment nonce
-        nonce24_increment(cs->nonce);
+        buffer_encrypt(buffer_i, bytesread, cs, key);
     }
 
     log_debug("encryption ended");

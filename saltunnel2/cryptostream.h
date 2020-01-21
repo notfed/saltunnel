@@ -67,7 +67,7 @@ typedef struct cryptostream {
     // New
     int from_fd;
     int to_fd;
-    nonce24 nonce;
+    nonce8 nonce;
     
     int vector_init_complete;
     
