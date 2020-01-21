@@ -39,7 +39,7 @@ ssize_t allread(int fd, char *buf, size_t len)
   ssize_t bytesread = 0;
   while (len)
   {
-    ssize_t r = read(fd, buf, len);
+    ssize_t r = uninterruptable_read(read,fd, buf, len);
     if(r==-1) { return -1; }
     if(r==0)  {
         errno = EIO; return -1; 

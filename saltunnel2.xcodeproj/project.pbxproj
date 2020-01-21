@@ -11,11 +11,11 @@
 		9420933B239CA46600D55AA5 /* cryptostream_encrypt.c in Sources */ = {isa = PBXBuildFile; fileRef = 9420933A239CA46600D55AA5 /* cryptostream_encrypt.c */; };
 		9420933E239CCD4800D55AA5 /* test.c in Sources */ = {isa = PBXBuildFile; fileRef = 9420933D239CCD4800D55AA5 /* test.c */; };
 		94209341239CD1E400D55AA5 /* uninterruptable.c in Sources */ = {isa = PBXBuildFile; fileRef = 94209340239CD1E400D55AA5 /* uninterruptable.c */; };
-		94209347239DE9A900D55AA5 /* tweetnacl.c in Sources */ = {isa = PBXBuildFile; fileRef = 94209346239DE9A900D55AA5 /* tweetnacl.c */; };
 		9420934A239DEA8E00D55AA5 /* devurandom.c in Sources */ = {isa = PBXBuildFile; fileRef = 94209349239DEA8E00D55AA5 /* devurandom.c */; };
 		9420934D239E095E00D55AA5 /* nonce.c in Sources */ = {isa = PBXBuildFile; fileRef = 9420934C239E095E00D55AA5 /* nonce.c */; };
 		94CEEBDF23D4CA4800E3F6F9 /* chaos.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CEEBDE23D4CA4800E3F6F9 /* chaos.c */; };
 		94CEEBE123D4CAD500E3F6F9 /* cryptostream_vector.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CEEBE023D4CAD500E3F6F9 /* cryptostream_vector.c */; };
+		94CEEBE723D60F3C00E3F6F9 /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 94CEEBE623D60F3B00E3F6F9 /* libsodium.a */; };
 		94D2788623ADF2120035EAFE /* oops.c in Sources */ = {isa = PBXBuildFile; fileRef = 94D2788523ADF2120035EAFE /* oops.c */; };
 		94D2788823AE6E190035EAFE /* log.c in Sources */ = {isa = PBXBuildFile; fileRef = 94D2788723AE6E190035EAFE /* log.c */; };
 		94D2788B23AF36820035EAFE /* uint16.c in Sources */ = {isa = PBXBuildFile; fileRef = 94D2788A23AF36820035EAFE /* uint16.c */; };
@@ -46,8 +46,6 @@
 		9420933D239CCD4800D55AA5 /* test.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = test.c; sourceTree = "<group>"; };
 		9420933F239CD1E400D55AA5 /* uninterruptable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = uninterruptable.h; sourceTree = "<group>"; };
 		94209340239CD1E400D55AA5 /* uninterruptable.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = uninterruptable.c; sourceTree = "<group>"; };
-		94209345239DE9A900D55AA5 /* tweetnacl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tweetnacl.h; sourceTree = "<group>"; };
-		94209346239DE9A900D55AA5 /* tweetnacl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tweetnacl.c; sourceTree = "<group>"; };
 		94209348239DEA8E00D55AA5 /* devurandom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = devurandom.h; sourceTree = "<group>"; };
 		94209349239DEA8E00D55AA5 /* devurandom.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = devurandom.c; sourceTree = "<group>"; };
 		9420934B239E095E00D55AA5 /* nonce.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nonce.h; sourceTree = "<group>"; };
@@ -56,6 +54,8 @@
 		94CEEBDE23D4CA4800E3F6F9 /* chaos.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = chaos.c; sourceTree = "<group>"; };
 		94CEEBE023D4CAD500E3F6F9 /* cryptostream_vector.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = cryptostream_vector.c; sourceTree = "<group>"; };
 		94CEEBE223D4CE8600E3F6F9 /* math.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = math.h; sourceTree = "<group>"; };
+		94CEEBE423D60EDE00E3F6F9 /* Users */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Users; path = ../../../..; sourceTree = "<group>"; };
+		94CEEBE623D60F3B00E3F6F9 /* libsodium.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsodium.a; path = ../../../../../usr/local/lib/libsodium.a; sourceTree = "<group>"; };
 		94D2788523ADF2120035EAFE /* oops.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = oops.c; sourceTree = "<group>"; };
 		94D2788723AE6E190035EAFE /* log.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = log.c; sourceTree = "<group>"; };
 		94D2788923AF36820035EAFE /* uint16.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = uint16.h; sourceTree = "<group>"; };
@@ -68,6 +68,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				94CEEBE723D60F3C00E3F6F9 /* libsodium.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -79,6 +80,7 @@
 			children = (
 				94209323239C8C9300D55AA5 /* saltunnel2 */,
 				94209322239C8C9300D55AA5 /* Products */,
+				94CEEBE323D60EDD00E3F6F9 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -95,8 +97,6 @@
 			children = (
 				94209349239DEA8E00D55AA5 /* devurandom.c */,
 				94209348239DEA8E00D55AA5 /* devurandom.h */,
-				94209346239DE9A900D55AA5 /* tweetnacl.c */,
-				94209345239DE9A900D55AA5 /* tweetnacl.h */,
 				94CEEBE223D4CE8600E3F6F9 /* math.h */,
 				94209330239C953F00D55AA5 /* saltunnel.h */,
 				94209331239C953F00D55AA5 /* saltunnel.c */,
@@ -120,6 +120,15 @@
 				94CEEBDE23D4CA4800E3F6F9 /* chaos.c */,
 			);
 			path = saltunnel2;
+			sourceTree = "<group>";
+		};
+		94CEEBE323D60EDD00E3F6F9 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				94CEEBE623D60F3B00E3F6F9 /* libsodium.a */,
+				94CEEBE423D60EDE00E3F6F9 /* Users */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -186,7 +195,6 @@
 				9420933E239CCD4800D55AA5 /* test.c in Sources */,
 				94D2788B23AF36820035EAFE /* uint16.c in Sources */,
 				9420934A239DEA8E00D55AA5 /* devurandom.c in Sources */,
-				94209347239DE9A900D55AA5 /* tweetnacl.c in Sources */,
 				9420933B239CA46600D55AA5 /* cryptostream_encrypt.c in Sources */,
 				94CEEBDF23D4CA4800E3F6F9 /* chaos.c in Sources */,
 				94209332239C953F00D55AA5 /* saltunnel.c in Sources */,
@@ -311,6 +319,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				"HEADER_SEARCH_PATHS[arch=*]" = /usr/local/include;
+				"LIBRARY_SEARCH_PATHS[arch=*]" = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -319,6 +329,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				"HEADER_SEARCH_PATHS[arch=*]" = /usr/local/include;
+				"LIBRARY_SEARCH_PATHS[arch=*]" = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

@@ -6,7 +6,7 @@
 #include "cryptostream.h"
 #include "uninterruptable.h"
 #include "oops.h"
-#include "tweetnacl.h"
+#include "sodium.h"
 #include "nonce.h"
 #include "log.h"
 #include "uint16.h"
