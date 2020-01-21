@@ -73,15 +73,13 @@ typedef struct cryptostream {
     
     unsigned char plaintext[CRYPTOSTREAM_SPAN_MAXBYTES];
     struct iovec plaintext_vector[CRYPTOSTREAM_BUFFER_COUNT*2]; // TODO: Rename to 'data_vector' to prevent confusion?
-    int plaintext_start;  // TODO: Rename to 'data_start' to prevent confusion?
-    int plaintext_len;    // TODO: Rename to 'data_len' to prevent confusion?
+    int vector_start;  // TODO: Rename to 'data_start' to prevent confusion?
+    int vector_len;    // TODO: Rename to 'data_len' to prevent confusion?
 //    int plaintext_len_buffers;
     
     unsigned char ciphertext[CRYPTOSTREAM_SPAN_MAXBYTES];
     struct iovec ciphertext_vector[CRYPTOSTREAM_BUFFER_COUNT*2];
 //    int ciphertext_vector_is_initialized;
-    int ciphertext_start;
-    int ciphertext_len;
     
     int debug_write_total;
     int debug_read_total;

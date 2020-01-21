@@ -17,8 +17,8 @@
 
 // Is there enough room for 1 buffer of plaintext and 1 buffer of ciphertext?
 int cryptostream_decrypt_feed_canread(cryptostream* cs) {
-    int plaintext_has_available_buffers = cs->plaintext_len < (128);
-    int ciphertext_has_available_buffers = cs->ciphertext_len < (128);
+    int plaintext_has_available_buffers = cs->vector_len < (128);
+    int ciphertext_has_available_buffers = cs->vector_len < (128);
     return plaintext_has_available_buffers && ciphertext_has_available_buffers;
 }
 
@@ -50,8 +50,8 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
     //    - u16     datalen;
     //    - u8[494] data;
     //    - ... (x128 packets) ...
-    int buffer_read_start = cs->ciphertext_start + cs->ciphertext_len;
-    int buffer_read_count = CRYPTOSTREAM_BUFFER_COUNT - cs->ciphertext_len;
+    int buffer_read_start = cs->vector_start + cs->vector_len;
+    int buffer_read_count = CRYPTOSTREAM_BUFFER_COUNT - cs->vector_len;
     int readv_fd = cs->from_fd;
     struct iovec* readv_vector = &cs->ciphertext_vector[buffer_read_start];
     
@@ -65,17 +65,9 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
         return 0;
     }
     
-    unsigned char* x = readv_vector->iov_base; // JUST TO WATCH
-    int xlen = readv_vector->iov_len; // JUST TO WATCH
-    
-    if(bytesread == 1) {
-        log_debug("cryptostream_decrypt_feed_read: got %d bytes from egress local (%x)",(int)bytesread,x[0]);
-        if(x[0] == 0) {
-            int bk = 0;
-        }
-    } else {
-        log_debug("cryptostream_decrypt_feed_read: got %d bytes from egress local",(int)bytesread);
-    }
+    // DEBUG VARIABLES
+    unsigned char* x = readv_vector->iov_base;
+    int xlen = readv_vector->iov_len;
     
     // Bump vector
     int buffers_filled  = (int)vector_skip(readv_vector, buffer_read_count, bytesread);
@@ -143,8 +135,7 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
 
     // Rotate buffer offsets
 //    cs->ciphertext_start = (cs->ciphertext_start + buffer_decrypt_count) % CRYPTOSTREAM_BUFFER_COUNT;
-    cs->ciphertext_len += buffer_decrypt_count;
-    cs->plaintext_len  += buffer_decrypt_count;
+    cs->vector_len += buffer_decrypt_count;
     
     log_debug("decryption ended");
 
@@ -152,7 +143,7 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
 }
 
 int cryptostream_decrypt_feed_canwrite(cryptostream* cs) {
-    return cs->plaintext_len > 0;
+    return cs->vector_len > 0;
 }
 
 //
@@ -165,8 +156,8 @@ int cryptostream_decrypt_feed_canwrite(cryptostream* cs) {
 int cryptostream_decrypt_feed_write(cryptostream* cs, unsigned char* key) {
     
     // Calculate the index of the first writable buffer, and how many buffers to write
-    int buffer_write_start       = cs->plaintext_start;
-    int buffer_write_count       = cs->plaintext_len;
+    int buffer_write_start       = cs->vector_start;
+    int buffer_write_count       = cs->vector_len;
     
 //    // Adjust the write-vector lengths to the datalen of each corresponding buffer
 //    for(int buffer_i = 0; buffer_i < buffer_write_count; buffer_i++) {
@@ -204,10 +195,8 @@ int cryptostream_decrypt_feed_write(cryptostream* cs, unsigned char* key) {
     }
     
     // Rotate the buffer offsets
-    cs->ciphertext_start = (cs->ciphertext_start + buffers_flushed) % CRYPTOSTREAM_BUFFER_COUNT;
-    cs->ciphertext_len   = (cs->ciphertext_len   - buffers_flushed);
-    cs->plaintext_start = (cs->plaintext_start + buffers_flushed) % CRYPTOSTREAM_BUFFER_COUNT;
-    cs->plaintext_len   = (cs->plaintext_len   - buffers_flushed);
+    cs->vector_start = (cs->vector_start + buffers_flushed) % CRYPTOSTREAM_BUFFER_COUNT;
+    cs->vector_len   = (cs->vector_len   - buffers_flushed);
 
     return 1;
 }

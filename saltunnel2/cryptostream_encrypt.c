@@ -17,7 +17,7 @@
 
 // Is there enough room for 1 buffer of plaintext and 1 buffer of ciphertext?
 int cryptostream_encrypt_feed_canread(cryptostream* cs) {
-    int free_buffers = CRYPTOSTREAM_BUFFER_COUNT - cs->ciphertext_len;
+    int free_buffers = CRYPTOSTREAM_BUFFER_COUNT - cs->vector_len;
     return free_buffers>=1;
 }
 
@@ -44,7 +44,7 @@ int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key) {
     //
 
     // Calculate how many buffers are free
-    int free_buffers = CRYPTOSTREAM_BUFFER_COUNT - cs->ciphertext_len;
+    int free_buffers = CRYPTOSTREAM_BUFFER_COUNT - cs->vector_len;
     
     // Perform a scattered read. Read data into the following format:
     //    - u8[32]  zeros;
@@ -71,7 +71,7 @@ int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key) {
     //
     
     // Calculate which buffer to start at and how many to decrypt
-    int buffer_start = cs->ciphertext_start;
+    int buffer_start = cs->vector_start;
     int buffer_count = ((bytesread-1) / CRYPTOSTREAM_BUFFER_MAXBYTES_DATA)+1;
 
     // Iterate the encryptable buffers (if any)
@@ -83,7 +83,7 @@ int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key) {
         
         // Find the pointers to the start of the buffers
         unsigned char* plaintext_buffer_ptr = cs->plaintext_vector[buffer_i].iov_base - 32-2;
-        unsigned char* ciphertext_buffer_ptr = cs->ciphertext_vector[cs->ciphertext_start + buffer_i].iov_base - 16;
+        unsigned char* ciphertext_buffer_ptr = cs->ciphertext_vector[cs->vector_start + buffer_i].iov_base - 16;
         
         // Fill zeros (32 bytes)
         memset((void*)plaintext_buffer_ptr, 0, 32);
@@ -122,14 +122,14 @@ int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key) {
     log_debug("encryption ended");
     
     // Rotate buffer offsets
-    cs->ciphertext_len += buffer_count;
+    cs->vector_len += buffer_count;
     
     return 1;
 }
 
 
 int cryptostream_encrypt_feed_canwrite(cryptostream* cs) {
-    return cs->ciphertext_len > 0;
+    return cs->vector_len > 0;
 }
 
 
@@ -143,12 +143,12 @@ int cryptostream_encrypt_feed_canwrite(cryptostream* cs) {
 int cryptostream_encrypt_feed_write(cryptostream* cs, unsigned char* key) {
     
     // DEBUG VARIABLES
-    unsigned char* x = cs->ciphertext_vector[cs->ciphertext_start].iov_base; // JUST TO WATCH
-    int xlen = (int)cs->ciphertext_vector[cs->ciphertext_start].iov_len; // JUST TO WATCH
+    unsigned char* x = cs->ciphertext_vector[cs->vector_start].iov_base; // JUST TO WATCH
+    int xlen = (int)cs->ciphertext_vector[cs->vector_start].iov_len; // JUST TO WATCH
     
     // Write as much as possible
-    int buffer_start = cs->ciphertext_start;
-    int buffer_count = cs->ciphertext_len;
+    int buffer_start = cs->vector_start;
+    int buffer_count = cs->vector_len;
     int byteswritten;
     try((byteswritten = (int)writev(cs->to_fd,                    // fd
                                  &cs->ciphertext_vector[buffer_start],  // vector
@@ -167,8 +167,8 @@ int cryptostream_encrypt_feed_write(cryptostream* cs, unsigned char* key) {
     }
     
     // Rotate the buffer offsets
-    cs->ciphertext_start  = (cs->ciphertext_start + buffers_freed)  % CRYPTOSTREAM_BUFFER_COUNT;
-    cs->ciphertext_len   -= buffers_freed;
+    cs->vector_start  = (cs->vector_start + buffers_freed)  % CRYPTOSTREAM_BUFFER_COUNT;
+    cs->vector_len   -= buffers_freed;
 
     return 1;
 }
