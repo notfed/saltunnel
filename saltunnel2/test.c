@@ -6,7 +6,7 @@
 #include "test.h"
 #include "uninterruptable.h"
 #include "saltunnel.h"
-#include "tweetnacl.h"
+#include "sodium.h"
 #include "nonce.h"
 #include "log.h"
 #include <stdio.h>
@@ -473,10 +473,11 @@ void test8() {
         CRYPTOSTREAM_SPAN_MAXBYTES_DATA,
         CRYPTOSTREAM_SPAN_MAXBYTES_PLAINTEXT,
         CRYPTOSTREAM_SPAN_MAXBYTES_CIPHERTEXT,
-        CRYPTOSTREAM_SPAN_MAXBYTES
+        CRYPTOSTREAM_SPAN_MAXBYTES,
+        CRYPTOSTREAM_SPAN_MAXBYTES_DATA + CRYPTOSTREAM_BUFFER_MAXBYTES_DATA + 1
     };
-    int multipliers[] = { 1, 2, 3 };
-    int adders[] = { -CRYPTOSTREAM_SPAN_MAXBYTES_DATA-1, -2, -1, 0, 1, 2, CRYPTOSTREAM_SPAN_MAXBYTES_DATA+1};
+    int multipliers[] = { 1 };
+    int adders[] = { -2, -1, 0, 1, 2 };
     
     int edges_len = sizeof(edges)/sizeof(edges[0]);
     int multipliers_len = sizeof(multipliers)/sizeof(multipliers[0]);
