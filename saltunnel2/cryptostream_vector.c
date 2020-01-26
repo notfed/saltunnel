@@ -84,3 +84,34 @@ ssize_t vector_skip(struct iovec *v, int start_i, size_t count_i, unsigned int n
     }
     return filled;
 }
+
+// Skip n bytes, and return how many iovecs have been filled
+ssize_t vector_skip_debug(struct iovec *v, int start_i, size_t count_i, unsigned int n, cryptostream* cs)
+{
+    if(cs != 0 && cs->debug_write_total>1000000) oops_fatal("assertion failed");
+    int filled=0;
+    if(cs != 0 && cs->debug_write_total>1000000) oops_fatal("assertion failed");
+    for(int buffer_i = start_i; buffer_i < start_i+count_i; buffer_i++) {
+        if(cs != 0 && cs->debug_write_total>1000000) oops_fatal("assertion failed");
+        int iov_len_was_zero = (v[buffer_i].iov_len==0);
+        if(cs != 0 && cs->debug_write_total>1000000) oops_fatal("assertion failed");
+        size_t ncur = MIN(v[buffer_i].iov_len, n);
+        if(cs != 0 && cs->debug_write_total>1000000) oops_fatal("assertion failed");
+        
+        vector_buffer_set_len(v,  buffer_i, (int)(v[buffer_i].iov_len  - ncur));
+        if(cs != 0 && cs->debug_write_total>1000000) oops_fatal("assertion failed");
+        vector_buffer_set_base(v, buffer_i, v[buffer_i].iov_base + ncur);
+        if(cs != 0 && cs->debug_write_total>1000000) oops_fatal("assertion failed");
+//        v[buffer_i].iov_len  -= ncur;
+//        v[buffer_i].iov_base += ncur;
+        
+        n -= ncur;
+        if(cs != 0 && cs->debug_write_total>1000000) oops_fatal("assertion failed");
+        int iov_len_is_zero = (v[buffer_i].iov_len==0);
+        if(cs != 0 && cs->debug_write_total>1000000) oops_fatal("assertion failed");
+        if(!iov_len_was_zero && iov_len_is_zero) filled++;
+        if(cs != 0 && cs->debug_write_total>1000000) oops_fatal("assertion failed");
+        if(n==0) break;
+    }
+    return filled;
+}

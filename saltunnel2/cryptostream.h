@@ -84,6 +84,8 @@ typedef struct cryptostream {
     
     long debug_write_total;
     long debug_read_total;
+    long debug_encrypted_blocks_total;
+    long debug_decrypted_blocks_total;
     
 } cryptostream;
 
@@ -107,5 +109,6 @@ void vector_reset_ciphertext(struct iovec* iovec_array, unsigned char* span, int
 void vector_buffer_set_len(struct iovec* iovec_array, int buffer_i, int len);
 void vector_buffer_set_base(struct iovec* iovec_array, int buffer_i, void* base);
 ssize_t vector_skip(struct iovec *v, int start_i, size_t count_i, unsigned int n);
+ssize_t vector_skip_debug(struct iovec *v, int start_i, size_t count_i, unsigned int n, cryptostream* debug_remove_me);
 
 #endif /* cryptostream_h */

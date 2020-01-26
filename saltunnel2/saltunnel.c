@@ -157,8 +157,6 @@ static void exchange_messages(cryptostream *ingress, cryptostream *egress, unsig
 
     }
     log_debug("all fds are closed [%d,%d,%d,%d]; done polling", ingress->from_fd, ingress->to_fd, egress->from_fd, egress->to_fd);
-    
-    _exit(0); // TODO: TEMPORARY
 }
 
 void saltunnel(cryptostream* ingress, cryptostream* egress)

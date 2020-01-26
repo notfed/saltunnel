@@ -250,7 +250,7 @@ static void* saltunnel_thread_inner(void* v)
     saltunnel_thread_context* c = (saltunnel_thread_context*)v;
     log_set_thread_name(c->thread_name);
     saltunnel(c->ingress, c->egress);
-//    free(v); // TODO: Free this! I commented it to aid in determining whether it's being used after free.
+    free(v);
     return 0;
 }
 
@@ -283,7 +283,7 @@ static void* write_thread_inner(void* v)
     if(w != c->len) oops_fatal("write");
     try(close(c->fd)) || oops_fatal("close");
     log_debug("write_thread wrote %d bytes to fd %d (and closed it)",(int)w,c->fd);
-//    free(v); // TODO: Free this! I commented it to aid in determining whether it's being used after free.
+    free(v);
     return 0;
 }
 
@@ -402,8 +402,8 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     }
     
     // Clean up memory
-//    free(from_peer1_local_str_actual); // TODO: Free this! I commented it to aid in determining whether it's being used after free.
-//    free(from_peer2_local_str_actual); // TODO: Free this! I commented it to aid in determining whether it's being used after free.
+    free(from_peer1_local_str_actual);
+    free(from_peer2_local_str_actual);
     
     // Clean up pipes // TODO: Not needed?
     close(peer1_pipe_local_input[0]);  close(peer1_pipe_local_input[1]);
@@ -460,13 +460,14 @@ void test8_for(int i) {
     bidirectional_test(from_peer1_local_str, peer1n,
                        from_peer2_local_str, peer2n);
     
-//    free(from_peer1_local_str);  // TODO: Free this! I commented it to aid in determining whether it's being used after free.
-//    free(from_peer2_local_str);  // TODO: Free this! I commented it to aid in determining whether it's being used after free.
+    free(from_peer1_local_str);
+    free(from_peer2_local_str);
 }
 void test8() {
 
     log_info("bidirectional_test (126464) started");
     test8_for(63232+512);
+    log_info("bidirectional_test (126464) succeeded");
     return;
     
     int edges[] = {

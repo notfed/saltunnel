@@ -102,17 +102,16 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
     //    - u16     datalen;
     //    - u8[494] data;
     //    - ... (x128 packets) ...
-    int buffer_read_start = (cs->vector_start + cs->vector_len) % CRYPTOSTREAM_BUFFER_COUNT;
-    int buffer_read_count = CRYPTOSTREAM_BUFFER_COUNT - cs->vector_len;
-    int readv_fd = cs->from_fd;
-    struct iovec* readv_vector = &cs->ciphertext_vector[buffer_read_start];
+    int buffer_free_start_i = (cs->vector_start + cs->vector_len) % CRYPTOSTREAM_BUFFER_COUNT;
+    int buffer_free_count = CRYPTOSTREAM_BUFFER_COUNT - cs->vector_len;
+    struct iovec* buffer_free_start = &cs->ciphertext_vector[buffer_free_start_i];
     
     int bytesread;
-    try((bytesread =  (int)readv(readv_fd, readv_vector, buffer_read_count)))
+    try((bytesread =  (int)readv(cs->from_fd, buffer_free_start, buffer_free_count)))
         || oops_fatal("error reading from cs->from_fd");
     
     cs->debug_read_total += bytesread;
-    if(cs->debug_read_total>1000000)
+    if(cs->debug_read_total>500000*528)
         oops_fatal("assertion failed");
     
     // If the read returned a 0, it means the read fd is closed
@@ -123,14 +122,16 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
     }
     
     // DEBUG VARIABLES
-    unsigned char* x = readv_vector->iov_base;
-    int xlen = readv_vector->iov_len;
+    unsigned char* x = buffer_free_start->iov_base;
+    int xlen = buffer_free_start->iov_len;
     
     // Bump vector
-    int buffers_filled  = (int)vector_skip(readv_vector, 0, buffer_read_count, bytesread);
+    if(cs->debug_write_total>1000000) oops_fatal("assertion failed");
+    int buffers_filled  = (int)vector_skip_debug(cs->ciphertext_vector, buffer_free_start_i, buffer_free_count, bytesread,cs); // CAUSING debug_write_total=140732920683736
+    if(cs->debug_write_total>1000000) oops_fatal("assertion failed");
 
     // Re-initialize the freed-up ciphertext vectors
-    for(int buffer_i = buffer_read_start; buffer_i < buffer_read_start+buffers_filled; buffer_i++) {
+    for(int buffer_i = buffer_free_start_i; buffer_i < buffer_free_start_i+buffers_filled; buffer_i++) {
         vector_reset_ciphertext(cs->ciphertext_vector, cs->ciphertext, buffer_i);
     }
     
@@ -151,7 +152,7 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
 //    int buffer_start = cs->ciphertext_start;
 //    int buffer_count = MIN(ciphertext_free_buffers,plaintext_free_buffers);
     
-    int buffer_decrypt_start = buffer_read_start;
+    int buffer_decrypt_start = buffer_free_start_i; // No longer free
     int buffer_decrypt_count = buffers_filled;
 
     // Iterate the decryptable buffers (if any)
@@ -160,8 +161,9 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
     {
         // Find the pointers to the start of the buffers
         buffer_decrypt(buffer_i, cs, key);
+        cs->debug_decrypted_blocks_total++;
 
-//        log_debug("cryptostream_decrypt_feed_read: decrypted %d bytes (buffer %d/%d)", datalen_current, buffer_i+1, buffer_decrypt_count);
+        log_debug("cryptostream_decrypt_feed_read: decrypted x bytes (buffer %d/%d)", buffer_i-buffer_decrypt_start+1, buffer_decrypt_count);
     }
     log_debug("decrypted %d bytes from %d buffers", bytesread, buffer_decrypt_count);
 
@@ -171,7 +173,7 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
     
 //    log_debug("decryption ended");
 
-    return bytesread;
+    return 1;
 }
 
 int cryptostream_decrypt_feed_canwrite(cryptostream* cs) {
@@ -190,54 +192,40 @@ int cryptostream_decrypt_feed_write(cryptostream* cs, unsigned char* key) {
     if(cs->debug_write_total>1000000)
         oops_fatal("assertion failed");
     
-    // Calculate the index of the first writable buffer, and how many buffers to write
-    int buffer_write_start       = cs->vector_start;
-    int buffer_write_count       = cs->vector_len;
-    
-//    // Adjust the write-vector lengths to the datalen of each corresponding buffer
-//    for(int buffer_i = 0; buffer_i < buffer_write_count; buffer_i++) {
-//        // Extract datalen
-//        uint16 datalen_current = 0;
-//        uint16_unpack((char*)cs->plaintext + 32, &datalen_current);
-//
-//        // Update vector length
-////        cs->plaintext_vector[buffer_start+b].iov_base = cs->plaintext  + CRYPTOSTREAM_BUFFER_MAXBYTES*(buffer_start+b) + 32+2;
-//        cs->plaintext_vector[buffer_write_start+buffer_i].iov_len = datalen_current;
-//    }
-    
-    // DEBUG VARIABLES
-    unsigned char* plaintext_first_data_ptr = (unsigned char*)cs->plaintext_vector[0].iov_base - 32-2;
-    char* plaintext_first_buffer = cs->plaintext_vector[0].iov_base;
-    int plaintext_first_buffer_len = (int)cs->plaintext_vector[0].iov_len;
-//    plaintext_first_buffer[plaintext_first_buffer_len] = '!';
-    
+    // Calculate the first writable buffer, and how many buffers to write
+    int buffer_full_start_i  = cs->vector_start;
+    int buffer_full_count    = cs->vector_len;
+    struct iovec* buffer_full_start = &cs->plaintext_vector[buffer_full_start_i];
     
     // Write as much as possible
     int byteswritten;
-    try((byteswritten = (int)chaos_writev(cs->to_fd,                   // fd
-                                 &cs->plaintext_vector[buffer_write_start],  // vector
-                                 buffer_write_count                          // count
+    try((byteswritten = (int)chaos_writev(cs->to_fd, // fd
+                                 buffer_full_start,  // vector
+                                 buffer_full_count   // vcount
     ))) || oops_fatal("failed to write");
+    
     cs->debug_write_total += byteswritten;
-    if(byteswritten != 1) {
-        int bk = 0;
-    }
+    if(byteswritten != 1)
+        oops_fatal("assertion failed");
     if(cs->debug_write_total>1000000)
         oops_fatal("assertion failed");
     
 //    log_debug("cryptostream_decrypt_feed_write: wrote %d bytes (total %d)", byteswritten, cs->debug_write_total);
-
-    // Feed the vector forward this many bytes
-    int buffers_flushed = (int)vector_skip(cs->plaintext_vector, buffer_write_start, buffer_write_count, byteswritten);
+    
+    // Seek the vectors so that, if we didn't write all the bytes, then, later, we can try again
+    int buffers_flushed = (int)vector_skip(cs->plaintext_vector,
+                                buffer_full_start_i,
+                                buffer_full_count,
+                                byteswritten);
     
     // Re-initialize the freed-up plaintext vectors
-    for(int buffer_i = buffer_write_start; buffer_i < buffer_write_start+buffers_flushed; buffer_i++) {
+    for(int buffer_i = buffer_full_start_i; buffer_i < buffer_full_start_i+buffers_flushed; buffer_i++) {
         vector_reset_plaintext(cs->plaintext_vector, cs->plaintext, buffer_i);
     }
     
     // Rotate the buffer offsets
     cs->vector_start = (cs->vector_start + buffers_flushed) % CRYPTOSTREAM_BUFFER_COUNT;
-    cs->vector_len   = (cs->vector_len   - buffers_flushed);
+    cs->vector_len   -= buffers_flushed;
 
     return 1;
 }
