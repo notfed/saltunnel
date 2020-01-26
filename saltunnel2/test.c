@@ -250,13 +250,13 @@ static void* saltunnel_thread_inner(void* v)
     saltunnel_thread_context* c = (saltunnel_thread_context*)v;
     log_set_thread_name(c->thread_name);
     saltunnel(c->ingress, c->egress);
-    free(v);
+//    free(v); // TODO: Free this! I commented it to aid in determining whether it's being used after free.
     return 0;
 }
 
 static pthread_t saltunnel_thread(const char* thread_name, cryptostream* ingress, cryptostream* egress)
 {
-    saltunnel_thread_context* c = malloc(sizeof(saltunnel_thread_context));
+    saltunnel_thread_context* c = calloc(1,sizeof(saltunnel_thread_context));
     c->thread_name = thread_name;
     c->ingress = ingress;
     c->egress = egress;
@@ -283,13 +283,13 @@ static void* write_thread_inner(void* v)
     if(w != c->len) oops_fatal("write");
     try(close(c->fd)) || oops_fatal("close");
     log_debug("write_thread wrote %d bytes to fd %d (and closed it)",(int)w,c->fd);
-    free(v);
+//    free(v); // TODO: Free this! I commented it to aid in determining whether it's being used after free.
     return 0;
 }
 
 static pthread_t write_thread(const char* thread_name, int fd,const char *buf,unsigned int len)
 {
-    write_thread_context* c = malloc(sizeof(write_thread_context));
+    write_thread_context* c = calloc(1,sizeof(write_thread_context));
     c->thread_name = thread_name;
     c->fd = fd;
     c->buf = buf;
@@ -365,13 +365,13 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     
     // Read "actual value" from peer1's local pipe
     log_debug("reading %d bytes from %d", from_peer2_local_str_len, peer1_pipe_local_output[0]);
-    char* from_peer1_local_str_actual = malloc(from_peer2_local_str_len);
-    try(allread(peer1_pipe_local_output[0], from_peer1_local_str_actual, from_peer2_local_str_len)) || oops_fatal("read");
+    char* from_peer1_local_str_actual = calloc(from_peer2_local_str_len+1,sizeof(char));
+    try(uninterruptable_readn(peer1_pipe_local_output[0], from_peer1_local_str_actual, from_peer2_local_str_len)) || oops_fatal("read");
     
     // Read "actual value" from peer2's local pipe
     log_debug("reading %d bytes from %d", from_peer1_local_str_len, peer2_pipe_local_output[0]);
-    char* from_peer2_local_str_actual = malloc(from_peer1_local_str_len);
-    try(allread(peer2_pipe_local_output[0], from_peer2_local_str_actual, from_peer1_local_str_len)) || oops_fatal("read");
+    char* from_peer2_local_str_actual = calloc(from_peer1_local_str_len+1,sizeof(char));
+    try(uninterruptable_readn(peer2_pipe_local_output[0], from_peer2_local_str_actual, from_peer1_local_str_len)) || oops_fatal("read");
     
     // Clean up threads
     try(pthread_join(write_thread_1, NULL)) || oops_fatal("pthread_join");
@@ -383,8 +383,8 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     int cmp1 = memcmp(from_peer2_local_str,from_peer1_local_str_actual,from_peer2_local_str_len);
     if(cmp1 != 0) {
         int d = first_difference(from_peer2_local_str, from_peer1_local_str_actual, from_peer2_local_str_len);
-        const char* s1 = from_peer1_local_str+d;
-        const char* s2 = from_peer2_local_str_actual+d;
+        const char* s1 = from_peer2_local_str+d;
+        const char* s2 = from_peer1_local_str_actual+d;
         log_fatal("str differed ('%c'!='%c') at index %d",*s1,*s2,d);
         log_fatal("bidirectional test (%d,%d) failed: peer1 strs differed",from_peer1_local_str_len,from_peer2_local_str_len);
         _exit(1);
@@ -402,8 +402,8 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     }
     
     // Clean up memory
-    free(from_peer1_local_str_actual);
-    free(from_peer2_local_str_actual);
+//    free(from_peer1_local_str_actual); // TODO: Free this! I commented it to aid in determining whether it's being used after free.
+//    free(from_peer2_local_str_actual); // TODO: Free this! I commented it to aid in determining whether it's being used after free.
     
     // Clean up pipes // TODO: Not needed?
     close(peer1_pipe_local_input[0]);  close(peer1_pipe_local_input[1]);
@@ -435,20 +435,22 @@ void test7() {
         from_peer1_local_str[i] = i+1;
         from_peer2_local_str[i] = i+1;
     }
-    
-    bidirectional_test(from_peer1_local_str, sizeof(from_peer1_local_str),
-                       from_peer2_local_str, sizeof(from_peer2_local_str));
+
+        bidirectional_test(from_peer1_local_str, 1,
+                           from_peer2_local_str, sizeof(from_peer2_local_str));
+//    bidirectional_test(from_peer1_local_str, sizeof(from_peer1_local_str),
+//                       from_peer2_local_str, sizeof(from_peer2_local_str));
 }
 
 // Bidirectional saltunnel test; multi-packet, various sizes
 void test8_for(int i) {
-    log_debug("---- iteration %d ----", i);
+    log_debug("---- testing with %d bytes ----", i);
     
     int peer1n = i;
     int peer2n = i;
         
-    char* from_peer1_local_str = malloc(peer1n);
-    char* from_peer2_local_str = malloc(peer2n);
+    char* from_peer1_local_str = calloc(peer1n,1);
+    char* from_peer2_local_str = calloc(peer2n,1);
     
     for(int c = 0; c < i; c++) {
         from_peer1_local_str[c] = (c%19==4||c%19==9||c%19==14) ? '-' : 'a'+((c/19)%26);
@@ -458,13 +460,16 @@ void test8_for(int i) {
     bidirectional_test(from_peer1_local_str, peer1n,
                        from_peer2_local_str, peer2n);
     
-    free(from_peer1_local_str);
-    free(from_peer2_local_str);
+//    free(from_peer1_local_str);  // TODO: Free this! I commented it to aid in determining whether it's being used after free.
+//    free(from_peer2_local_str);  // TODO: Free this! I commented it to aid in determining whether it's being used after free.
 }
 void test8() {
+
+    log_info("bidirectional_test (126464) started");
+    test8_for(63232+512);
+    return;
     
     int edges[] = {
-        3,
         CRYPTOSTREAM_BUFFER_COUNT,
         CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT,
         CRYPTOSTREAM_BUFFER_MAXBYTES,
@@ -478,7 +483,7 @@ void test8() {
         (2*CRYPTOSTREAM_SPAN_MAXBYTES_DATA) + CRYPTOSTREAM_BUFFER_MAXBYTES_DATA + 1
     };
     int multipliers[] = { 1 };
-    int adders[] = { -2, -1, 0, 1, 2 };
+    int adders[] = { 0, -2, -1, 1, 2 };
     
     int edges_len = sizeof(edges)/sizeof(edges[0]);
     int multipliers_len = sizeof(multipliers)/sizeof(multipliers[0]);
@@ -493,8 +498,8 @@ void test8() {
             }
         }
     }
-    log_info("bidirectional_test (10000000) started");
-    test8_for(10000000);
+//    log_info("bidirectional_test (10000000) started");
+//    test8_for(10000000);
     
 }
 
@@ -540,23 +545,23 @@ void test10() {
     if(vector[0].iov_base != &data[0]) oops_fatal("assertion 10.0.1 failed");
     if(vector[0].iov_len != 10)        oops_fatal("assertion 10.0.2 failed");
     
-    if(vector_skip(vector, 3, 0) != 0) oops_fatal("assertion 10.0.3 failed; vector_skip(vector, 3, 0)");
+    if(vector_skip(vector, 0, 3, 0) != 0) oops_fatal("assertion 10.0.3 failed; vector_skip(vector, 3, 0)");
     
-    if(vector_skip(vector, 3, 1) != 0) oops_fatal("assertion 10.2.1 failed; vector_skip(vector, 3, 1)");
+    if(vector_skip(vector, 0, 3, 1) != 0) oops_fatal("assertion 10.2.1 failed; vector_skip(vector, 3, 1)");
     if(vector[0].iov_base != &data[1]) oops_fatal("assertion 10.2.2 failed");
     if(vector[0].iov_len  != 9)        oops_fatal("assertion 10.2.3 failed");
     
-    if(vector_skip(vector, 3, 8) != 0) oops_fatal("assertion 10.3.1 failed; vector_skip(vector, 3, 8)");
+    if(vector_skip(vector, 0, 3, 8) != 0) oops_fatal("assertion 10.3.1 failed; vector_skip(vector, 3, 8)");
     if(vector[0].iov_base != &data[9]) oops_fatal("assertion 10.3.2 failed");
     if(vector[0].iov_len  != 1)        oops_fatal("assertion 10.3.3 failed");
     
-    if(vector_skip(vector, 3, 1) != 1)  oops_fatal("assertion 10.4.1 failed; vector_skip(vector, 3, 1)");
+    if(vector_skip(vector, 0, 3, 1) != 1)  oops_fatal("assertion 10.4.1 failed; vector_skip(vector, 3, 1)");
     if(vector[0].iov_base != &data[10]) oops_fatal("assertion 10.4.2 failed");
     if(vector[0].iov_len  != 0)        oops_fatal("assertion 10.4.3 failed");
     
     int buffers_skipped = 0;
     for(int i = 0; i < 20; i+=1)
-        buffers_skipped = (int)vector_skip(vector, 3, 1);
+        buffers_skipped = (int)vector_skip(vector, 0, 3, 1);
 //      if(vector_skip(vector, 3, 20) != 2) oops_fatal("assertion 10.5.1 failed; vector_skip(vector, 3, 20)");
     if(buffers_skipped != 1) oops_fatal("assertion 10.5.1 failed; vector_skip(vector, 3, 20)");
     

@@ -45,3 +45,4 @@ const char* log_get_thread_name_formatted(void);
 #define log_fatal(...) MACRO_CHOOSER(__VA_ARGS__)("fatal",__VA_ARGS__)
 
 #endif /* log_h */
+

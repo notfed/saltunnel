@@ -12,6 +12,7 @@
 #include "uint16.h"
 #include "chaos.h"
 #include "math.h"
+#include "crypto_secretbox_salsa208poly1305.h"
 #include <unistd.h>
 #include <stdio.h>
 
@@ -21,14 +22,31 @@ int cryptostream_encrypt_feed_canread(cryptostream* cs) {
     return free_buffers>=1;
 }
 
-static void buffer_encrypt(int buffer_i, int bytesread, cryptostream *cs, unsigned char *key) {
+static void buffer_encrypt(int buffer_i, int current_bytes_to_encrypt, cryptostream *cs, unsigned char *key) {
     {
-        // Calculate how many bytes to encrypt (for this buffer)
-        uint16 current_bytes_to_encrypt = (uint16)MIN(CRYPTOSTREAM_BUFFER_MAXBYTES_DATA, bytesread - buffer_i*CRYPTOSTREAM_BUFFER_MAXBYTES_DATA);
+        // Assertions
+        {
+            char* a = ((char*)cs->plaintext);
+            char* b = ((char*)cs->plaintext_vector[buffer_i].iov_base-32-2);
+            long d = b-a;
+            if( d % CRYPTOSTREAM_BUFFER_MAXBYTES != 0)
+                oops_fatal("assertion failed");
+            if(d<0 || d/CRYPTOSTREAM_BUFFER_MAXBYTES>=256)
+                oops_fatal("assertion failed");
+        }
+        {
+            char* a = ((char*)cs->ciphertext);
+            char* b = ((char*)cs->ciphertext_vector[buffer_i].iov_base-16);
+            long d = b-a;
+            if( d % CRYPTOSTREAM_BUFFER_MAXBYTES != 0)
+                oops_fatal("assertion failed");
+            if(d<0 || d/CRYPTOSTREAM_BUFFER_MAXBYTES>=256)
+                oops_fatal("assertion failed");
+        }
         
         // Find the pointers to the start of the buffers
         unsigned char* plaintext_buffer_ptr = cs->plaintext_vector[buffer_i].iov_base - 32-2;
-        unsigned char* ciphertext_buffer_ptr = cs->ciphertext_vector[cs->vector_start + buffer_i].iov_base - 16;
+        unsigned char* ciphertext_buffer_ptr = cs->ciphertext_vector[buffer_i].iov_base - 16;
         
         // Fill zeros (32 bytes)
         memset((void*)plaintext_buffer_ptr, 0, 32);
@@ -83,7 +101,8 @@ int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key) {
     //
 
     // Calculate how many buffers are free
-    int free_buffers = CRYPTOSTREAM_BUFFER_COUNT - cs->vector_len;
+    int buffer_free_start = (cs->vector_start+cs->vector_len) % CRYPTOSTREAM_BUFFER_COUNT;
+    int buffer_free_count = CRYPTOSTREAM_BUFFER_COUNT - cs->vector_len;
     
     // Perform a scattered read. Read data into the following format:
     //    - u8[32]  zeros;
@@ -91,9 +110,9 @@ int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key) {
     //    - u8[494] data;
     //    - ... (x128 packets) ...
     int bytesread;
-    try((bytesread =  (int)readv(cs->from_fd,    // fd
-                                 cs->plaintext_vector, // vector
-                                 free_buffers)))       // count
+    try((bytesread =  (int)chaos_readv(cs->from_fd,                        // fd
+                                 &cs->plaintext_vector[buffer_free_start], // vector
+                                 buffer_free_count)))                      // count
     || oops_fatal("error reading from cs->from_fd");
     
     // If the read returned a 0, it means the read fd is closed
@@ -103,27 +122,32 @@ int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key) {
         return 0;
     }
     
-    log_debug("cryptostream_encrypt_feed_read: got %d bytes from egress local",(int)bytesread);
-    
+    cs->debug_read_total += bytesread;
+    log_debug("cryptostream_encrypt_feed_read: got %d bytes from egress local (total %d)",(int)bytesread,cs->debug_read_total);
+
     //
     // Encrypt
     //
     
     // Calculate which buffer to start at and how many to decrypt
-    int buffer_start = cs->vector_start;
-    int buffer_count = ((bytesread-1) / CRYPTOSTREAM_BUFFER_MAXBYTES_DATA)+1;
+    int buffer_encrypt_start = cs->vector_start;
+    int buffer_encrypt_count = ((bytesread-1) / CRYPTOSTREAM_BUFFER_MAXBYTES_DATA)+1;
 
     // Iterate the encryptable buffers (if any)
-    log_debug("encryption started");
-    for(int buffer_i = buffer_start; buffer_i < buffer_count; buffer_i++)
+    
+//    log_debug("encryption started");
+    int bytesleft = bytesread;
+    for(int buffer_i = buffer_encrypt_start; buffer_i < buffer_encrypt_start+buffer_encrypt_count; buffer_i++)
     {
-        buffer_encrypt(buffer_i, bytesread, cs, key);
+        int current_bytes_to_encrypt = MIN(bytesleft, CRYPTOSTREAM_BUFFER_MAXBYTES_DATA);
+        buffer_encrypt(buffer_i, (uint16)current_bytes_to_encrypt, cs, key);
+        bytesleft -= current_bytes_to_encrypt;
     }
-
-    log_debug("encryption ended");
+    if(cs->debug_read_total >= 1000000) oops_fatal("assertion failed");
+//    log_debug("encryption ended");
     
     // Rotate buffer offsets
-    cs->vector_len += buffer_count;
+    cs->vector_len += buffer_encrypt_count;
     
     return 1;
 }
@@ -148,28 +172,32 @@ int cryptostream_encrypt_feed_write(cryptostream* cs, unsigned char* key) {
     int xlen = (int)cs->ciphertext_vector[cs->vector_start].iov_len; // JUST TO WATCH
     
     // Write as much as possible
-    int buffer_start = cs->vector_start;
-    int buffer_count = cs->vector_len;
+    int buffer_full_start = cs->vector_start;
+    int buffer_full_count = cs->vector_len;
     int byteswritten;
     try((byteswritten = (int)writev(cs->to_fd,                    // fd
-                                 &cs->ciphertext_vector[buffer_start],  // vector
-                                 buffer_count                           // vcount
+                                 &cs->ciphertext_vector[buffer_full_start],  // vector
+                                 buffer_full_count                           // vcount
     ))) || oops_fatal("failed to write");
     
     // If we failed to flush all ciphertext, seek the vectors so that, later, we can try again
-    int buffers_freed = (int)vector_skip(&cs->ciphertext_vector[buffer_start],  // vector
-                buffer_count,                                                   // vector count
-                byteswritten);                                                  // seek n bytes
-    log_debug("cryptostream_encrypt_feed_write: wrote %d bytes", byteswritten);
+    int buffers_flushed = (int)vector_skip(cs->ciphertext_vector, buffer_full_start, // vector
+                buffer_full_count,                                                   // vector count
+                byteswritten);                                                       // seek n bytes
+    cs->debug_write_total += byteswritten;
+    log_debug("cryptostream_encrypt_feed_write: wrote %d bytes (total %l)", byteswritten, cs->debug_write_total);
     
     // Re-initialize the freed-up ciphertext vectors
-    for(int buffer_i = 0; buffer_i < buffers_freed; buffer_i++) {
-        vector_reset_ciphertext(cs->ciphertext_vector, cs->ciphertext, buffer_start+buffer_i);
+    for(int buffer_i = buffer_full_start; buffer_i < buffer_full_start+buffers_flushed; buffer_i++) {
+        vector_reset_ciphertext(cs->ciphertext_vector, cs->ciphertext, buffer_i);
+        // DEBUG
+//        memset(cs->plaintext_vector[buffer_i].iov_base, '2', CRYPTOSTREAM_BUFFER_MAXBYTES_DATA);
+//        memset(cs->ciphertext_vector[buffer_i].iov_base, '2', CRYPTOSTREAM_BUFFER_MAXBYTES_DATA);
     }
     
     // Rotate the buffer offsets
-    cs->vector_start  = (cs->vector_start + buffers_freed)  % CRYPTOSTREAM_BUFFER_COUNT;
-    cs->vector_len   -= buffers_freed;
-
+    cs->vector_start = (cs->vector_start + buffers_flushed) % CRYPTOSTREAM_BUFFER_COUNT;
+    cs->vector_len   -= buffers_flushed;
+    
     return 1;
 }

@@ -10,8 +10,17 @@
 #include <stdio.h>
 #include <string.h>
 
+static void strncpy_boring(char *output, char* src, int maxlen) {
+    for(int i = 0; i < maxlen; i++) {
+        output[i] = src[i];
+        if(src[i] == 0) return;
+    }
+}
+
 char* log_filename_idempotent_fill(char* log_name, char* log_filename_from_macro, int len, char* log_name_filled) {
     if(!*log_name_filled) {
+        char result[256];
+        result[255] = 0;
         
         // Point to the last slash of path (if any), plus 1
         char* last_slash = strrchr(log_filename_from_macro, '/');
@@ -26,16 +35,19 @@ char* log_filename_idempotent_fill(char* log_name, char* log_filename_from_macro
         // Find the latter of last_slash or last_backslash
         if(last_backslash>last_slash) last_slash = last_backslash;
         
-        // Use the str now pointed to by last_slash
-        strncpy(log_name,last_slash,256);
+        // Copy the str now pointed to by last_slash
+        strncpy(result,last_slash,255);
         
         // After that, point to the first period
-        char* first_dot = strchr(log_name, '.');
+        char* first_dot = memchr(result, '.', 255);
         
         // If there was a period, null it out
         if(first_dot!=0) {
             first_dot[0]=0;
         }
+        
+        // Copy the final result to log_name
+        strncpy_boring(log_name, result, 255);
         
         *log_name_filled = 1;
     }

@@ -12,7 +12,7 @@ typedef unsigned char nonce24[24];
 void nonce8_clear(nonce8);
 void nonce8_increment(nonce8);
 
-void nonce24_clear(nonce24);
-void nonce24_increment(nonce24);
+//void nonce24_clear(nonce24);
+//void nonce24_increment(nonce24);
 
 #endif /* nonce_h */

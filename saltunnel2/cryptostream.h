@@ -65,6 +65,7 @@ typedef struct cryptostream {
 //    int readvector_is_initialized;
     
     // New
+    unsigned char WTF[32];
     int from_fd;
     int to_fd;
     nonce8 nonce;
@@ -73,16 +74,16 @@ typedef struct cryptostream {
     
     unsigned char plaintext[CRYPTOSTREAM_SPAN_MAXBYTES];
     struct iovec plaintext_vector[CRYPTOSTREAM_BUFFER_COUNT*2]; // TODO: Rename to 'data_vector' to prevent confusion?
-    int vector_start;  // TODO: Rename to 'data_start' to prevent confusion?
-    int vector_len;    // TODO: Rename to 'data_len' to prevent confusion?
+    int vector_start;
+    int vector_len;
 //    int plaintext_len_buffers;
     
     unsigned char ciphertext[CRYPTOSTREAM_SPAN_MAXBYTES];
     struct iovec ciphertext_vector[CRYPTOSTREAM_BUFFER_COUNT*2];
 //    int ciphertext_vector_is_initialized;
     
-    int debug_write_total;
-    int debug_read_total;
+    long debug_write_total;
+    long debug_read_total;
     
 } cryptostream;
 
@@ -103,6 +104,8 @@ int cryptostream_decrypt_feed_write(cryptostream* cs, unsigned char* key);
 void vector_init(cryptostream *cs);
 void vector_reset_plaintext(struct iovec* iovec_array, unsigned char* span, int vec_i);
 void vector_reset_ciphertext(struct iovec* iovec_array, unsigned char* span, int vec_i);
-ssize_t vector_skip(struct iovec *v, size_t vlen, unsigned int n);
+void vector_buffer_set_len(struct iovec* iovec_array, int buffer_i, int len);
+void vector_buffer_set_base(struct iovec* iovec_array, int buffer_i, void* base);
+ssize_t vector_skip(struct iovec *v, int start_i, size_t count_i, unsigned int n);
 
 #endif /* cryptostream_h */
