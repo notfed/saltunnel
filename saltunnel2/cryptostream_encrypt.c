@@ -175,7 +175,7 @@ int cryptostream_encrypt_feed_write(cryptostream* cs, unsigned char* key) {
     
     // Write as much as possible
     int byteswritten;
-    try((byteswritten = (int)writev(cs->to_fd,       // fd
+    try((byteswritten = (int)chaos_writev(cs->to_fd,       // fd
                                  buffer_full_start,  // vector
                                  buffer_full_count   // vcount
     ))) || oops_fatal("failed to write");

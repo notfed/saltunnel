@@ -107,7 +107,7 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
     struct iovec* buffer_free_start = &cs->ciphertext_vector[buffer_free_start_i];
     
     int bytesread;
-    try((bytesread =  (int)readv(cs->from_fd, buffer_free_start, buffer_free_count)))
+    try((bytesread =  (int)chaos_readv(cs->from_fd, buffer_free_start, buffer_free_count)))
         || oops_fatal("error reading from cs->from_fd");
     
     cs->debug_read_total += bytesread;
