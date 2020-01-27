@@ -20,7 +20,11 @@ int cryptostream_encrypt_feed_canread(cryptostream* cs) {
     return cs->vector_len < CRYPTOSTREAM_BUFFER_COUNT;
 }
 
-static void buffer_encrypt(int buffer_i, int current_bytes_to_encrypt, cryptostream *cs, unsigned char *key) {
+static void buffer_encrypt(int buffer_i, int buffer_n, int bytesread, cryptostream *cs, unsigned char *key) {
+    
+    int current_bytes_to_encrypt = MIN(CRYPTOSTREAM_BUFFER_MAXBYTES_DATA,
+                                       bytesread - CRYPTOSTREAM_BUFFER_MAXBYTES_DATA*buffer_n);
+    if(current_bytes_to_encrypt<0) oops_fatal("assertion failed");
     
     // Find the pointers to the start of the buffers
     unsigned char* plaintext_buffer_ptr = cs->plaintext_vector[buffer_i].iov_base - 32-2;
@@ -117,11 +121,7 @@ int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key) {
     int bytesleft = bytesread;
     for(int buffer_i = buffer_encrypt_start_i; buffer_i < buffer_encrypt_start_i+buffer_encrypt_count; buffer_i++)
     {
-        int current_bytes_to_encrypt = MIN(bytesleft, CRYPTOSTREAM_BUFFER_MAXBYTES_DATA);
-        buffer_encrypt(buffer_i, (uint16)current_bytes_to_encrypt, cs, key);
-        bytesleft -= current_bytes_to_encrypt;
-        
-        cs->debug_encrypted_blocks_total++;
+        buffer_encrypt(buffer_i, buffer_i-buffer_encrypt_start_i, (uint16)bytesread, cs, key);
         log_debug("cryptostream_encrypt_feed_read: encrypted %d bytes (buffer %d/%d)", CRYPTOSTREAM_BUFFER_MAXBYTES, buffer_i-buffer_encrypt_start_i+1, buffer_encrypt_count);
     }
     

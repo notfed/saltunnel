@@ -470,7 +470,6 @@ void test8() {
     stopwatch_start(&sw);
   
     int edges[] = {
-        100000000,
         CRYPTOSTREAM_BUFFER_COUNT,
         CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT,
         CRYPTOSTREAM_BUFFER_MAXBYTES,
@@ -496,14 +495,14 @@ void test8() {
                 int i = edges[e] * multipliers[m] + adders[a];
                 log_info("bidirectional_test (%d = %d * %d + %d) started", i, edges[e], multipliers[m], adders[a]);
                 if(i>0) test8_for(i);
-                
-
-                long elapsed = stopwatch_elapsed(&sw);
-                log_info("test8: took %l us", elapsed);
-                return;
             }
         }
     }
+    
+
+    long elapsed = stopwatch_elapsed(&sw);
+    log_info("test8: took %dus", elapsed);
+    return;
 //    log_info("bidirectional_test (10000000) started");
 //    test8_for(10000000);
     

@@ -52,7 +52,6 @@
 
 typedef struct cryptostream {
     
-    // New
     int from_fd;
     int to_fd;
     nonce8 nonce;
