@@ -86,7 +86,7 @@ int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key) {
     //    - u8[494] data;
     //    - ... (x128 packets) ...
     int bytesread;
-    try((bytesread =  (int)chaos_readv(cs->from_fd,    // fd
+    try((bytesread =  (int)readv(cs->from_fd,          // fd
                                 buffer_free_start,     // vector
                                 buffer_free_count)))   // count
     || oops_fatal("error reading from cs->from_fd");
@@ -152,7 +152,7 @@ int cryptostream_encrypt_feed_write(cryptostream* cs, unsigned char* key) {
     
     // Write as much as possible
     int byteswritten;
-    try((byteswritten = (int)chaos_writev(cs->to_fd,       // fd
+    try((byteswritten = (int)writev(cs->to_fd,       // fd
                                  buffer_full_start,  // vector
                                  buffer_full_count   // vcount
     ))) || oops_fatal("failed to write");
