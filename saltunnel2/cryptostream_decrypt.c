@@ -12,7 +12,7 @@
 #include "uint16.h"
 #include "chaos.h"
 #include "math.h"
-#include "crypto_secretbox_salsa208poly1305.h"
+#include "crypto_secretbox_salsa2012poly1305.h"
 #include <unistd.h>
 #include <stdio.h>
 
@@ -110,38 +110,23 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
         return bytesread;
     }
     
-    //`
-    // Decrypt ciphertext into plaintext
     //
-//
-//    // Calculate how many buffers are free
-//    int ciphertext_free_buffers = CRYPTOSTREAM_BUFFER_COUNT - cs->ciphertext_len;
-//    int plaintext_free_buffers  = CRYPTOSTREAM_BUFFER_COUNT - cs->plaintext_len;
-//
-//    // Calculate which buffer to start at and how many to decrypt
-//    int buffer_start = cs->ciphertext_start;
-//    int buffer_count = MIN(ciphertext_free_buffers,plaintext_free_buffers);
+    // Decrypt
+    //
     
     int buffer_decrypt_start = buffer_free_start_i; // No longer free
     int buffer_decrypt_count = buffers_filled;
 
     // Iterate the decryptable buffers (if any)
-//    log_debug("decryption started");
     for(int buffer_i = buffer_decrypt_start; buffer_i < buffer_decrypt_start+buffer_decrypt_count; buffer_i++)
     {
-        // Find the pointers to the start of the buffers
         buffer_decrypt(buffer_i, cs, key);
-        cs->debug_decrypted_blocks_total++;
-
         log_debug("cryptostream_decrypt_feed_read: decrypted x bytes (buffer %d/%d)", buffer_i-buffer_decrypt_start+1, buffer_decrypt_count);
     }
     log_debug("decrypted %d bytes from %d buffers", bytesread, buffer_decrypt_count);
 
     // Rotate buffer offsets
-//    cs->ciphertext_start = (cs->ciphertext_start + buffer_decrypt_count) % CRYPTOSTREAM_BUFFER_COUNT;
     cs->vector_len += buffer_decrypt_count;
-    
-//    log_debug("decryption ended");
 
     return 1;
 }
@@ -172,8 +157,6 @@ int cryptostream_decrypt_feed_write(cryptostream* cs, unsigned char* key) {
     ))) || oops_fatal("failed to write");
     
     cs->debug_write_total += byteswritten;
-    
-//    log_debug("cryptostream_decrypt_feed_write: wrote %d bytes (total %d)", byteswritten, cs->debug_write_total);
     
     // Seek the vectors so that, if we didn't write all the bytes, then, later, we can try again
     int buffers_flushed = (int)vector_skip(cs->plaintext_vector,

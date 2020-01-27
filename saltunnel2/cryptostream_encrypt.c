@@ -12,7 +12,7 @@
 #include "uint16.h"
 #include "chaos.h"
 #include "math.h"
-#include "crypto_secretbox_salsa208poly1305.h"
+#include "crypto_secretbox_salsa2012poly1305.h"
 #include <unistd.h>
 #include <stdio.h>
 
@@ -115,10 +115,6 @@ int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key) {
     int buffer_encrypt_count = ((bytesread-1) / CRYPTOSTREAM_BUFFER_MAXBYTES_DATA)+1;
 
     // Iterate the encryptable buffers (if any)
-    
-    
-//    log_debug("encryption started");
-    int bytesleft = bytesread;
     for(int buffer_i = buffer_encrypt_start_i; buffer_i < buffer_encrypt_start_i+buffer_encrypt_count; buffer_i++)
     {
         buffer_encrypt(buffer_i, buffer_i-buffer_encrypt_start_i, (uint16)bytesread, cs, key);
