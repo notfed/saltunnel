@@ -36,7 +36,7 @@ static void buffer_decrypt(int buffer_i, cryptostream *cs, unsigned char *key) {
     // - output structure:
     //   - [0..32] == zero
     //   - [32..]  == plaintext
-    try(crypto_secretbox_salsa208poly1305_open(plaintext_buffer_ptr, ciphertext_buffer_ptr,
+    try(crypto_secretbox_salsa2012poly1305_open(plaintext_buffer_ptr, ciphertext_buffer_ptr,
                               CRYPTOSTREAM_BUFFER_MAXBYTES,cs->nonce,key)) ||
         oops_fatal("failed to decrypt");
     

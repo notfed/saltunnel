@@ -11,8 +11,8 @@
 #include "oops.h"
 #include <sys/uio.h>
 
-#define CHAOS_READ_N 1
-#define CHAOS_WRITE_N 1
+#define CHAOS_READ_N 1000
+#define CHAOS_WRITE_N 1000
 
 // Only read chaos_n bytes at a time
 int chaos_readv(int fd, struct iovec* vector, int count) {

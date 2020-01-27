@@ -46,7 +46,7 @@ static void buffer_encrypt(int buffer_i, int current_bytes_to_encrypt, cryptostr
     //   - [0..16]  == zero
     //   - [16..32] == auth
     //   - [32..]   == ciphertext
-    try(crypto_secretbox_salsa208poly1305(ciphertext_buffer_ptr, plaintext_buffer_ptr,
+    try(crypto_secretbox_salsa2012poly1305(ciphertext_buffer_ptr, plaintext_buffer_ptr,
                          CRYPTOSTREAM_BUFFER_MAXBYTES, cs->nonce, key)) || oops_fatal("failed to encrypt");
     
     // Increment nonce
@@ -112,6 +112,7 @@ int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key) {
 
     // Iterate the encryptable buffers (if any)
     
+    
 //    log_debug("encryption started");
     int bytesleft = bytesread;
     for(int buffer_i = buffer_encrypt_start_i; buffer_i < buffer_encrypt_start_i+buffer_encrypt_count; buffer_i++)
@@ -121,10 +122,8 @@ int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key) {
         bytesleft -= current_bytes_to_encrypt;
         
         cs->debug_encrypted_blocks_total++;
-        log_debug("cryptostream_encrypt_feed_read: encrypted %d bytes (buffer %d/%d)", CRYPTOSTREAM_BUFFER_MAXBYTES, buffer_i-buffer_encrypt_start_i+1, buffer_encrypt_count);
+//        log_debug("cryptostream_encrypt_feed_read: encrypted %d bytes (buffer %d/%d)", CRYPTOSTREAM_BUFFER_MAXBYTES, buffer_i-buffer_encrypt_start_i+1, buffer_encrypt_count);
     }
-    if(cs->debug_read_total >= 1000000) oops_fatal("assertion failed");
-//    log_debug("encryption ended");
     
     // Rotate buffer offsets
     cs->vector_len += buffer_encrypt_count;

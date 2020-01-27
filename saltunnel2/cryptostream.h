@@ -51,21 +51,8 @@
 #define CRYPTOSTREAM_SPAN_MAXBYTES            (CRYPTOSTREAM_BUFFER_MAXBYTES * CRYPTOSTREAM_BUFFER_COUNT)
 
 typedef struct cryptostream {
-//    
-//    // Old
-//
-//    struct iovec readvector[128];
-//    struct iovec writevector[128];
-//    
-//    unsigned int ciphertext_packet_size_in_progress;
-//    int packetcount;
-//    int flush_progress_bytesleft;
-//    int flush_progress_totalbytes;
-//    int ctr;
-//    int readvector_is_initialized;
     
     // New
-    unsigned char WTF[32];
     int from_fd;
     int to_fd;
     nonce8 nonce;
@@ -76,11 +63,9 @@ typedef struct cryptostream {
     struct iovec plaintext_vector[CRYPTOSTREAM_BUFFER_COUNT*2]; // TODO: Rename to 'data_vector' to prevent confusion?
     int vector_start;
     int vector_len;
-//    int plaintext_len_buffers;
     
     unsigned char ciphertext[CRYPTOSTREAM_SPAN_MAXBYTES];
     struct iovec ciphertext_vector[CRYPTOSTREAM_BUFFER_COUNT*2];
-//    int ciphertext_vector_is_initialized;
     
     long debug_write_total;
     long debug_read_total;
