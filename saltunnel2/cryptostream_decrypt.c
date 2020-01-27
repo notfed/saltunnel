@@ -16,37 +16,14 @@
 #include <unistd.h>
 #include <stdio.h>
 
-// Is there enough room for 1 buffer of plaintext and 1 buffer of ciphertext?
 int cryptostream_decrypt_feed_canread(cryptostream* cs) {
     return cs->vector_len < CRYPTOSTREAM_BUFFER_COUNT;
 }
 
 static void buffer_decrypt(int buffer_i, cryptostream *cs, unsigned char *key) {
+    
     unsigned char* plaintext_buffer_ptr = cs->plaintext_vector[buffer_i].iov_base - 32-2;
     unsigned char* ciphertext_buffer_ptr = cs->ciphertext_vector[buffer_i].iov_base - 16;
-    
-    unsigned char* dbg1 = cs->ciphertext_vector[buffer_i%CRYPTOSTREAM_BUFFER_COUNT].iov_base-16;
-    unsigned char* dbg2 = cs->ciphertext_vector[buffer_i].iov_base-16;
-
-    // Assertions
-    {
-        char* a = ((char*)cs->plaintext);
-        char* b = ((char*)cs->plaintext_vector[buffer_i].iov_base-32-2);
-        long d = b-a;
-        if( d % CRYPTOSTREAM_BUFFER_MAXBYTES != 0)
-            oops_fatal("assertion failed");
-        if(d<0 || d/CRYPTOSTREAM_BUFFER_MAXBYTES>=256)
-            oops_fatal("assertion failed");
-    }
-    {
-        char* a = ((char*)cs->ciphertext);
-        char* b = ((char*)cs->ciphertext_vector[buffer_i].iov_base-16);
-        long d = b-a;
-        if( d % CRYPTOSTREAM_BUFFER_MAXBYTES != 0)
-            oops_fatal("assertion failed");
-        if(d<0 || d/CRYPTOSTREAM_BUFFER_MAXBYTES>=256)
-            oops_fatal("assertion failed");
-    }
     
     // Decrypt chunk from ciphertext to plaintext (512 bytes)
     
@@ -93,8 +70,13 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
     }
 
     //
-    // Read ciphertext
+    // Read
     //
+    
+    // Calculate how many buffers are free
+    int buffer_free_start_i = (cs->vector_start + cs->vector_len) % CRYPTOSTREAM_BUFFER_COUNT;
+    int buffer_free_count = CRYPTOSTREAM_BUFFER_COUNT - cs->vector_len;
+    struct iovec* buffer_free_start = &cs->ciphertext_vector[buffer_free_start_i];
     
     // Perform a scattered read. Read data into the following format:
     //    - u8[16]  zeros;
@@ -102,17 +84,11 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
     //    - u16     datalen;
     //    - u8[494] data;
     //    - ... (x128 packets) ...
-    int buffer_free_start_i = (cs->vector_start + cs->vector_len) % CRYPTOSTREAM_BUFFER_COUNT;
-    int buffer_free_count = CRYPTOSTREAM_BUFFER_COUNT - cs->vector_len;
-    struct iovec* buffer_free_start = &cs->ciphertext_vector[buffer_free_start_i];
-    
     int bytesread;
     try((bytesread =  (int)chaos_readv(cs->from_fd, buffer_free_start, buffer_free_count)))
         || oops_fatal("error reading from cs->from_fd");
     
     cs->debug_read_total += bytesread;
-    if(cs->debug_read_total>500000*528)
-        oops_fatal("assertion failed");
     
     // If the read returned a 0, it means the read fd is closed
     if(bytesread==0)
@@ -121,14 +97,8 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
         return 0;
     }
     
-    // DEBUG VARIABLES
-    unsigned char* x = buffer_free_start->iov_base;
-    int xlen = buffer_free_start->iov_len;
-    
     // Bump vector
-    if(cs->debug_write_total>1000000) oops_fatal("assertion failed");
-    int buffers_filled  = (int)vector_skip_debug(cs->ciphertext_vector, buffer_free_start_i, buffer_free_count, bytesread,cs); // CAUSING debug_write_total=140732920683736
-    if(cs->debug_write_total>1000000) oops_fatal("assertion failed");
+    int buffers_filled  = (int)vector_skip(cs->ciphertext_vector, buffer_free_start_i, buffer_free_count, bytesread);
 
     // Re-initialize the freed-up ciphertext vectors
     for(int buffer_i = buffer_free_start_i; buffer_i < buffer_free_start_i+buffers_filled; buffer_i++) {
@@ -189,9 +159,6 @@ int cryptostream_decrypt_feed_canwrite(cryptostream* cs) {
 //
 int cryptostream_decrypt_feed_write(cryptostream* cs, unsigned char* key) {
     
-    if(cs->debug_write_total>1000000)
-        oops_fatal("assertion failed");
-    
     // Calculate the first writable buffer, and how many buffers to write
     int buffer_full_start_i  = cs->vector_start;
     int buffer_full_count    = cs->vector_len;
@@ -205,10 +172,6 @@ int cryptostream_decrypt_feed_write(cryptostream* cs, unsigned char* key) {
     ))) || oops_fatal("failed to write");
     
     cs->debug_write_total += byteswritten;
-    if(byteswritten != 1)
-        oops_fatal("assertion failed");
-    if(cs->debug_write_total>1000000)
-        oops_fatal("assertion failed");
     
 //    log_debug("cryptostream_decrypt_feed_write: wrote %d bytes (total %d)", byteswritten, cs->debug_write_total);
     

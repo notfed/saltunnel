@@ -464,12 +464,7 @@ void test8_for(int i) {
     free(from_peer2_local_str);
 }
 void test8() {
-
-    log_info("bidirectional_test (126464) started");
-    test8_for(63232+512);
-    log_info("bidirectional_test (126464) succeeded");
-    return;
-    
+  
     int edges[] = {
         CRYPTOSTREAM_BUFFER_COUNT,
         CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT,

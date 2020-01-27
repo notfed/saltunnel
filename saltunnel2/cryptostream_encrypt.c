@@ -16,64 +16,41 @@
 #include <unistd.h>
 #include <stdio.h>
 
-// Is there enough room for 1 buffer of plaintext and 1 buffer of ciphertext?
 int cryptostream_encrypt_feed_canread(cryptostream* cs) {
-    int free_buffers = CRYPTOSTREAM_BUFFER_COUNT - cs->vector_len;
-    return free_buffers>=1;
+    return cs->vector_len < CRYPTOSTREAM_BUFFER_COUNT;
 }
 
 static void buffer_encrypt(int buffer_i, int current_bytes_to_encrypt, cryptostream *cs, unsigned char *key) {
-    {
-        // Assertions
-        {
-            char* a = ((char*)cs->plaintext);
-            char* b = ((char*)cs->plaintext_vector[buffer_i].iov_base-32-2);
-            long d = b-a;
-            if( d % CRYPTOSTREAM_BUFFER_MAXBYTES != 0)
-                oops_fatal("assertion failed");
-            if(d<0 || d/CRYPTOSTREAM_BUFFER_MAXBYTES>=256)
-                oops_fatal("assertion failed");
-        }
-        {
-            char* a = ((char*)cs->ciphertext);
-            char* b = ((char*)cs->ciphertext_vector[buffer_i].iov_base-16);
-            long d = b-a;
-            if( d % CRYPTOSTREAM_BUFFER_MAXBYTES != 0)
-                oops_fatal("assertion failed");
-            if(d<0 || d/CRYPTOSTREAM_BUFFER_MAXBYTES>=256)
-                oops_fatal("assertion failed");
-        }
-        
-        // Find the pointers to the start of the buffers
-        unsigned char* plaintext_buffer_ptr = cs->plaintext_vector[buffer_i].iov_base - 32-2;
-        unsigned char* ciphertext_buffer_ptr = cs->ciphertext_vector[buffer_i].iov_base - 16;
-        
-        // Fill zeros (32 bytes)
-        memset((void*)plaintext_buffer_ptr, 0, 32);
-        
-        // Fill len (2 bytes)
-        uint16_pack(((void*)plaintext_buffer_ptr+32), current_bytes_to_encrypt);
-        
-        // Fill unused data (0-494 bytes)
-        memset((void*)plaintext_buffer_ptr+32+2+current_bytes_to_encrypt, 0, CRYPTOSTREAM_BUFFER_MAXBYTES_DATA-current_bytes_to_encrypt);
-        
-        // Encrypt chunk from plaintext to ciphertext (494 bytes)
-        
-        // crypto_secretbox:
-        // - signature: crypto_secretbox(c,m,mlen,n,k);
-        // - input structure:
-        //   - [0..32] == zero
-        //   - [32..]  == plaintext
-        // - output structure:
-        //   - [0..16]  == zero
-        //   - [16..32] == auth
-        //   - [32..]   == ciphertext
-        try(crypto_secretbox_salsa208poly1305(ciphertext_buffer_ptr, plaintext_buffer_ptr,
-                             CRYPTOSTREAM_BUFFER_MAXBYTES, cs->nonce, key)) || oops_fatal("failed to encrypt");
-        
-        // Increment nonce
-        nonce8_increment(cs->nonce);
-    }
+    
+    // Find the pointers to the start of the buffers
+    unsigned char* plaintext_buffer_ptr = cs->plaintext_vector[buffer_i].iov_base - 32-2;
+    unsigned char* ciphertext_buffer_ptr = cs->ciphertext_vector[buffer_i].iov_base - 16;
+    
+    // Fill zeros (32 bytes)
+    memset((void*)plaintext_buffer_ptr, 0, 32);
+    
+    // Fill len (2 bytes)
+    uint16_pack(((void*)plaintext_buffer_ptr+32), current_bytes_to_encrypt);
+    
+    // Fill unused data (0-494 bytes)
+    memset((void*)plaintext_buffer_ptr+32+2+current_bytes_to_encrypt, 0, CRYPTOSTREAM_BUFFER_MAXBYTES_DATA-current_bytes_to_encrypt);
+    
+    // Encrypt chunk from plaintext to ciphertext (494 bytes)
+    
+    // crypto_secretbox:
+    // - signature: crypto_secretbox(c,m,mlen,n,k);
+    // - input structure:
+    //   - [0..32] == zero
+    //   - [32..]  == plaintext
+    // - output structure:
+    //   - [0..16]  == zero
+    //   - [16..32] == auth
+    //   - [32..]   == ciphertext
+    try(crypto_secretbox_salsa208poly1305(ciphertext_buffer_ptr, plaintext_buffer_ptr,
+                         CRYPTOSTREAM_BUFFER_MAXBYTES, cs->nonce, key)) || oops_fatal("failed to encrypt");
+    
+    // Increment nonce
+    nonce8_increment(cs->nonce);
 }
 
 //
@@ -114,6 +91,8 @@ int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key) {
                                 buffer_free_count)))   // count
     || oops_fatal("error reading from cs->from_fd");
     
+    cs->debug_read_total += bytesread;
+    
     // If the read returned a 0, it means the read fd is closed
     if(bytesread==0)
     {
@@ -121,7 +100,6 @@ int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key) {
         return 0;
     }
     
-    cs->debug_read_total += bytesread;
     log_debug("cryptostream_encrypt_feed_read: got %d bytes from egress local (total %d)",(int)bytesread,cs->debug_read_total);
 
     //
