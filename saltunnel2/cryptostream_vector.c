@@ -17,37 +17,31 @@ static int second(int buffer_i) {
 }
 
 static void vector_reset_plaintext_one(struct iovec* iovec_array, unsigned char* span, int buffer_i) {
-    if(buffer_i<0 || buffer_i>=256) oops_fatal("assertion failed");
     iovec_array[buffer_i].iov_base = span + CRYPTOSTREAM_BUFFER_MAXBYTES*first(buffer_i) + 32+2; // DOH! This might be > 128*528?
     iovec_array[buffer_i].iov_len  = CRYPTOSTREAM_BUFFER_MAXBYTES_DATA;
 }
 
 void vector_reset_plaintext(struct iovec* iovec_array, unsigned char* span, int buffer_i) {
-    if(buffer_i<0 || buffer_i>=256) oops_fatal("assertion failed");
     vector_reset_plaintext_one(iovec_array, span, first(buffer_i));
     vector_reset_plaintext_one(iovec_array, span, second(buffer_i));
 }
 
 static void vector_reset_ciphertext_one(struct iovec* iovec_array, unsigned char* span, int buffer_i) {
-    if(buffer_i<0 || buffer_i>=256) oops_fatal("assertion failed");
     iovec_array[buffer_i].iov_base = span + CRYPTOSTREAM_BUFFER_MAXBYTES*first(buffer_i) + 16; // DOH! This might be > 128*528?
     iovec_array[buffer_i].iov_len  = CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT;
 }
 
 void vector_reset_ciphertext(struct iovec* iovec_array, unsigned char* span, int buffer_i) {
-    if(buffer_i<0 || buffer_i>=256) oops_fatal("assertion failed");
     vector_reset_ciphertext_one(iovec_array, span, first(buffer_i));
     vector_reset_ciphertext_one(iovec_array, span, second(buffer_i));
 }
 
 void vector_buffer_set_len(struct iovec* iovec_array, int buffer_i, int len) {
-    if(buffer_i<0 || buffer_i>=256) oops_fatal("assertion failed");
     iovec_array[first(buffer_i)].iov_len = len;
     iovec_array[second(buffer_i)].iov_len = len;
 }
 
 void vector_buffer_set_base(struct iovec* iovec_array, int buffer_i, void* base) {
-    if(buffer_i<0 || buffer_i>=256) oops_fatal("assertion failed");
     iovec_array[first(buffer_i)].iov_base = base;
     iovec_array[second(buffer_i)].iov_base = base;
 }
@@ -80,37 +74,6 @@ ssize_t vector_skip(struct iovec *v, int start_i, size_t count_i, unsigned int n
         n -= ncur;
         int iov_len_is_zero = (v[buffer_i].iov_len==0);
         if(!iov_len_was_zero && iov_len_is_zero) filled++;
-        if(n==0) break;
-    }
-    return filled;
-}
-
-// Skip n bytes, and return how many iovecs have been filled
-ssize_t vector_skip_debug(struct iovec *v, int start_i, size_t count_i, unsigned int n, cryptostream* cs)
-{
-    if(cs != 0 && cs->debug_write_total>1000000) oops_fatal("assertion failed");
-    int filled=0;
-    if(cs != 0 && cs->debug_write_total>1000000) oops_fatal("assertion failed");
-    for(int buffer_i = start_i; buffer_i < start_i+count_i; buffer_i++) {
-        if(cs != 0 && cs->debug_write_total>1000000) oops_fatal("assertion failed");
-        int iov_len_was_zero = (v[buffer_i].iov_len==0);
-        if(cs != 0 && cs->debug_write_total>1000000) oops_fatal("assertion failed");
-        size_t ncur = MIN(v[buffer_i].iov_len, n);
-        if(cs != 0 && cs->debug_write_total>1000000) oops_fatal("assertion failed");
-        
-        vector_buffer_set_len(v,  buffer_i, (int)(v[buffer_i].iov_len  - ncur));
-        if(cs != 0 && cs->debug_write_total>1000000) oops_fatal("assertion failed");
-        vector_buffer_set_base(v, buffer_i, v[buffer_i].iov_base + ncur);
-        if(cs != 0 && cs->debug_write_total>1000000) oops_fatal("assertion failed");
-//        v[buffer_i].iov_len  -= ncur;
-//        v[buffer_i].iov_base += ncur;
-        
-        n -= ncur;
-        if(cs != 0 && cs->debug_write_total>1000000) oops_fatal("assertion failed");
-        int iov_len_is_zero = (v[buffer_i].iov_len==0);
-        if(cs != 0 && cs->debug_write_total>1000000) oops_fatal("assertion failed");
-        if(!iov_len_was_zero && iov_len_is_zero) filled++;
-        if(cs != 0 && cs->debug_write_total>1000000) oops_fatal("assertion failed");
         if(n==0) break;
     }
     return filled;

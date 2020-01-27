@@ -122,7 +122,7 @@ int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key) {
         bytesleft -= current_bytes_to_encrypt;
         
         cs->debug_encrypted_blocks_total++;
-//        log_debug("cryptostream_encrypt_feed_read: encrypted %d bytes (buffer %d/%d)", CRYPTOSTREAM_BUFFER_MAXBYTES, buffer_i-buffer_encrypt_start_i+1, buffer_encrypt_count);
+        log_debug("cryptostream_encrypt_feed_read: encrypted %d bytes (buffer %d/%d)", CRYPTOSTREAM_BUFFER_MAXBYTES, buffer_i-buffer_encrypt_start_i+1, buffer_encrypt_count);
     }
     
     // Rotate buffer offsets
