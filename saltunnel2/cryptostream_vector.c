@@ -68,8 +68,6 @@ ssize_t vector_skip(struct iovec *v, int start_i, size_t count_i, unsigned int n
         
         vector_buffer_set_len(v,  buffer_i, (int)(v[buffer_i].iov_len  - ncur));
         vector_buffer_set_base(v, buffer_i, v[buffer_i].iov_base + ncur);
-//        v[buffer_i].iov_len  -= ncur;
-//        v[buffer_i].iov_base += ncur;
         
         n -= ncur;
         int iov_len_is_zero = (v[buffer_i].iov_len==0);

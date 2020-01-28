@@ -73,19 +73,21 @@ typedef struct cryptostream {
     
 } cryptostream;
 
-//int cryptostream_identity_feed(cryptostream*,unsigned char*); //
-//int cryptostream_decrypt_feed(cryptostream*,unsigned char*); //
-//int cryptostream_encrypt_feed(cryptostream*,unsigned char*); //
-
 int cryptostream_encrypt_feed_canread(cryptostream* cs);
 int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key);
 int cryptostream_encrypt_feed_canwrite(cryptostream* cs);
 int cryptostream_encrypt_feed_write(cryptostream* cs, unsigned char* key);
 
+void encrypt_all(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs, unsigned char *key);
+void encrypt_one(int buffer_i, int buffer_n, int bytesread, cryptostream *cs, unsigned char *key);
+
 int cryptostream_decrypt_feed_canread(cryptostream* cs);
 int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key);
 int cryptostream_decrypt_feed_canwrite(cryptostream* cs);
 int cryptostream_decrypt_feed_write(cryptostream* cs, unsigned char* key);
+
+void decrypt_all(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream *cs, unsigned char *key);
+void decrypt_one(int buffer_i, cryptostream *cs, unsigned char *key);
 
 void vector_init(cryptostream *cs);
 void vector_reset_plaintext(struct iovec* iovec_array, unsigned char* span, int vec_i);
