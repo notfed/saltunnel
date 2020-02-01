@@ -1,0 +1,396 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		943E03BF23E53DFC0049DF5E /* cryptostream_encrypt_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 943E03BE23E53DFC0049DF5E /* cryptostream_encrypt_parallel.c */; };
+		94CE75DD23E52A6F00A84ABC /* chaos.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75BA23E52A6E00A84ABC /* chaos.c */; };
+		94CE75DE23E52A7000A84ABC /* pthread_barrier.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75BB23E52A6E00A84ABC /* pthread_barrier.c */; };
+		94CE75DF23E52A7000A84ABC /* cryptostream_vector.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75BD23E52A6E00A84ABC /* cryptostream_vector.c */; };
+		94CE75E023E52A7000A84ABC /* log.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75BF23E52A6E00A84ABC /* log.c */; };
+		94CE75E123E52A7000A84ABC /* uint16.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75C223E52A6E00A84ABC /* uint16.c */; };
+		94CE75E223E52A7000A84ABC /* crypto_secretbox_salsa208poly1305.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75C323E52A6E00A84ABC /* crypto_secretbox_salsa208poly1305.c */; };
+		94CE75E323E52A7000A84ABC /* uninterruptable.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75C623E52A6E00A84ABC /* uninterruptable.c */; };
+		94CE75E423E52A7000A84ABC /* cryptostream_encrypt.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75CA23E52A6E00A84ABC /* cryptostream_encrypt.c */; };
+		94CE75E523E52A7000A84ABC /* stopwatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75CB23E52A6F00A84ABC /* stopwatch.c */; };
+		94CE75E623E52A7000A84ABC /* nonce.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75CC23E52A6F00A84ABC /* nonce.c */; };
+		94CE75E723E52A7000A84ABC /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75CF23E52A6F00A84ABC /* main.c */; };
+		94CE75E823E52A7000A84ABC /* cryptostream_encrypt_feed.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75D023E52A6F00A84ABC /* cryptostream_encrypt_feed.c */; };
+		94CE75E923E52A7000A84ABC /* saltunnel.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75D223E52A6F00A84ABC /* saltunnel.c */; };
+		94CE75EA23E52A7000A84ABC /* test.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75D323E52A6F00A84ABC /* test.c */; };
+		94CE75EB23E52A7000A84ABC /* devurandom.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75D423E52A6F00A84ABC /* devurandom.c */; };
+		94CE75EC23E52A7000A84ABC /* threadpool.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75D523E52A6F00A84ABC /* threadpool.c */; };
+		94CE75ED23E52A7000A84ABC /* crypto_secretbox_salsa2012poly1305.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75D623E52A6F00A84ABC /* crypto_secretbox_salsa2012poly1305.c */; };
+		94CE75EE23E52A7000A84ABC /* cryptostream_decrypt.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75D723E52A6F00A84ABC /* cryptostream_decrypt.c */; };
+		94CE75EF23E52A7000A84ABC /* cryptostream_decrypt_feed.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75D823E52A6F00A84ABC /* cryptostream_decrypt_feed.c */; };
+		94CE75F023E52A7000A84ABC /* oops.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75DB23E52A6F00A84ABC /* oops.c */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		94CE75AA23E5284C00A84ABC /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		943E03BE23E53DFC0049DF5E /* cryptostream_encrypt_parallel.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = cryptostream_encrypt_parallel.c; sourceTree = "<group>"; };
+		94CE75AC23E5284C00A84ABC /* saltunnel */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = saltunnel; sourceTree = BUILT_PRODUCTS_DIR; };
+		94CE75B923E52A6E00A84ABC /* pthread_barrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pthread_barrier.h; sourceTree = "<group>"; };
+		94CE75BA23E52A6E00A84ABC /* chaos.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = chaos.c; sourceTree = "<group>"; };
+		94CE75BB23E52A6E00A84ABC /* pthread_barrier.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pthread_barrier.c; sourceTree = "<group>"; };
+		94CE75BC23E52A6E00A84ABC /* threadpool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = threadpool.h; sourceTree = "<group>"; };
+		94CE75BD23E52A6E00A84ABC /* cryptostream_vector.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cryptostream_vector.c; sourceTree = "<group>"; };
+		94CE75BE23E52A6E00A84ABC /* log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = log.h; sourceTree = "<group>"; };
+		94CE75BF23E52A6E00A84ABC /* log.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = log.c; sourceTree = "<group>"; };
+		94CE75C023E52A6E00A84ABC /* nonce.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nonce.h; sourceTree = "<group>"; };
+		94CE75C123E52A6E00A84ABC /* crypto_secretbox_salsa208poly1305.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_secretbox_salsa208poly1305.h; sourceTree = "<group>"; };
+		94CE75C223E52A6E00A84ABC /* uint16.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = uint16.c; sourceTree = "<group>"; };
+		94CE75C323E52A6E00A84ABC /* crypto_secretbox_salsa208poly1305.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = crypto_secretbox_salsa208poly1305.c; sourceTree = "<group>"; };
+		94CE75C423E52A6E00A84ABC /* stopwatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stopwatch.h; sourceTree = "<group>"; };
+		94CE75C523E52A6E00A84ABC /* test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = test.h; sourceTree = "<group>"; };
+		94CE75C623E52A6E00A84ABC /* uninterruptable.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = uninterruptable.c; sourceTree = "<group>"; };
+		94CE75C723E52A6E00A84ABC /* crypto_secretbox_salsa2012poly1305.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_secretbox_salsa2012poly1305.h; sourceTree = "<group>"; };
+		94CE75C823E52A6E00A84ABC /* math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = math.h; sourceTree = "<group>"; };
+		94CE75C923E52A6E00A84ABC /* chaos.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = chaos.h; sourceTree = "<group>"; };
+		94CE75CA23E52A6E00A84ABC /* cryptostream_encrypt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cryptostream_encrypt.c; sourceTree = "<group>"; };
+		94CE75CB23E52A6F00A84ABC /* stopwatch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = stopwatch.c; sourceTree = "<group>"; };
+		94CE75CC23E52A6F00A84ABC /* nonce.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = nonce.c; sourceTree = "<group>"; };
+		94CE75CD23E52A6F00A84ABC /* oops.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = oops.h; sourceTree = "<group>"; };
+		94CE75CE23E52A6F00A84ABC /* saltunnel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = saltunnel.h; sourceTree = "<group>"; };
+		94CE75CF23E52A6F00A84ABC /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		94CE75D023E52A6F00A84ABC /* cryptostream_encrypt_feed.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cryptostream_encrypt_feed.c; sourceTree = "<group>"; };
+		94CE75D123E52A6F00A84ABC /* uint16.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uint16.h; sourceTree = "<group>"; };
+		94CE75D223E52A6F00A84ABC /* saltunnel.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = saltunnel.c; sourceTree = "<group>"; };
+		94CE75D323E52A6F00A84ABC /* test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = test.c; sourceTree = "<group>"; };
+		94CE75D423E52A6F00A84ABC /* devurandom.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = devurandom.c; sourceTree = "<group>"; };
+		94CE75D523E52A6F00A84ABC /* threadpool.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = threadpool.c; sourceTree = "<group>"; };
+		94CE75D623E52A6F00A84ABC /* crypto_secretbox_salsa2012poly1305.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = crypto_secretbox_salsa2012poly1305.c; sourceTree = "<group>"; };
+		94CE75D723E52A6F00A84ABC /* cryptostream_decrypt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cryptostream_decrypt.c; sourceTree = "<group>"; };
+		94CE75D823E52A6F00A84ABC /* cryptostream_decrypt_feed.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cryptostream_decrypt_feed.c; sourceTree = "<group>"; };
+		94CE75D923E52A6F00A84ABC /* devurandom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = devurandom.h; sourceTree = "<group>"; };
+		94CE75DA23E52A6F00A84ABC /* cryptostream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cryptostream.h; sourceTree = "<group>"; };
+		94CE75DB23E52A6F00A84ABC /* oops.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = oops.c; sourceTree = "<group>"; };
+		94CE75DC23E52A6F00A84ABC /* uninterruptable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uninterruptable.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		94CE75A923E5284C00A84ABC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		94CE75A323E5284C00A84ABC = {
+			isa = PBXGroup;
+			children = (
+				94CE75AE23E5284C00A84ABC /* saltunnel */,
+				94CE75AD23E5284C00A84ABC /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		94CE75AD23E5284C00A84ABC /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				94CE75AC23E5284C00A84ABC /* saltunnel */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		94CE75AE23E5284C00A84ABC /* saltunnel */ = {
+			isa = PBXGroup;
+			children = (
+				94CE75D323E52A6F00A84ABC /* test.c */,
+				94CE75DA23E52A6F00A84ABC /* cryptostream.h */,
+				94CE75D023E52A6F00A84ABC /* cryptostream_encrypt_feed.c */,
+				94CE75CA23E52A6E00A84ABC /* cryptostream_encrypt.c */,
+				943E03BE23E53DFC0049DF5E /* cryptostream_encrypt_parallel.c */,
+				94CE75D823E52A6F00A84ABC /* cryptostream_decrypt_feed.c */,
+				94CE75D723E52A6F00A84ABC /* cryptostream_decrypt.c */,
+				94CE75BC23E52A6E00A84ABC /* threadpool.h */,
+				94CE75D523E52A6F00A84ABC /* threadpool.c */,
+				94CE75BD23E52A6E00A84ABC /* cryptostream_vector.c */,
+				94CE75BB23E52A6E00A84ABC /* pthread_barrier.c */,
+				94CE75B923E52A6E00A84ABC /* pthread_barrier.h */,
+				94CE75BF23E52A6E00A84ABC /* log.c */,
+				94CE75BE23E52A6E00A84ABC /* log.h */,
+				94CE75D423E52A6F00A84ABC /* devurandom.c */,
+				94CE75D923E52A6F00A84ABC /* devurandom.h */,
+				94CE75BA23E52A6E00A84ABC /* chaos.c */,
+				94CE75C923E52A6E00A84ABC /* chaos.h */,
+				94CE75C823E52A6E00A84ABC /* math.h */,
+				94CE75CC23E52A6F00A84ABC /* nonce.c */,
+				94CE75C023E52A6E00A84ABC /* nonce.h */,
+				94CE75DB23E52A6F00A84ABC /* oops.c */,
+				94CE75CD23E52A6F00A84ABC /* oops.h */,
+				94CE75D223E52A6F00A84ABC /* saltunnel.c */,
+				94CE75CE23E52A6F00A84ABC /* saltunnel.h */,
+				94CE75CB23E52A6F00A84ABC /* stopwatch.c */,
+				94CE75C423E52A6E00A84ABC /* stopwatch.h */,
+				94CE75C323E52A6E00A84ABC /* crypto_secretbox_salsa208poly1305.c */,
+				94CE75C123E52A6E00A84ABC /* crypto_secretbox_salsa208poly1305.h */,
+				94CE75D623E52A6F00A84ABC /* crypto_secretbox_salsa2012poly1305.c */,
+				94CE75C723E52A6E00A84ABC /* crypto_secretbox_salsa2012poly1305.h */,
+				94CE75C523E52A6E00A84ABC /* test.h */,
+				94CE75C223E52A6E00A84ABC /* uint16.c */,
+				94CE75D123E52A6F00A84ABC /* uint16.h */,
+				94CE75C623E52A6E00A84ABC /* uninterruptable.c */,
+				94CE75DC23E52A6F00A84ABC /* uninterruptable.h */,
+				94CE75CF23E52A6F00A84ABC /* main.c */,
+			);
+			path = saltunnel;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		94CE75AB23E5284C00A84ABC /* saltunnel */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 94CE75B323E5284C00A84ABC /* Build configuration list for PBXNativeTarget "saltunnel" */;
+			buildPhases = (
+				94CE75A823E5284C00A84ABC /* Sources */,
+				94CE75A923E5284C00A84ABC /* Frameworks */,
+				94CE75AA23E5284C00A84ABC /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = saltunnel;
+			productName = saltunnel;
+			productReference = 94CE75AC23E5284C00A84ABC /* saltunnel */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		94CE75A423E5284C00A84ABC /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1130;
+				ORGANIZATIONNAME = "Jay Sullivan";
+				TargetAttributes = {
+					94CE75AB23E5284C00A84ABC = {
+						CreatedOnToolsVersion = 11.3;
+					};
+				};
+			};
+			buildConfigurationList = 94CE75A723E5284C00A84ABC /* Build configuration list for PBXProject "saltunnel" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 94CE75A323E5284C00A84ABC;
+			productRefGroup = 94CE75AD23E5284C00A84ABC /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				94CE75AB23E5284C00A84ABC /* saltunnel */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		94CE75A823E5284C00A84ABC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				94CE75E723E52A7000A84ABC /* main.c in Sources */,
+				943E03BF23E53DFC0049DF5E /* cryptostream_encrypt_parallel.c in Sources */,
+				94CE75E023E52A7000A84ABC /* log.c in Sources */,
+				94CE75EB23E52A7000A84ABC /* devurandom.c in Sources */,
+				94CE75DE23E52A7000A84ABC /* pthread_barrier.c in Sources */,
+				94CE75E423E52A7000A84ABC /* cryptostream_encrypt.c in Sources */,
+				94CE75E623E52A7000A84ABC /* nonce.c in Sources */,
+				94CE75E123E52A7000A84ABC /* uint16.c in Sources */,
+				94CE75DF23E52A7000A84ABC /* cryptostream_vector.c in Sources */,
+				94CE75F023E52A7000A84ABC /* oops.c in Sources */,
+				94CE75EA23E52A7000A84ABC /* test.c in Sources */,
+				94CE75DD23E52A6F00A84ABC /* chaos.c in Sources */,
+				94CE75EF23E52A7000A84ABC /* cryptostream_decrypt_feed.c in Sources */,
+				94CE75E223E52A7000A84ABC /* crypto_secretbox_salsa208poly1305.c in Sources */,
+				94CE75E523E52A7000A84ABC /* stopwatch.c in Sources */,
+				94CE75ED23E52A7000A84ABC /* crypto_secretbox_salsa2012poly1305.c in Sources */,
+				94CE75EE23E52A7000A84ABC /* cryptostream_decrypt.c in Sources */,
+				94CE75E323E52A7000A84ABC /* uninterruptable.c in Sources */,
+				94CE75E823E52A7000A84ABC /* cryptostream_encrypt_feed.c in Sources */,
+				94CE75EC23E52A7000A84ABC /* threadpool.c in Sources */,
+				94CE75E923E52A7000A84ABC /* saltunnel.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		94CE75B123E5284C00A84ABC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				"HEADER_SEARCH_PATHS[arch=*]" = /usr/local/include;
+				"LIBRARY_SEARCH_PATHS[arch=*]" = /usr/local/lib;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				"OTHER_LDFLAGS[arch=*]" = "-lsodium";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		94CE75B223E5284C00A84ABC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				"HEADER_SEARCH_PATHS[arch=*]" = /usr/local/include;
+				"LIBRARY_SEARCH_PATHS[arch=*]" = /usr/local/lib;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				"OTHER_LDFLAGS[arch=*]" = "-lsodium";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		94CE75B423E5284C00A84ABC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		94CE75B523E5284C00A84ABC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		94CE75A723E5284C00A84ABC /* Build configuration list for PBXProject "saltunnel" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				94CE75B123E5284C00A84ABC /* Debug */,
+				94CE75B223E5284C00A84ABC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		94CE75B323E5284C00A84ABC /* Build configuration list for PBXNativeTarget "saltunnel" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				94CE75B423E5284C00A84ABC /* Debug */,
+				94CE75B523E5284C00A84ABC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 94CE75A423E5284C00A84ABC /* Project object */;
+}

@@ -7,6 +7,7 @@
 #define cryptostream_h
 
 #include "nonce.h"
+#include "threadpool.h"
 #include <unistd.h>
 
 // Glossary:
@@ -71,6 +72,8 @@ typedef struct cryptostream {
     long debug_encrypted_blocks_total;
     long debug_decrypted_blocks_total;
     
+    threadpool tp;
+    
 } cryptostream;
 
 int cryptostream_encrypt_feed_canread(cryptostream* cs);
@@ -79,7 +82,9 @@ int cryptostream_encrypt_feed_canwrite(cryptostream* cs);
 int cryptostream_encrypt_feed_write(cryptostream* cs, unsigned char* key);
 
 void encrypt_all(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs, unsigned char *key);
-void encrypt_one(int buffer_i, int buffer_n, int bytesread, cryptostream *cs, unsigned char *key, int do_inc_nonce, nonce8 nonce);
+void encrypt_all_serial(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs, unsigned char *key, nonce8 nonce);
+void encrypt_all_parallel(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs, unsigned char *key);
+void encrypt_one(int buffer_i, int buffer_n, int bytesread, cryptostream *cs, unsigned char *key, nonce8 nonce);
 
 int cryptostream_decrypt_feed_canread(cryptostream* cs);
 int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key);

@@ -6,7 +6,7 @@
 #ifndef threadpool_h
 #define threadpool_h
 
-#define THREADPOOL_THREAD_COUNT 8
+#define THREADPOOL_THREAD_COUNT 4
 
 #include "pthread_barrier.h"
 #include <pthread.h>
@@ -19,15 +19,17 @@ typedef struct threadpool_task {
 } threadpool_task;
 
 typedef struct threadpool_thread_context {
-    struct threadpool* tp;
     int thread_i;
 } threadpool_thread_context;
 
 typedef struct threadpool {
+    pthread_mutex_t parallel_for_mutex;
+    
+    int tp_init_complete;
     
     pthread_t threads[THREADPOOL_THREAD_COUNT];
     threadpool_thread_context thread_contexts[THREADPOOL_THREAD_COUNT];
-    threadpool_task tasks[THREADPOOL_THREAD_COUNT];
+    threadpool_task* tasks;
     
     pthread_mutex_t mutex;
     int started;              // Protected by mutex
@@ -37,9 +39,8 @@ typedef struct threadpool {
     
 } threadpool;
 
-
-void threadpool_init(threadpool* tp, int threads);
-void threadpool_for(threadpool *tp);
-void threadpool_shutdown(threadpool *tp);
+void threadpool_init(void);
+void threadpool_for(threadpool_task* task);
+void threadpool_shutdown(void);
 
 #endif /* threadpool_h */

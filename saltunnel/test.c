@@ -148,7 +148,7 @@ void test4() {
     int pipe_net_write[2];   create_test_pipe(pipe_net_write);
     
     // Start with "expected value" available for reading from net pipe
-    const char net_teststr_expected[] = "from_net_pipe";
+//    const char net_teststr_expected[] = "from_net_pipe";
     uninterruptable_write(write, pipe_net_read[1],   test_encpacket,   512); close(pipe_net_read[1]);
     
     // Start with "expected value" available for reading from local pipe
@@ -339,7 +339,7 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     cryptostream context1_ingress = {
 //        .op = cryptostream_decrypt_feed,
         .from_fd = peer2_pipe_to_peer1[0],
-        .to_fd = peer1_pipe_local_output[1]
+        .to_fd = peer1_pipe_local_output[1],
     };
     cryptostream context1_egress = {
 //        .op = cryptostream_encrypt_feed,
@@ -459,7 +459,7 @@ void test8_for(int i) {
     }
     
     bidirectional_test(from_peer1_local_str, peer1n,
-                       from_peer2_local_str, peer2n);
+                       from_peer2_local_str, peer2n); // TODO: 0 should be peer2n
     
     free(from_peer1_local_str);
     free(from_peer2_local_str);
@@ -468,7 +468,12 @@ void test8() {
     
     stopwatch sw;
     stopwatch_start(&sw);
-  
+
+    test8_for(15000000);
+          long elapsed = stopwatch_elapsed(&sw);
+          log_info("test8: took %dus", (int)elapsed);
+          return;
+            
     int edges[] = {
         CRYPTOSTREAM_BUFFER_COUNT,
         CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT,
@@ -500,9 +505,6 @@ void test8() {
     }
     
 
-    long elapsed = stopwatch_elapsed(&sw);
-    log_info("test8: took %dus", (int)elapsed);
-    return;
 //    log_info("bidirectional_test (10000000) started");
 //    test8_for(10000000);
     
@@ -595,9 +597,3 @@ int test() {
     log_info("all tests passed");
     return 0;
 }
-
-int main() {
-    test();
-    return 0;
-}
-
