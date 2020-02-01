@@ -36,20 +36,22 @@ int pthread_barrier_destroy(pthread_barrier_t *barrier)
     return 0;
 }
 
-int pthread_barrier_wait(pthread_barrier_t *barrier)
+int pthread_barrier_wait(pthread_barrier_t *barrier, int* started)
 {
     pthread_mutex_lock(&barrier->mutex);
     ++(barrier->count);
     if(barrier->count >= barrier->tripCount)
     {
         barrier->count = 0;
+        *started = 0;
         pthread_cond_broadcast(&barrier->cond);
         pthread_mutex_unlock(&barrier->mutex);
         return 1;
     }
     else
     {
-        pthread_cond_wait(&barrier->cond, &(barrier->mutex));
+        while(barrier->count!=0)
+          pthread_cond_wait(&barrier->cond, &barrier->mutex);
         pthread_mutex_unlock(&barrier->mutex);
         return 0;
     }

@@ -4,6 +4,7 @@
 //
 
 #include "uninterruptable.h"
+#include "oops.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -41,6 +42,8 @@ ssize_t uninterruptable_readn(int fd, char *buf, size_t len)
   while (len)
   {
     ssize_t r = read(fd, buf2, len);
+    if(r<-1) oops_fatal("wtf, this really happened");
+    if(r>(ssize_t)len) oops_fatal("wtf, this really happened");
     if(r==-1 && errno == EINTR) continue;
     if(r==-1) { return -1; }
     if(r==0)  { errno = EIO; return -1; }

@@ -79,7 +79,7 @@ int cryptostream_encrypt_feed_canwrite(cryptostream* cs);
 int cryptostream_encrypt_feed_write(cryptostream* cs, unsigned char* key);
 
 void encrypt_all(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs, unsigned char *key);
-void encrypt_one(int buffer_i, int buffer_n, int bytesread, cryptostream *cs, unsigned char *key);
+void encrypt_one(int buffer_i, int buffer_n, int bytesread, cryptostream *cs, unsigned char *key, int do_inc_nonce, nonce8 nonce);
 
 int cryptostream_decrypt_feed_canread(cryptostream* cs);
 int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key);

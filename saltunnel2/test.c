@@ -501,7 +501,7 @@ void test8() {
     
 
     long elapsed = stopwatch_elapsed(&sw);
-    log_info("test8: took %dus", elapsed);
+    log_info("test8: took %dus", (int)elapsed);
     return;
 //    log_info("bidirectional_test (10000000) started");
 //    test8_for(10000000);

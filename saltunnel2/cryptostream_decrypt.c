@@ -24,6 +24,8 @@ void decrypt_all(int buffer_decrypt_count, int buffer_decrypt_start, cryptostrea
     }
 }
 
+static nonce8 zero_nonce = {0}; // TODO: Use real nonce in parallel
+
 void decrypt_one(int buffer_i, cryptostream *cs, unsigned char *key) {
     
     unsigned char* plaintext_buffer_ptr = cs->plaintext_vector[buffer_i].iov_base - 32-2;
@@ -41,11 +43,11 @@ void decrypt_one(int buffer_i, cryptostream *cs, unsigned char *key) {
     //   - [0..32] == zero
     //   - [32..]  == plaintext
     try(crypto_secretbox_salsa2012poly1305_open(plaintext_buffer_ptr, ciphertext_buffer_ptr,
-                              CRYPTOSTREAM_BUFFER_MAXBYTES,cs->nonce,key)) ||
+                              CRYPTOSTREAM_BUFFER_MAXBYTES,zero_nonce,key)) ||
         oops_fatal("failed to decrypt");
     
     // Increment nonce
-    nonce8_increment(cs->nonce);
+    nonce8_increment(cs->nonce,cs->nonce);
     
     // Extract datalen
     uint16 datalen_current = 0;
