@@ -12,7 +12,6 @@
 #include <unistd.h>
 
 int intexit(int exitcode) {
-    int e = errno;
     _exit(exitcode);
     return -1;
 }

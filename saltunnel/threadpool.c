@@ -30,7 +30,7 @@ static void* threadpool_loop(void* ctx_void) {
     int thread_i = ctx->thread_i;
 
     for(;;) {
-        log_debug("threadpool_loop: about to wait for 'start' signal");
+        log_info("threadpool_loop: about to wait for 'start' signal");
         
         // Wait for start signal
         try(pthread_mutex_lock(&tp.mutex)) || oops_fatal("pthread_mutex_lock");
@@ -38,17 +38,17 @@ static void* threadpool_loop(void* ctx_void) {
             try(pthread_cond_wait(&tp.start, &tp.mutex)) || oops_fatal("pthread_cond_wait");
         try(pthread_mutex_unlock(&tp.mutex)) || oops_fatal("pthread_mutex_unlock");
         
-        log_debug("threadpool_loop: received 'start' signal; encrypting...");
+        log_info("threadpool_loop: received 'start' signal; encrypting...");
         
         // Run the thread action
         threadpool_task* task = &tp.tasks[thread_i];
         task->action(task->param);
         
-        log_debug("threadpool_loop: done encrypting; about to wait for 'finish' barrier");
+        log_info("threadpool_loop: done encrypting; about to wait for 'finish' barrier");
         // Finish all threads together
         pthread_barrier_wait(&tp.finish, &tp.started);
         
-        log_debug("threadpool_loop: 'finish' barrier completed");
+        log_info("threadpool_loop: 'finish' barrier completed");
         
         // TODO: Break when shutdown is requested
     }
@@ -56,7 +56,7 @@ static void* threadpool_loop(void* ctx_void) {
     return 0;
 }
 
-void threadpool_init() {
+void threadpool_init(void) {
     
     if(!tp.tp_init_complete) {
         tp.tp_init_complete = 1;
@@ -111,7 +111,7 @@ void threadpool_for(threadpool_task* tasks) {
     try(pthread_mutex_unlock(&tp.parallel_for_mutex)) || oops_fatal("pthread_mutex_unlock");
 }
 
-void threadpool_shutdown() {
+void threadpool_shutdown(void) {
     for(int i = 0; i<THREADPOOL_THREAD_COUNT; i++) {
         // TODO: Gracefully exit each thread
     }

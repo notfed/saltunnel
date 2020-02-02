@@ -31,7 +31,7 @@ void encrypt_all_serial(int buffer_encrypt_count, int buffer_encrypt_start_i, in
     for(int buffer_i = buffer_encrypt_start_i; buffer_i < buffer_encrypt_start_i+buffer_encrypt_count; buffer_i++)
     {
         encrypt_one(buffer_i, buffer_i-buffer_encrypt_start_i, (uint16)bytesread, cs, key, nonce);
-        log_debug("cryptostream_encrypt_feed_read: encrypted %d bytes (buffer %d/%d)", CRYPTOSTREAM_BUFFER_MAXBYTES, buffer_i-buffer_encrypt_start_i+1, buffer_encrypt_count);
+//        log_debug("encrypt_all_serial: encrypted (buffer %d/%d)", buffer_i-buffer_encrypt_start_i+1, buffer_encrypt_count);
     }
 }
 

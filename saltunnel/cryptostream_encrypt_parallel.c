@@ -60,5 +60,6 @@ void encrypt_all_parallel(int buffer_encrypt_count, int buffer_encrypt_start_i, 
     threadpool_for(tasks);
     
     log_debug("encrypt_all_parallel: successfully encrypted entire span");
-    memset(params, 0, sizeof(params)); // TODO: For debug. Weird...'params' should no longer be used...
+    memset(params, 0, sizeof(params)); // TODO: Debug
+    memset(tasks, 0, sizeof(tasks)); // TODO: Debug
 }

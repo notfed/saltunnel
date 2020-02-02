@@ -6,7 +6,7 @@
 #ifndef threadpool_h
 #define threadpool_h
 
-#define THREADPOOL_THREAD_COUNT 4
+#define THREADPOOL_THREAD_COUNT 2
 
 #include "pthread_barrier.h"
 #include <pthread.h>
@@ -34,7 +34,6 @@ typedef struct threadpool {
     pthread_mutex_t mutex;
     int started;              // Protected by mutex
     pthread_cond_t start;     // Protected by mutex
-    int finished;             // Protected by mutex
     pthread_barrier_t finish; // Protected by mutex
     
 } threadpool;

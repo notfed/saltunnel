@@ -34,6 +34,6 @@ int chaos_writev(int fd, struct iovec* vector, int count) {
         .iov_base = vector[0].iov_base,
         .iov_len = MIN((CHAOS_WRITE_N),vector[0].iov_len)
     };
-    int r = writev(fd,&newvector,1);
+    int r = (int)writev(fd,&newvector,1);
     return r;
 }

@@ -469,7 +469,8 @@ void test8() {
     stopwatch sw;
     stopwatch_start(&sw);
 
-    test8_for(15000000);
+          // TODO: Debug
+          test8_for(10000000);
           long elapsed = stopwatch_elapsed(&sw);
           log_info("test8: took %dus", (int)elapsed);
           return;

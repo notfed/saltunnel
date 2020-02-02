@@ -20,8 +20,9 @@ void decrypt_all(int buffer_decrypt_count, int buffer_decrypt_start, cryptostrea
     for(int buffer_i = buffer_decrypt_start; buffer_i < buffer_decrypt_start+buffer_decrypt_count; buffer_i++)
     {
         decrypt_one(buffer_i, cs, key);
-        log_debug("cryptostream_decrypt_feed_read: decrypted x bytes (buffer %d/%d)", buffer_i-buffer_decrypt_start+1, buffer_decrypt_count);
+//        log_debug("cryptostream_decrypt_feed_read: decrypted (buffer %d/%d)", buffer_i-buffer_decrypt_start+1, buffer_decrypt_count);
     }
+    log_debug("cryptostream_decrypt_feed_read: decrypted %d buffers", buffer_decrypt_count);
 }
 
 static nonce8 zero_nonce = {0}; // TODO: Use real nonce in parallel
