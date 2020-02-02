@@ -47,8 +47,8 @@ void decrypt_one(int buffer_i, cryptostream *cs, unsigned char *key) {
                               CRYPTOSTREAM_BUFFER_MAXBYTES,zero_nonce,key)) ||
         oops_fatal("failed to decrypt");
     
-    // Increment nonce
-    nonce8_increment(cs->nonce,cs->nonce);
+//    // Increment nonce
+//    nonce8_increment(cs->nonce,cs->nonce); // Debug: Using zero nonces for now
     
     // Extract datalen
     uint16 datalen_current = 0;

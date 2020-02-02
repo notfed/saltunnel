@@ -14,9 +14,10 @@ typedef int pthread_barrierattr_t;
 typedef struct
 {
     pthread_mutex_t mutex;
-    pthread_cond_t count_was_reset;
-    int count;
-    int num_threads;
+    pthread_cond_t phase_changed;
+    unsigned long count;
+    unsigned long num_threads;
+    unsigned long phase;
 } pthread_barrier_t;
 
 int pthread_barrier_destroy(pthread_barrier_t *barrier);
