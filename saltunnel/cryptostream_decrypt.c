@@ -23,8 +23,8 @@ void decrypt_all(int buffer_decrypt_count, int buffer_decrypt_start_i, cryptostr
 //    stopwatch sw;
 //    stopwatch_start(&sw);
 //    log_info("decrypt_all: going to decrypt %d buffers", buffer_decrypt_count);
-    int do_parallel = (buffer_decrypt_count==CRYPTOSTREAM_BUFFER_COUNT);
-    if(do_parallel) {
+    int all_buffers_full = (buffer_decrypt_count==CRYPTOSTREAM_BUFFER_COUNT);
+    if(all_buffers_full && threadpool_enough_cpus_for_parallel()) {
         decrypt_all_parallel(buffer_decrypt_count, buffer_decrypt_start_i, cs, key);
     }
     else {

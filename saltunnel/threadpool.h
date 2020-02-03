@@ -38,6 +38,7 @@ typedef struct threadpool {
     
 } threadpool;
 
+int threadpool_enough_cpus_for_parallel(void);
 void threadpool_init(void);
 void threadpool_for(threadpool_task* task);
 void threadpool_shutdown(void);

@@ -24,8 +24,8 @@ void encrypt_all(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytes
 //    stopwatch sw;
 //    stopwatch_start(&sw);
     
-    int do_parallel = (buffer_encrypt_count==CRYPTOSTREAM_BUFFER_COUNT);
-    if(do_parallel) {
+    int all_buffers_full = (buffer_encrypt_count==CRYPTOSTREAM_BUFFER_COUNT);
+    if(all_buffers_full && threadpool_enough_cpus_for_parallel()) {
         encrypt_all_parallel(buffer_encrypt_count, buffer_encrypt_start_i, bytesread, cs, key);
     }
     else {

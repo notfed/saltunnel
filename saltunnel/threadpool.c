@@ -23,6 +23,11 @@
 
 static threadpool tp = {0};
 
+static int enough_cpus_for_parallel;
+int threadpool_enough_cpus_for_parallel() {
+    return enough_cpus_for_parallel;
+}
+
 static void* threadpool_loop(void* ctx_void) {
     if(!tp.tp_init_complete)
         oops_fatal("threadpool not initialized");
@@ -67,7 +72,11 @@ void threadpool_init(void) {
     } else {
         oops_fatal("attempted to initialialize threadpool twice");
     }
-
+    
+    enough_cpus_for_parallel = (sysconf(_SC_NPROCESSORS_ONLN)>=4);
+    if(!enough_cpus_for_parallel)
+        return;
+    
     try(pthread_mutex_init(&tp.parallel_for_mutex, NULL))
       || oops_fatal("pthread_mutex_init");
     
