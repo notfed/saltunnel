@@ -1,9 +1,7 @@
 //
-//  pthread_barrier.h
+//  threadpool_barrier.h
 //  saltunnel2
 //
-#ifdef __APPLE__
-
 #ifndef pthread_barrier_h
 #define pthread_barrier_h
 
@@ -20,9 +18,8 @@ typedef struct
     unsigned long phase;
 } pthread_barrier_t;
 
-int pthread_barrier_destroy(pthread_barrier_t *barrier);
-int pthread_barrier_init(pthread_barrier_t *barrier, const pthread_barrierattr_t *attr, unsigned int num_threads);
-int pthread_barrier_wait(pthread_barrier_t *barrier, int* started);
+int threadpool_barrier_destroy(pthread_barrier_t *barrier);
+int threadpool_barrier_init(pthread_barrier_t *barrier, const pthread_barrierattr_t *attr, unsigned int num_threads);
+int threadpool_barrier_wait(pthread_barrier_t *barrier, int* started);
 
 #endif /* pthread_barrier_h */
-#endif // __APPLE__

@@ -8,7 +8,7 @@
 
 #define THREADPOOL_THREAD_COUNT 4
 
-#include "pthread_barrier.h"
+#include "threadpool_barrier.h"
 #include <pthread.h>
 
 struct threadpool;

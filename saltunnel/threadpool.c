@@ -6,7 +6,7 @@
 #include "cryptostream.h"
 #include "threadpool.h"
 #include "oops.h"
-#include "pthread_barrier.h"
+#include "threadpool_barrier.h"
 #include "stopwatch.h"
 #include <pthread.h>
 #include <stdlib.h>
@@ -49,7 +49,7 @@ static void* threadpool_loop(void* ctx_void) {
         
         log_debug("threadpool_loop: done encrypting; about to wait for 'finish' barrier");
         // Finish all threads together
-        pthread_barrier_wait(&tp.finish, &tp.started);
+        threadpool_barrier_wait(&tp.finish, &tp.started);
         
         log_debug("threadpool_loop: 'finish' barrier completed");
         
@@ -77,7 +77,7 @@ void threadpool_init(void) {
     try(pthread_cond_init(&tp.start, NULL))
     || oops_fatal("pthread_cond_init");
     
-    try(pthread_barrier_init(&tp.finish, NULL, THREADPOOL_THREAD_COUNT))
+    try(threadpool_barrier_init(&tp.finish, NULL, THREADPOOL_THREAD_COUNT))
      || oops_fatal("pthread_barrier_init");
     
     for(int thread_i = 0; thread_i < THREADPOOL_THREAD_COUNT-1; thread_i++) {
@@ -110,7 +110,7 @@ void threadpool_for(threadpool_task* tasks) {
     
     // Wait for all threads to finish
     log_debug("threadpool_for: about to wait for 'finish' barrier");
-    pthread_barrier_wait(&tp.finish, &tp.started);
+    threadpool_barrier_wait(&tp.finish, &tp.started);
     log_debug("threadpool_for: 'finish' barrier completed");
     
     // Release big lock

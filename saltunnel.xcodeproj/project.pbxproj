@@ -8,8 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		943E03BF23E53DFC0049DF5E /* cryptostream_encrypt_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 943E03BE23E53DFC0049DF5E /* cryptostream_encrypt_parallel.c */; };
+		943E03C123E7BB8F0049DF5E /* cryptostream_decrypt_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 943E03C023E7BB8F0049DF5E /* cryptostream_decrypt_parallel.c */; };
 		94CE75DD23E52A6F00A84ABC /* chaos.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75BA23E52A6E00A84ABC /* chaos.c */; };
-		94CE75DE23E52A7000A84ABC /* pthread_barrier.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75BB23E52A6E00A84ABC /* pthread_barrier.c */; };
+		94CE75DE23E52A7000A84ABC /* threadpool_barrier.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75BB23E52A6E00A84ABC /* threadpool_barrier.c */; };
 		94CE75DF23E52A7000A84ABC /* cryptostream_vector.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75BD23E52A6E00A84ABC /* cryptostream_vector.c */; };
 		94CE75E023E52A7000A84ABC /* log.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75BF23E52A6E00A84ABC /* log.c */; };
 		94CE75E123E52A7000A84ABC /* uint16.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75C223E52A6E00A84ABC /* uint16.c */; };
@@ -44,10 +45,11 @@
 
 /* Begin PBXFileReference section */
 		943E03BE23E53DFC0049DF5E /* cryptostream_encrypt_parallel.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = cryptostream_encrypt_parallel.c; sourceTree = "<group>"; };
+		943E03C023E7BB8F0049DF5E /* cryptostream_decrypt_parallel.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = cryptostream_decrypt_parallel.c; sourceTree = "<group>"; };
 		94CE75AC23E5284C00A84ABC /* saltunnel */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = saltunnel; sourceTree = BUILT_PRODUCTS_DIR; };
-		94CE75B923E52A6E00A84ABC /* pthread_barrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pthread_barrier.h; sourceTree = "<group>"; };
+		94CE75B923E52A6E00A84ABC /* threadpool_barrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = threadpool_barrier.h; sourceTree = "<group>"; };
 		94CE75BA23E52A6E00A84ABC /* chaos.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = chaos.c; sourceTree = "<group>"; };
-		94CE75BB23E52A6E00A84ABC /* pthread_barrier.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pthread_barrier.c; sourceTree = "<group>"; };
+		94CE75BB23E52A6E00A84ABC /* threadpool_barrier.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = threadpool_barrier.c; sourceTree = "<group>"; };
 		94CE75BC23E52A6E00A84ABC /* threadpool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = threadpool.h; sourceTree = "<group>"; };
 		94CE75BD23E52A6E00A84ABC /* cryptostream_vector.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cryptostream_vector.c; sourceTree = "<group>"; };
 		94CE75BE23E52A6E00A84ABC /* log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = log.h; sourceTree = "<group>"; };
@@ -120,11 +122,12 @@
 				943E03BE23E53DFC0049DF5E /* cryptostream_encrypt_parallel.c */,
 				94CE75D823E52A6F00A84ABC /* cryptostream_decrypt_feed.c */,
 				94CE75D723E52A6F00A84ABC /* cryptostream_decrypt.c */,
+				943E03C023E7BB8F0049DF5E /* cryptostream_decrypt_parallel.c */,
+				94CE75BD23E52A6E00A84ABC /* cryptostream_vector.c */,
 				94CE75BC23E52A6E00A84ABC /* threadpool.h */,
 				94CE75D523E52A6F00A84ABC /* threadpool.c */,
-				94CE75BD23E52A6E00A84ABC /* cryptostream_vector.c */,
-				94CE75BB23E52A6E00A84ABC /* pthread_barrier.c */,
-				94CE75B923E52A6E00A84ABC /* pthread_barrier.h */,
+				94CE75B923E52A6E00A84ABC /* threadpool_barrier.h */,
+				94CE75BB23E52A6E00A84ABC /* threadpool_barrier.c */,
 				94CE75BF23E52A6E00A84ABC /* log.c */,
 				94CE75BE23E52A6E00A84ABC /* log.h */,
 				94CE75D423E52A6F00A84ABC /* devurandom.c */,
@@ -215,7 +218,7 @@
 				943E03BF23E53DFC0049DF5E /* cryptostream_encrypt_parallel.c in Sources */,
 				94CE75E023E52A7000A84ABC /* log.c in Sources */,
 				94CE75EB23E52A7000A84ABC /* devurandom.c in Sources */,
-				94CE75DE23E52A7000A84ABC /* pthread_barrier.c in Sources */,
+				94CE75DE23E52A7000A84ABC /* threadpool_barrier.c in Sources */,
 				94CE75E423E52A7000A84ABC /* cryptostream_encrypt.c in Sources */,
 				94CE75E623E52A7000A84ABC /* nonce.c in Sources */,
 				94CE75E123E52A7000A84ABC /* uint16.c in Sources */,
@@ -224,6 +227,7 @@
 				94CE75EA23E52A7000A84ABC /* test.c in Sources */,
 				94CE75DD23E52A6F00A84ABC /* chaos.c in Sources */,
 				94CE75EF23E52A7000A84ABC /* cryptostream_decrypt_feed.c in Sources */,
+				943E03C123E7BB8F0049DF5E /* cryptostream_decrypt_parallel.c in Sources */,
 				94CE75E223E52A7000A84ABC /* crypto_secretbox_salsa208poly1305.c in Sources */,
 				94CE75E523E52A7000A84ABC /* stopwatch.c in Sources */,
 				94CE75ED23E52A7000A84ABC /* crypto_secretbox_salsa2012poly1305.c in Sources */,
