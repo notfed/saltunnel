@@ -20,8 +20,8 @@
 static unsigned long total_elapsed = 0;
 void decrypt_all(int buffer_decrypt_count, int buffer_decrypt_start_i, cryptostream *cs, unsigned char *key) {
 
-    stopwatch sw;
-    stopwatch_start(&sw);
+//    stopwatch sw;
+//    stopwatch_start(&sw);
 //    log_info("decrypt_all: going to decrypt %d buffers", buffer_decrypt_count);
     int do_parallel = (buffer_decrypt_count==CRYPTOSTREAM_BUFFER_COUNT);
     if(do_parallel) {
@@ -31,9 +31,9 @@ void decrypt_all(int buffer_decrypt_count, int buffer_decrypt_start_i, cryptostr
         log_info("decrypt serial");
         decrypt_all_serial(buffer_decrypt_count, buffer_decrypt_start_i, cs, key);
     }
-    long elapsed = stopwatch_elapsed(&sw);
-    total_elapsed += elapsed;
-    log_info("decrypt_all took %dus (total %dus)", (int)elapsed, (int)total_elapsed);
+//    long elapsed = stopwatch_elapsed(&sw);
+//    total_elapsed += elapsed;
+//    log_info("decrypt_all took %dus (total %dus)", (int)elapsed, (int)total_elapsed);
 }
 
 void decrypt_all_serial(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream *cs, unsigned char *key) {

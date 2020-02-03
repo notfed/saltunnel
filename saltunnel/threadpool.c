@@ -77,10 +77,10 @@ void threadpool_init(void) {
     try(pthread_cond_init(&tp.start, NULL))
     || oops_fatal("pthread_cond_init");
     
-    try(pthread_barrier_init(&tp.finish, NULL, THREADPOOL_THREAD_COUNT+1))
+    try(pthread_barrier_init(&tp.finish, NULL, THREADPOOL_THREAD_COUNT))
      || oops_fatal("pthread_barrier_init");
     
-    for(int thread_i = 0; thread_i < THREADPOOL_THREAD_COUNT; thread_i++) {
+    for(int thread_i = 0; thread_i < THREADPOOL_THREAD_COUNT-1; thread_i++) {
         tp.thread_contexts[thread_i].thread_i = thread_i;
         pthread_create(&tp.threads[thread_i], NULL, threadpool_loop, (void*)&tp.thread_contexts[thread_i])==0
         || oops_fatal("pthread_create failed");
@@ -94,8 +94,8 @@ void threadpool_for(threadpool_task* tasks) {
     // Take big lock
     try(pthread_mutex_lock(&tp.parallel_for_mutex)) || oops_fatal("pthread_mutex_lock");
     
-    // Point to tasks
-    tp.tasks = tasks;
+    // Point the threadpool to (except, we'll do the first task in the current thread)
+    tp.tasks = &tasks[1];
     
     // Broadcast start signal
     try(pthread_mutex_lock(&tp.mutex)) || oops_fatal("pthread_mutex_lock");
@@ -104,6 +104,9 @@ void threadpool_for(threadpool_task* tasks) {
         try(pthread_cond_broadcast(&tp.start)) || oops_fatal("pthread_cond_wait");
     log_debug("threadpool_for: sent 'start' signal");
     try(pthread_mutex_unlock(&tp.mutex)) || oops_fatal("pthread_mutex_unlock");
+    
+    // Run the first task in the current thread
+    tasks[0].action(tasks[0].param);
     
     // Wait for all threads to finish
     log_debug("threadpool_for: about to wait for 'finish' barrier");
@@ -116,7 +119,7 @@ void threadpool_for(threadpool_task* tasks) {
 }
 
 void threadpool_shutdown(void) {
-    for(int i = 0; i<THREADPOOL_THREAD_COUNT; i++) {
+    for(int i = 0; i<THREADPOOL_THREAD_COUNT-1; i++) {
         // TODO: Gracefully exit each thread
     }
 }

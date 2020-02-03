@@ -27,8 +27,8 @@ typedef struct threadpool {
     
     int tp_init_complete;
     
-    pthread_t threads[THREADPOOL_THREAD_COUNT];
-    threadpool_thread_context thread_contexts[THREADPOOL_THREAD_COUNT];
+    pthread_t threads[THREADPOOL_THREAD_COUNT-1];
+    threadpool_thread_context thread_contexts[THREADPOOL_THREAD_COUNT-1];
     threadpool_task* tasks;
     
     pthread_mutex_t mutex;
