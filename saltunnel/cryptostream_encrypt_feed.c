@@ -43,7 +43,7 @@ int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key) {
 
     // Calculate how many buffers are free
     int buffer_free_start_i = (cs->vector_start+cs->vector_len) % CRYPTOSTREAM_BUFFER_COUNT;
-    int buffer_free_count = CRYPTOSTREAM_BUFFER_COUNT - cs->vector_len;
+    int buffer_free_count = MIN(128,CRYPTOSTREAM_BUFFER_COUNT - cs->vector_len);
     struct iovec* buffer_free_start = &cs->plaintext_vector[buffer_free_start_i];
     
     // Perform a scattered read. Read data into the following format:
