@@ -358,6 +358,9 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
         .to_fd = peer2_pipe_to_peer1[1]
     };
     
+    stopwatch sw;
+    stopwatch_start(&sw);
+    
     // Spawn saltunnel threads
     pthread_t saltunnel_thread_1 = saltunnel_thread("speer1",&context1_ingress, &context1_egress);
     pthread_t saltunnel_thread_2 = saltunnel_thread("speer2",&context2_ingress, &context2_egress);
@@ -379,6 +382,9 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     try(pthread_join(write_thread_2, NULL)) || oops_fatal("pthread_join");
     try(pthread_join(saltunnel_thread_1, NULL)) || oops_fatal("pthread_join");
     try(pthread_join(saltunnel_thread_2, NULL)) || oops_fatal("pthread_join");
+    
+    long elapsed = stopwatch_elapsed(&sw);
+    log_info("test8 saltunnel took %dus (total %dus)", (int)elapsed);
 
     // Compare actual peer1 local data
     int cmp1 = memcmp(from_peer2_local_str,from_peer1_local_str_actual,from_peer2_local_str_len);
@@ -468,7 +474,7 @@ void test8() {
     
 
           // TODO: Debug
-          test8_for(100000000);
+          test8_for(500000000);
           return;
             
     int edges[] = {
@@ -579,6 +585,7 @@ void test10() {
 }
 
 int test() {
+    
     log_info("test suite started");
 //    run(test1, "test1");
 //    run(test2, "test2");

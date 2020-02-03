@@ -28,7 +28,7 @@ void decrypt_all(int buffer_decrypt_count, int buffer_decrypt_start_i, cryptostr
         decrypt_all_parallel(buffer_decrypt_count, buffer_decrypt_start_i, cs, key);
     }
     else {
-        log_info("decrypt serial");
+//        log_info("decrypt serial");
         decrypt_all_serial(buffer_decrypt_count, buffer_decrypt_start_i, cs, key);
     }
 //    long elapsed = stopwatch_elapsed(&sw);
