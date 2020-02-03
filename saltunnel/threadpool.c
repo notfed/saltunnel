@@ -7,6 +7,7 @@
 #include "threadpool.h"
 #include "oops.h"
 #include "pthread_barrier.h"
+#include "stopwatch.h"
 #include <pthread.h>
 #include <stdlib.h>
 
@@ -29,7 +30,9 @@ static void* threadpool_loop(void* ctx_void) {
     threadpool_thread_context* ctx = (threadpool_thread_context*)ctx_void;
     int thread_i = ctx->thread_i;
 
+    stopwatch sw={0}; unsigned long c=0;
     for(;;) {
+//        stopwatch_start(&sw);
         log_debug("threadpool_loop: about to wait for 'start' signal");
         
         // Wait for start signal
@@ -51,6 +54,7 @@ static void* threadpool_loop(void* ctx_void) {
         log_debug("threadpool_loop: 'finish' barrier completed");
         
         // TODO: Break when shutdown is requested
+//        log_info("threadpool_loop took %dus (#%d)", (int)stopwatch_elapsed(&sw), c++);
     }
     
     return 0;

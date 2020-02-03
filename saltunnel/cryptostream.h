@@ -92,6 +92,8 @@ int cryptostream_decrypt_feed_canwrite(cryptostream* cs);
 int cryptostream_decrypt_feed_write(cryptostream* cs, unsigned char* key);
 
 void decrypt_all(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream *cs, unsigned char *key);
+void decrypt_all_serial(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream *cs, unsigned char *key);
+void decrypt_all_parallel(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream *cs, unsigned char *key);
 void decrypt_one(int buffer_i, cryptostream *cs, unsigned char *key);
 
 void vector_init(cryptostream *cs);

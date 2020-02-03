@@ -6,7 +6,7 @@
 #ifndef threadpool_h
 #define threadpool_h
 
-#define THREADPOOL_THREAD_COUNT 2
+#define THREADPOOL_THREAD_COUNT 4
 
 #include "pthread_barrier.h"
 #include <pthread.h>

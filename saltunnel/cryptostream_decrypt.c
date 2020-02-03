@@ -13,10 +13,30 @@
 #include "chaos.h"
 #include "math.h"
 #include "crypto_secretbox_salsa2012poly1305.h"
+#include "stopwatch.h"
 #include <unistd.h>
 #include <stdio.h>
 
-void decrypt_all(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream *cs, unsigned char *key) {
+static unsigned long total_elapsed = 0;
+void decrypt_all(int buffer_decrypt_count, int buffer_decrypt_start_i, cryptostream *cs, unsigned char *key) {
+
+    stopwatch sw;
+    stopwatch_start(&sw);
+//    log_info("decrypt_all: going to decrypt %d buffers", buffer_decrypt_count);
+    int do_parallel = (buffer_decrypt_count==CRYPTOSTREAM_BUFFER_COUNT);
+    if(do_parallel) {
+        decrypt_all_parallel(buffer_decrypt_count, buffer_decrypt_start_i, cs, key);
+    }
+    else {
+        log_info("decrypt serial");
+        decrypt_all_serial(buffer_decrypt_count, buffer_decrypt_start_i, cs, key);
+    }
+    long elapsed = stopwatch_elapsed(&sw);
+    total_elapsed += elapsed;
+    log_info("decrypt_all took %dus (total %dus)", (int)elapsed, (int)total_elapsed);
+}
+
+void decrypt_all_serial(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream *cs, unsigned char *key) {
     for(int buffer_i = buffer_decrypt_start; buffer_i < buffer_decrypt_start+buffer_decrypt_count; buffer_i++)
     {
         decrypt_one(buffer_i, cs, key);

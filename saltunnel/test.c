@@ -466,13 +466,9 @@ void test8_for(int i) {
 }
 void test8() {
     
-    stopwatch sw;
-    stopwatch_start(&sw);
 
           // TODO: Debug
           test8_for(100000000);
-          long elapsed = stopwatch_elapsed(&sw);
-          log_info("test8: took %dus", (int)elapsed);
           return;
             
     int edges[] = {

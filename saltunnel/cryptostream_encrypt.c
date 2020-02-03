@@ -14,17 +14,28 @@
 #include "math.h"
 #include "crypto_secretbox_salsa2012poly1305.h"
 #include "threadpool.h"
+#include "stopwatch.h"
 #include <unistd.h>
 #include <stdio.h>
 
+static unsigned long total_elapsed = 0;
 void encrypt_all(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs, unsigned char *key) {
+//
+//    stopwatch sw;
+//    stopwatch_start(&sw);
+    
     int do_parallel = (buffer_encrypt_count==CRYPTOSTREAM_BUFFER_COUNT);
     if(do_parallel) {
         encrypt_all_parallel(buffer_encrypt_count, buffer_encrypt_start_i, bytesread, cs, key);
     }
     else {
+        log_info("encrypt serial");
         encrypt_all_serial(buffer_encrypt_count, buffer_encrypt_start_i, bytesread, cs, key, cs->nonce);
     }
+//    
+//    long elapsed = stopwatch_elapsed(&sw);
+//    total_elapsed += elapsed;
+////    log_info("encrypt_all took %dus (total %dus)", (int)elapsed, (int)total_elapsed);
 }
 
 void encrypt_all_serial(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs, unsigned char *key, nonce8 nonce) {
