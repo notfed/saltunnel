@@ -19,6 +19,7 @@ typedef struct threadpool_task {
 } threadpool_task;
 
 typedef struct threadpool_thread_context {
+    struct threadpool* tp;
     int thread_i;
 } threadpool_thread_context;
 
@@ -39,8 +40,11 @@ typedef struct threadpool {
 } threadpool;
 
 int threadpool_enough_cpus_for_parallel(void);
-void threadpool_init(void);
-void threadpool_for(threadpool_task* task);
-void threadpool_shutdown(void);
+void threadpool_init(threadpool* tp);
+void threadpool_for(threadpool* tp, threadpool_task* task);
+void threadpool_shutdown(threadpool* tp);
+
+extern threadpool tp1;
+extern threadpool tp2;
 
 #endif /* threadpool_h */

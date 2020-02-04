@@ -384,7 +384,7 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     try(pthread_join(saltunnel_thread_2, NULL)) || oops_fatal("pthread_join");
     
     long elapsed = stopwatch_elapsed(&sw);
-    log_info("test8 saltunnel took %dus (%d MBps)", (int)elapsed, (from_peer1_local_str_len+from_peer2_local_str_len)/elapsed);
+    log_info("test8 saltunnel took %dus (%d MBps)", (int)elapsed, (int)((from_peer1_local_str_len+from_peer2_local_str_len)/elapsed));
 
     // Compare actual peer1 local data
     int cmp1 = memcmp(from_peer2_local_str,from_peer1_local_str_actual,from_peer2_local_str_len);
