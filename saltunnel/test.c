@@ -472,11 +472,7 @@ void test8_for(int i) {
 }
 void test8() {
     
-
-          // TODO: Debug
-          test8_for(500000000);
-          return;
-            
+    
     int edges[] = {
         CRYPTOSTREAM_BUFFER_COUNT,
         CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT,
@@ -490,7 +486,7 @@ void test8() {
         CRYPTOSTREAM_SPAN_MAXBYTES_DATA + CRYPTOSTREAM_BUFFER_MAXBYTES_DATA + 1,
         (2*CRYPTOSTREAM_SPAN_MAXBYTES_DATA) + CRYPTOSTREAM_BUFFER_MAXBYTES_DATA + 1
     };
-    int multipliers[] = { 1 };
+    int multipliers[] = { 1, 2, 3, 10 };
     int adders[] = { 0, -2, -1, 1, 2 };
     
     int edges_len = sizeof(edges)/sizeof(edges[0]);
@@ -507,10 +503,7 @@ void test8() {
         }
     }
     
-
-//    log_info("bidirectional_test (10000000) started");
-//    test8_for(10000000);
-    
+    test8_for(10000000);
     
 }
 
