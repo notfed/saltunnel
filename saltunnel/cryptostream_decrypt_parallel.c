@@ -3,6 +3,7 @@
 //  saltunnel2
 //
 
+#include "config.h"
 #include "cryptostream.h"
 #include "uninterruptable.h"
 #include "oops.h"
@@ -14,6 +15,7 @@
 #include "math.h"
 #include "crypto_secretbox_salsa20poly1305.h"
 #include "threadpool.h"
+#include "saltunnel.h"
 #include <unistd.h>
 #include <stdio.h>
 
@@ -58,7 +60,7 @@ void decrypt_all_parallel(int buffer_decrypt_count, int buffer_decrypt_start, cr
 //    nonce8_copy(params[THREADPOOL_THREAD_COUNT-1].nonce, cs->nonce);
     
     // Run tasks in parallel
-    threadpool_for(&tp2, tasks);
+    threadpool_for(1, tasks);
     
 //    log_info("decrypt_all_parallel: successfully decrypted entire span");
     memset(params, 0, sizeof(params)); // TODO: Debug

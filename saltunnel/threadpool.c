@@ -3,6 +3,7 @@
 //  saltunnel2
 //
 
+#include "config.h"
 #include "cryptostream.h"
 #include "threadpool.h"
 #include "oops.h"
@@ -11,8 +12,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 
-threadpool tp1 = {0};
-threadpool tp2 = {0};
+threadpool tps[2] = {0};
 
 static int enough_cpus_for_parallel;
 int threadpool_enough_cpus_for_parallel() {
@@ -60,15 +60,22 @@ static void* threadpool_loop(void* ctx_void) {
 
 void threadpool_init(threadpool* tp) {
     
+    // Mark this threadpool as initialized
     if(!tp->tp_init_complete) {
         tp->tp_init_complete = 1;
     } else {
         oops_fatal("attempted to initialialize threadpool twice");
     }
     
-    enough_cpus_for_parallel = (sysconf(_SC_NPROCESSORS_ONLN)>=4);
-    if(!enough_cpus_for_parallel)
+    // Check to see if we shouldn't even use threads
+    if(THREADPOOL_THREAD_COUNT<2) {
+        enough_cpus_for_parallel=0;
+    } else {
+        enough_cpus_for_parallel = (sysconf(_SC_NPROCESSORS_ONLN)>=4);
+    }
+    if(!enough_cpus_for_parallel) {
         return;
+    }
     
     pthread_mutex_init(&tp->parallel_for_mutex, NULL)==0 || oops_fatal("pthread_mutex_init");
     
@@ -87,7 +94,19 @@ void threadpool_init(threadpool* tp) {
     }
 }
 
-void threadpool_for(threadpool* tp, threadpool_task* tasks) {
+void threadpool_for(int threadpool_index, threadpool_task* tasks) {
+
+
+    // Determine which threadpool to use
+    threadpool* tp;
+    if(THREADPOOL_POOLS==1) {
+      tp = &tps[0];
+    } else if(THREADPOOL_POOLS==2) {
+        if(threadpool_index<0 || threadpool_index>1) oops_fatal("assertion failed");
+        tp = &tps[threadpool_index];
+    } else {
+        oops_fatal("assertion failed");
+    }
     if(!tp->tp_init_complete)
         oops_fatal("threadpool not initialized");
     
@@ -124,3 +143,26 @@ void threadpool_shutdown(threadpool* tp) {
         // TODO: Gracefully exit each thread
     }
 }
+
+void threadpool_init_all() {
+    if(THREADPOOL_POOLS==1) {
+        threadpool_init(&tps[0]);
+    } else if(THREADPOOL_POOLS==2) {
+        threadpool_init(&tps[0]);
+        threadpool_init(&tps[1]);
+    } else {
+        oops_fatal("assertion failed");
+    }
+}
+
+void threadpool_shutdown_all() {
+    if(THREADPOOL_POOLS==1) {
+        threadpool_shutdown(&tps[0]);
+    } else if(THREADPOOL_POOLS==2) {
+        threadpool_shutdown(&tps[0]);
+        threadpool_shutdown(&tps[1]);
+    } else {
+        oops_fatal("assertion failed");
+    }
+}
+

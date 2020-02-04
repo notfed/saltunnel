@@ -12,10 +12,8 @@
 #include <unistd.h>
 
 int main(int argc, const char * argv[]) {
-    threadpool_init(&tp1);
-    threadpool_init(&tp2);
+    threadpool_init_all();
     test();
-    threadpool_shutdown(&tp1);
-    threadpool_shutdown(&tp2);
+    threadpool_shutdown_all();
     return 0;
 }

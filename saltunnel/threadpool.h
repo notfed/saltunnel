@@ -6,8 +6,7 @@
 #ifndef threadpool_h
 #define threadpool_h
 
-#define THREADPOOL_THREAD_COUNT 4
-
+#include "config.h"
 #include "threadpool_barrier.h"
 #include <pthread.h>
 
@@ -40,11 +39,15 @@ typedef struct threadpool {
 } threadpool;
 
 int threadpool_enough_cpus_for_parallel(void);
-void threadpool_init(threadpool* tp);
-void threadpool_for(threadpool* tp, threadpool_task* task);
-void threadpool_shutdown(threadpool* tp);
 
-extern threadpool tp1;
-extern threadpool tp2;
+void threadpool_init(threadpool* tp);
+void threadpool_shutdown(threadpool* tp);
+void threadpool_init_all(void);
+void threadpool_shutdown_all(void);
+
+//void threadpool_for(threadpool* tp, threadpool_task* task);
+void threadpool_for(int threadpool_index, threadpool_task* task);
+
+extern threadpool tp[2];
 
 #endif /* threadpool_h */
