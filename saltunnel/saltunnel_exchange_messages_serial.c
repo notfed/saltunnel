@@ -101,7 +101,7 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress, unsig
         
         // close 'to' when: 'from' is EOF, and all buffers are empty
         if(pfds[0].fd == FD_EOF && pfds[1].fd != FD_EOF && !cryptostream_decrypt_feed_canwrite(ingress)) {
-            log_debug("egress is done; closing egress->to_fd (%d)", ingress->to_fd);
+            log_debug("ingress is done; closing ingress->to_fd (%d)", ingress->to_fd);
             try(close(ingress->to_fd)) || oops_fatal("failed to close");
             pfds[1].fd = FD_EOF;
         }
