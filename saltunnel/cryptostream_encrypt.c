@@ -12,7 +12,7 @@
 #include "uint16.h"
 #include "chaos.h"
 #include "math.h"
-#include "crypto_secretbox_salsa2012poly1305.h"
+#include "crypto_secretbox_salsa20poly1305.h"
 #include "threadpool.h"
 #include "stopwatch.h"
 #include <unistd.h>
@@ -77,7 +77,7 @@ void encrypt_one(int buffer_i, int buffer_n, int bytesread, cryptostream *cs, un
     //   - [0..16]  == zero
     //   - [16..32] == auth
     //   - [32..]   == ciphertext
-    try(crypto_secretbox_salsa2012poly1305(ciphertext_buffer_ptr, plaintext_buffer_ptr,
+    try(crypto_secretbox_salsa20poly1305(ciphertext_buffer_ptr, plaintext_buffer_ptr,
                          CRYPTOSTREAM_BUFFER_MAXBYTES, nonce, key)) || oops_fatal("failed to encrypt");
     
     // Increment nonce

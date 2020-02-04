@@ -471,6 +471,12 @@ void test8_for(int i) {
     free(from_peer2_local_str);
 }
 void test8() {
+    test8_for(10000000);
+    test8_for(10000000);
+    test8_for(10000000);
+    test8_for(10000000);
+    test8_for(10000000);
+    return;
     
     
     int edges[] = {
@@ -503,7 +509,6 @@ void test8() {
         }
     }
     
-    test8_for(10000000);
     
 }
 

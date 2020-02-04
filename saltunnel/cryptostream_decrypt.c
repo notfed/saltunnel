@@ -12,7 +12,7 @@
 #include "uint16.h"
 #include "chaos.h"
 #include "math.h"
-#include "crypto_secretbox_salsa2012poly1305.h"
+#include "crypto_secretbox_salsa20poly1305.h"
 #include "stopwatch.h"
 #include <unistd.h>
 #include <stdio.h>
@@ -63,7 +63,7 @@ void decrypt_one(int buffer_i, cryptostream *cs, unsigned char *key) {
     // - output structure:
     //   - [0..32] == zero
     //   - [32..]  == plaintext
-    try(crypto_secretbox_salsa2012poly1305_open(plaintext_buffer_ptr, ciphertext_buffer_ptr,
+    try(crypto_secretbox_salsa20poly1305_open(plaintext_buffer_ptr, ciphertext_buffer_ptr,
                               CRYPTOSTREAM_BUFFER_MAXBYTES,zero_nonce,key)) ||
         oops_fatal("failed to decrypt");
     
