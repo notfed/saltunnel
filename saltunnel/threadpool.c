@@ -11,16 +11,6 @@
 #include <pthread.h>
 #include <stdlib.h>
 
-//typedef struct threadpool_task {
-//    void (*action)(void*);
-//    void* param;
-//} threadpool_task;
-//
-//typedef struct threadpool_thread_context {
-//    threadpool* tp;
-//    int thread_i;
-//} threadpool_thread_context;
-
 threadpool tp1 = {0};
 threadpool tp2 = {0};
 

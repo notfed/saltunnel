@@ -10,21 +10,13 @@ void nonce8_clear(nonce8 nonce) {
         nonce[i] = 0;
     }
 }
-//
-//void nonce8_increment(nonce8 nonce) {
-//    unsigned char carry = 1;
-//    for(int i = 0; i < 8; i++) {
-//        nonce[i] += carry;
-//        carry &= (nonce[i] == 0);
-//    }
-//}
-
 
 void nonce8_copy(nonce8 nonce_from, nonce8 nonce_to) {
     for(int i = 0; i < 8; i++) {
         nonce_to[i] = nonce_from[i];
     }
 }
+
 void nonce8_increment(nonce8 nonce_from, nonce8 nonce_to) {
     unsigned char carry = 1;
     for(int i = 0; i < 8; i++) {

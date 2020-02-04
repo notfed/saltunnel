@@ -2,17 +2,14 @@
 //  chaos.c
 //  saltunnel2
 //
-//  Created by Jay Sullivan on 1/19/20.
-//  Copyright © 2020 Jay Sullivan. All rights reserved.
-//
 
 #include "math.h"
 #include "chaos.h"
 #include "oops.h"
 #include <sys/uio.h>
 
-#define CHAOS_READ_N 1000
-#define CHAOS_WRITE_N 1000
+#define CHAOS_READ_N 512
+#define CHAOS_WRITE_N 512
 
 // Only read chaos_n bytes at a time
 int chaos_readv(int fd, struct iovec* vector, int count) {
