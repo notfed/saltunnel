@@ -1,4 +1,4 @@
 export C_INCLUDE_PATH=/usr/local/include
 export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/lib
 ls -1 *.c | xargs clang -c -O3
-
+clang *.o -O3 /usr/local/lib/libsodium.a -lpthread -o tst
