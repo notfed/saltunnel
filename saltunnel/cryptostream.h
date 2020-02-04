@@ -8,6 +8,7 @@
 
 #include "nonce.h"
 #include "threadpool.h"
+#include <sys/uio.h>
 #include <unistd.h>
 
 // Glossary:
