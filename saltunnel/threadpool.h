@@ -35,7 +35,7 @@ typedef struct threadpool {
     pthread_mutex_t mutex;
     int started;              // Protected by mutex
     pthread_cond_t start;     // Protected by mutex
-    pthread_barrier_t finish; // Protected by mutex
+    threadpool_barrier_t finish; // Protected by mutex
     
 } threadpool;
 

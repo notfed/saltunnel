@@ -6,7 +6,7 @@
 #include "threadpool_barrier.h"
 #include "oops.h"
 
-int threadpool_barrier_init(pthread_barrier_t *barrier, const pthread_barrierattr_t *attr, unsigned int num_threads)
+int threadpool_barrier_init(threadpool_barrier_t *barrier, const threadpool_barrierattr_t *attr, unsigned int num_threads)
 {
     if(num_threads <= 0) oops_fatal("assertion failed");
     
@@ -20,14 +20,14 @@ int threadpool_barrier_init(pthread_barrier_t *barrier, const pthread_barrieratt
     return 0;
 }
 
-int threadpool_barrier_destroy(pthread_barrier_t *barrier)
+int threadpool_barrier_destroy(threadpool_barrier_t *barrier)
 {
     pthread_cond_destroy(&barrier->phase_changed)==0 || oops_fatal("pthread_cond_init");
     pthread_mutex_destroy(&barrier->mutex)==0 || oops_fatal("pthread_cond_init");
     return 0;
 }
 
-int threadpool_barrier_wait(pthread_barrier_t *barrier, int* started)
+int threadpool_barrier_wait(threadpool_barrier_t *barrier, int* started)
 {
     pthread_mutex_lock(&barrier->mutex)==0 || oops_fatal("pthread_mutex_lock");
     if(*started==0) oops_fatal("assertion failed");
