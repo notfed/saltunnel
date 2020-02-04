@@ -135,8 +135,10 @@ void test3() {
 
 void create_test_pipe(int fds[2]) {
     try(pipe(fds)) || oops_fatal("failed to create pipe");
+    #ifdef F_SETPIPE_SZ
     try(fcntl(fds[0], F_SETPIPE_SZ, 1048576)) || oops_fatal("failed to configure pipe");
     try(fcntl(fds[1], F_SETPIPE_SZ, 1048576)) || oops_fatal("failed to configure pipe");
+    #endif
 }
 
 // test4: saltunnel works with cryptostream
