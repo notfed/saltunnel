@@ -44,10 +44,10 @@ static void* threadpool_loop(void* ctx_void) {
         log_debug("threadpool_loop: about to wait for 'start' signal");
         
         // Wait for start signal
-        try(pthread_mutex_lock(&tp->mutex)) || oops_fatal("pthread_mutex_lock");
+        pthread_mutex_lock(&tp->mutex)==0 || oops_fatal("pthread_mutex_lock");
         while(!tp->started)
-            try(pthread_cond_wait(&tp->start, &tp->mutex)) || oops_fatal("pthread_cond_wait");
-        try(pthread_mutex_unlock(&tp->mutex)) || oops_fatal("pthread_mutex_unlock");
+            pthread_cond_wait(&tp->start, &tp->mutex)==0 || oops_fatal("pthread_cond_wait");
+        pthread_mutex_unlock(&tp->mutex)==0 || oops_fatal("pthread_mutex_unlock");
         
         log_debug("threadpool_loop: received 'start' signal; encrypting...");
         
@@ -80,17 +80,14 @@ void threadpool_init(threadpool* tp) {
     if(!enough_cpus_for_parallel)
         return;
     
-    try(pthread_mutex_init(&tp->parallel_for_mutex, NULL))
-      || oops_fatal("pthread_mutex_init");
+    pthread_mutex_init(&tp->parallel_for_mutex, NULL)==0 || oops_fatal("pthread_mutex_init");
     
-    try(pthread_mutex_init(&tp->mutex, NULL))
-      || oops_fatal("pthread_mutex_init");
+    pthread_mutex_init(&tp->mutex, NULL)==0 || oops_fatal("pthread_mutex_init");
     
-    try(pthread_cond_init(&tp->start, NULL))
-    || oops_fatal("pthread_cond_init");
+    pthread_cond_init(&tp->start, NULL)==0 || oops_fatal("pthread_cond_init");
     
-    try(threadpool_barrier_init(&tp->finish, NULL, THREADPOOL_THREAD_COUNT))
-     || oops_fatal("pthread_barrier_init");
+    threadpool_barrier_init(&tp->finish, NULL, THREADPOOL_THREAD_COUNT)==0
+    || oops_fatal("pthread_barrier_init");
     
     for(int thread_i = 0; thread_i < THREADPOOL_THREAD_COUNT-1; thread_i++) {
         tp->thread_contexts[thread_i].tp = tp;
@@ -105,30 +102,31 @@ void threadpool_for(threadpool* tp, threadpool_task* tasks) {
         oops_fatal("threadpool not initialized");
     
     // Take big lock
-    try(pthread_mutex_lock(&tp->parallel_for_mutex)) || oops_fatal("pthread_mutex_lock");
+    pthread_mutex_lock(&tp->parallel_for_mutex)==0 || oops_fatal("pthread_mutex_lock");
     
     // Point the threadpool to (except, we'll do the first task in the current thread)
     tp->tasks = &tasks[1];
     
     // Broadcast start signal
-    try(pthread_mutex_lock(&tp->mutex)) || oops_fatal("pthread_mutex_lock");
+    pthread_mutex_lock(&tp->mutex)==0 || oops_fatal("pthread_mutex_lock");
     log_debug("threadpool_for: about to send 'start' signal");
         tp->started = 1;
-        try(pthread_cond_broadcast(&tp->start)) || oops_fatal("pthread_cond_wait");
+        pthread_cond_broadcast(&tp->start)==0 || oops_fatal("pthread_cond_wait");
     log_debug("threadpool_for: sent 'start' signal");
-    try(pthread_mutex_unlock(&tp->mutex)) || oops_fatal("pthread_mutex_unlock");
+    pthread_mutex_unlock(&tp->mutex)==0 || oops_fatal("pthread_mutex_unlock");
     
     // Run the first task in the current thread
     tasks[0].action(tasks[0].param);
     
     // Wait for all threads to finish
     log_debug("threadpool_for: about to wait for 'finish' barrier");
-    threadpool_barrier_wait(&tp->finish, &tp->started);
+    int r = threadpool_barrier_wait(&tp->finish, &tp->started);
+    if(r<0 || r>1) oops_fatal("barrier_wait");
     log_debug("threadpool_for: 'finish' barrier completed");
     
     // Release big lock
     tp->tasks = 0; // TODO: Debug
-    try(pthread_mutex_unlock(&tp->parallel_for_mutex)) || oops_fatal("pthread_mutex_unlock");
+    pthread_mutex_unlock(&tp->parallel_for_mutex)==0 || oops_fatal("pthread_mutex_unlock");
 }
 
 void threadpool_shutdown(threadpool* tp) {
