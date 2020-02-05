@@ -12,6 +12,7 @@
 		943E03C323E91A420049DF5E /* saltunnel_exchange_messages_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 943E03C223E91A420049DF5E /* saltunnel_exchange_messages_parallel.c */; };
 		943E03C523E91A710049DF5E /* saltunnel_exchange_messages_serial.c in Sources */ = {isa = PBXBuildFile; fileRef = 943E03C423E91A710049DF5E /* saltunnel_exchange_messages_serial.c */; };
 		943E03C823E924F00049DF5E /* crypto_secretbox_salsa20poly1305.c in Sources */ = {isa = PBXBuildFile; fileRef = 943E03C723E924F00049DF5E /* crypto_secretbox_salsa20poly1305.c */; };
+		9448B0FC23EA6E670047D0CB /* crypto_secretbox_chacha20poly1305.c in Sources */ = {isa = PBXBuildFile; fileRef = 9448B0FB23EA6E670047D0CB /* crypto_secretbox_chacha20poly1305.c */; };
 		94CE75DD23E52A6F00A84ABC /* chaos.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75BA23E52A6E00A84ABC /* chaos.c */; };
 		94CE75DE23E52A7000A84ABC /* threadpool_barrier.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75BB23E52A6E00A84ABC /* threadpool_barrier.c */; };
 		94CE75DF23E52A7000A84ABC /* cryptostream_vector.c in Sources */ = {isa = PBXBuildFile; fileRef = 94CE75BD23E52A6E00A84ABC /* cryptostream_vector.c */; };
@@ -53,6 +54,8 @@
 		943E03C623E924F00049DF5E /* crypto_secretbox_salsa20poly1305.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = crypto_secretbox_salsa20poly1305.h; sourceTree = "<group>"; };
 		943E03C723E924F00049DF5E /* crypto_secretbox_salsa20poly1305.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = crypto_secretbox_salsa20poly1305.c; sourceTree = "<group>"; };
 		9448B0F923EA6DD90047D0CB /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
+		9448B0FA23EA6E670047D0CB /* crypto_secretbox_chacha20poly1305.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = crypto_secretbox_chacha20poly1305.h; sourceTree = "<group>"; };
+		9448B0FB23EA6E670047D0CB /* crypto_secretbox_chacha20poly1305.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = crypto_secretbox_chacha20poly1305.c; sourceTree = "<group>"; };
 		94CE75AC23E5284C00A84ABC /* saltunnel */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = saltunnel; sourceTree = BUILT_PRODUCTS_DIR; };
 		94CE75B923E52A6E00A84ABC /* threadpool_barrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = threadpool_barrier.h; sourceTree = "<group>"; };
 		94CE75BA23E52A6E00A84ABC /* chaos.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = chaos.c; sourceTree = "<group>"; };
@@ -156,6 +159,8 @@
 				94CE75C723E52A6E00A84ABC /* crypto_secretbox_salsa2012poly1305.h */,
 				943E03C723E924F00049DF5E /* crypto_secretbox_salsa20poly1305.c */,
 				943E03C623E924F00049DF5E /* crypto_secretbox_salsa20poly1305.h */,
+				9448B0FB23EA6E670047D0CB /* crypto_secretbox_chacha20poly1305.c */,
+				9448B0FA23EA6E670047D0CB /* crypto_secretbox_chacha20poly1305.h */,
 				94CE75C523E52A6E00A84ABC /* test.h */,
 				94CE75C223E52A6E00A84ABC /* uint16.c */,
 				94CE75D123E52A6F00A84ABC /* uint16.h */,
@@ -234,6 +239,7 @@
 				94CE75EA23E52A7000A84ABC /* test.c in Sources */,
 				943E03C523E91A710049DF5E /* saltunnel_exchange_messages_serial.c in Sources */,
 				94CE75DD23E52A6F00A84ABC /* chaos.c in Sources */,
+				9448B0FC23EA6E670047D0CB /* crypto_secretbox_chacha20poly1305.c in Sources */,
 				94CE75EF23E52A7000A84ABC /* cryptostream_decrypt_feed.c in Sources */,
 				943E03C123E7BB8F0049DF5E /* cryptostream_decrypt_parallel.c in Sources */,
 				94CE75E223E52A7000A84ABC /* crypto_secretbox_salsa208poly1305.c in Sources */,
