@@ -474,6 +474,10 @@ void test8_for(int i) {
     free(from_peer2_local_str);
 }
 void test8() {
+//    
+//    test8_for(1000000);
+//    return;
+//    
     int edges[] = {
         CRYPTOSTREAM_BUFFER_COUNT,
         CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT,

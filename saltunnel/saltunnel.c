@@ -13,25 +13,22 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-static void exchange_key(cryptostream *ingress, cryptostream *egress, unsigned char* key) {
-    // TODO: Perform steps to agree on key
-    //       For now, just hard-coding to [0..31].
-    for(int i = 0; i<32;  i++)
-        key[i] = i;
-}
-
 void saltunnel(cryptostream* ingress, cryptostream* egress)
 {
-    unsigned char key[32] = {0};
+    // Input Long-term Key (For now, just hard-coding to [0..31])
+    unsigned char long_term_key[32] = {0};
+    for(int i = 0; i<32;  i++)
+        long_term_key[i] = i;
     
     // Key Exchange
-    exchange_key(ingress, egress, key);
+    unsigned char session_key[32] = {0};
+    exchange_session_key(ingress, egress, long_term_key, session_key);
     
     // Message Exchange
     if(SALTUNNEL_PUMP_THREADS==1)
-        exchange_messages_serial(ingress, egress, key);
+        exchange_messages_serial(ingress, egress, session_key);
     else if(SALTUNNEL_PUMP_THREADS==2)
-        exchange_messages_parallel(ingress, egress, key);
+        exchange_messages_parallel(ingress, egress, session_key);
     else
         oops_fatal("assertion failed");
 }
