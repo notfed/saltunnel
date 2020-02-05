@@ -16,7 +16,7 @@
 //      - 494 bytes of data
 //      - 494+2=496 bytes of plaintext (includes a 2-byte datalen)
 //      - 494+2+16=512 bytes of ciphertext (includes 16-byte auth)
-//      - 494+2+32=512 bytes total (includes 16-byte zeros)
+//      - 494+2+32=528 bytes total (includes 16-byte zeros)
 //  The format for a buffer is:
 //      - u8[16]  zeros;
 //      - u8[16]  auth; (zeros for plaintext)

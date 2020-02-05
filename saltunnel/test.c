@@ -40,8 +40,8 @@ void test1() {
     // Write "expected value" to both pipes
     const char local_teststr_expected[] = "send_nt_pipe";
     const char net_teststr_expected[] = "send_lc_pipe";
-    uninterruptable_write(write, pipe_local[1], local_teststr_expected, 12);
-    uninterruptable_write(write, pipe_net[1], net_teststr_expected, 12);
+    uninterruptable_writen(write, pipe_local[1], local_teststr_expected, 12);
+    uninterruptable_writen(write, pipe_net[1], net_teststr_expected, 12);
     
     // Read "actual value" from both pipes
     char local_teststr_actual[12+1] = {0};
@@ -152,11 +152,11 @@ void test4() {
     
     // Start with "expected value" available for reading from net pipe
 //    const char net_teststr_expected[] = "from_net_pipe";
-    uninterruptable_write(write, pipe_net_read[1],   test_encpacket,   512); close(pipe_net_read[1]);
+    uninterruptable_writen(write, pipe_net_read[1],   test_encpacket,   512); close(pipe_net_read[1]);
     
     // Start with "expected value" available for reading from local pipe
     const char local_teststr_expected[] = "from_lcl_pipe"; 
-    uninterruptable_write(write, pipe_local_read[1], local_teststr_expected, 14); close(pipe_local_read[1]);
+    uninterruptable_writen(write, pipe_local_read[1], local_teststr_expected, 14); close(pipe_local_read[1]);
     
     // Run saltunnel
     cryptostream ingress = {
