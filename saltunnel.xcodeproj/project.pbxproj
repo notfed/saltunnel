@@ -52,6 +52,7 @@
 		943E03C423E91A710049DF5E /* saltunnel_exchange_messages_serial.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = saltunnel_exchange_messages_serial.c; sourceTree = "<group>"; };
 		943E03C623E924F00049DF5E /* crypto_secretbox_salsa20poly1305.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = crypto_secretbox_salsa20poly1305.h; sourceTree = "<group>"; };
 		943E03C723E924F00049DF5E /* crypto_secretbox_salsa20poly1305.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = crypto_secretbox_salsa20poly1305.c; sourceTree = "<group>"; };
+		9448B0F923EA6DD90047D0CB /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
 		94CE75AC23E5284C00A84ABC /* saltunnel */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = saltunnel; sourceTree = BUILT_PRODUCTS_DIR; };
 		94CE75B923E52A6E00A84ABC /* threadpool_barrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = threadpool_barrier.h; sourceTree = "<group>"; };
 		94CE75BA23E52A6E00A84ABC /* chaos.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = chaos.c; sourceTree = "<group>"; };
@@ -119,6 +120,7 @@
 		94CE75AE23E5284C00A84ABC /* saltunnel */ = {
 			isa = PBXGroup;
 			children = (
+				9448B0F923EA6DD90047D0CB /* config.h */,
 				94CE75CF23E52A6F00A84ABC /* main.c */,
 				94CE75D323E52A6F00A84ABC /* test.c */,
 				94CE75DA23E52A6F00A84ABC /* cryptostream.h */,
