@@ -10,58 +10,78 @@
 #include "log.h"
 #include <string.h>
 
+static unsigned char version[] = { 0x06,0x05,0x28,0x84,0x9a,0x61,0x08,0xc7 }; // 0x060528849a6108c7
+
+typedef struct buffer0 {
+    union {
+        unsigned char nonce[24];
+        struct {
+            unsigned char unused[8];
+            unsigned char prezeros[16];
+        };
+    };
+    unsigned char auth[16];
+    unsigned char version[8];
+    unsigned char pk[32];
+    unsigned char zeros[432];
+} buffer0;
+
 void exchange_session_key(cryptostream *ingress, cryptostream *egress,
                           unsigned char* long_term_key,
                           unsigned char* session_key_out) {
     
+    buffer0 my_buffer_plaintext = {0};
+    
     // Create an ephemeral keypair
     unsigned char my_sk[32];
-    unsigned char my_pk[32+32]; // zeros=>[0..32], pk=>[32..64]
-    memset(my_pk, 0, 32);
-    crypto_box_curve25519xsalsa20poly1305_keypair(my_pk+32,my_sk);
+    crypto_box_curve25519xsalsa20poly1305_keypair(my_buffer_plaintext.pk,my_sk);
     
-    // Encrypt ephemeral public key
+    // Generate a nonce
     unsigned char my_nonce[24];
     randombytes(my_nonce, 24);
-    unsigned char my_pk_encrypted[16+16+32+464] = {0}; // zeros=>[0..16], auth=>[16..32], pk=>[32..64], randomness[64..464]
-    try(crypto_secretbox_xsalsa20poly1305(my_pk_encrypted,my_pk,16+16+32,my_nonce,long_term_key))
+    
+    // Serialize buffer
+    memcpy(my_buffer_plaintext.version, version, 8);
+    memcpy(my_buffer_plaintext.pk, my_buffer_plaintext.pk, 32);
+    
+    // Encrypt buffer
+    buffer0 my_buffer_ciphertext = {0};
+    try(crypto_secretbox_xsalsa20poly1305(my_buffer_ciphertext.prezeros,
+                                          my_buffer_plaintext.prezeros,
+                                          512-8, my_nonce, long_term_key))
     || oops_fatal("encryption failed");
     
-    try(crypto_secretbox_xsalsa20poly1305_open(my_pk,my_pk_encrypted,16+16+32,my_nonce,long_term_key))
-    || oops_fatal("decryption failed");
+    // Put nonce in buffer
+    memcpy(my_buffer_ciphertext.nonce, my_nonce, 24);
     
-    // Pack chunk
-    unsigned char write_chunk[512] = {0}; // nonce=>[0..24], auth=>[24..40], pk=>[40..72], randomness[72..512]
-    memcpy(write_chunk, my_nonce, 24);
-    memcpy(write_chunk+24, my_pk_encrypted+16, 16+32);
-    randombytes(my_pk_encrypted+72, 512-72); // TODO: Makes more sense to just encrypt/decrypt entire 512-block
-    
-    // Send chunk
-    try(uninterruptable_writen(write, egress->to_fd, (char*)write_chunk, 512))
+    // Send encrypted buffer
+    try(uninterruptable_writen(write, egress->to_fd, (char*)&my_buffer_ciphertext, 512))
     || oops_fatal("write failed");
     
     // ---- ---- ---- ----
     
-    // Receive chunk
-    unsigned char read_chunk[512] = {0}; // nonce=>[0..24], auth=>[24..40], pk=>[40..72], randomness[72..512]
-    try(uninterruptable_readn(ingress->from_fd, (char*)read_chunk, 512))
+    // Receive encrypted buffer
+    buffer0 their_buffer_ciphertext = {0};
+    try(uninterruptable_readn(ingress->from_fd, (char*)&their_buffer_ciphertext, 512))
     || oops_fatal("read failed");
     
-    // Unpack chunk
-    unsigned char their_nonce[24] = {0}; // DEBUG
-    unsigned char their_pk_encrypted[16+16+32+464] = {0}; // zeros=>[0..16], auth=>[16..32], pk=>[32..64], randomness[64..464]
-    memcpy(their_nonce, read_chunk, 24);
-    memset(their_pk_encrypted, 0, 16);
-    memcpy(their_pk_encrypted+16, read_chunk+24, 16+32);
+    // Get nonce
+    unsigned char their_nonce[24];
+    memcpy(their_nonce, their_buffer_ciphertext.nonce, 24);
     
-    // Decrypt ephemeral public key
-    unsigned char their_pk[32+32]; // zeros=>[0..32], pk=>[32..64]
-    
-    try(crypto_secretbox_xsalsa20poly1305_open(their_pk,their_pk_encrypted,16+16+32,their_nonce,long_term_key))
+    // Decrypt encrypted buffer
+    buffer0 their_buffer_plaintext = {0};
+    try(crypto_secretbox_xsalsa20poly1305_open((unsigned char*)&their_buffer_plaintext.prezeros,
+                                               (unsigned char*)&their_buffer_ciphertext.prezeros,
+                                               512-8, their_buffer_ciphertext.nonce, long_term_key))
     || oops_fatal("decryption failed");
     
+    // Verify version
+    if(sodium_compare(their_buffer_plaintext.version, version, 8) != 0)
+        oops_fatal("version mismatch");
+    
     // Calculate shared key
-    try(crypto_box_curve25519xsalsa20poly1305_beforenm(session_key_out, their_pk+32, my_sk))
+    try(crypto_box_curve25519xsalsa20poly1305_beforenm(session_key_out, their_buffer_plaintext.pk, my_sk))
     || oops_fatal("diffie-hellman failed");
     //  NOTE: Need to differentiate between server and client keys
     
