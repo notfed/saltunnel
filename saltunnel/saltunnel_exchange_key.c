@@ -6,11 +6,12 @@
 #include "saltunnel.h"
 #include "uninterruptable.h"
 #include "sodium.h"
+#include "crypto_secretbox_salsa20poly1305.h"
 #include "oops.h"
 #include "log.h"
 #include <string.h>
 
-static unsigned char version[] = { 0x06,0x05,0x28,0x84,0x9a,0x61,0x08,0xc7 }; // 0x060528849a6108c7
+static const unsigned char version[] = { 0x06,0x05,0x28,0x84,0x9a,0x61,0x08,0xc7 }; // 0x060528849a6108c7
 
 typedef struct buffer0 {
     union {
@@ -26,15 +27,31 @@ typedef struct buffer0 {
     unsigned char zeros[432];
 } buffer0;
 
+typedef struct buffer1 {
+    unsigned char prezeros[16];
+    unsigned char auth[16];
+    unsigned char zeros[496];
+} buffer1;
+
 void exchange_session_key(cryptostream *ingress, cryptostream *egress,
                           unsigned char* long_term_key,
                           unsigned char* session_key_out) {
     
     buffer0 my_buffer_plaintext = {0};
+    buffer0 my_buffer_ciphertext = {0};
+    buffer0 their_buffer_plaintext = {0};
+    buffer0 their_buffer_ciphertext = {0};
     
+    //-----------------------
     // Create an ephemeral keypair
+    //-----------------------
+    
     unsigned char my_sk[32];
     crypto_box_curve25519xsalsa20poly1305_keypair(my_buffer_plaintext.pk,my_sk);
+    
+    //-----------------------
+    // Send buffer0
+    //-----------------------
     
     // Generate a nonce
     unsigned char my_nonce[24];
@@ -45,10 +62,9 @@ void exchange_session_key(cryptostream *ingress, cryptostream *egress,
     memcpy(my_buffer_plaintext.pk, my_buffer_plaintext.pk, 32);
     
     // Encrypt buffer
-    buffer0 my_buffer_ciphertext = {0};
     try(crypto_secretbox_xsalsa20poly1305(my_buffer_ciphertext.prezeros,
                                           my_buffer_plaintext.prezeros,
-                                          512-8, my_nonce, long_term_key))
+                                          512+16-24, my_nonce, long_term_key))
     || oops_fatal("encryption failed");
     
     // Put nonce in buffer
@@ -58,10 +74,11 @@ void exchange_session_key(cryptostream *ingress, cryptostream *egress,
     try(uninterruptable_writen(write, egress->to_fd, (char*)&my_buffer_ciphertext, 512))
     || oops_fatal("write failed");
     
-    // ---- ---- ---- ----
+    //-----------------------
+    // Receive buffer0
+    //-----------------------
     
     // Receive encrypted buffer
-    buffer0 their_buffer_ciphertext = {0};
     try(uninterruptable_readn(ingress->from_fd, (char*)&their_buffer_ciphertext, 512))
     || oops_fatal("read failed");
     
@@ -70,10 +87,9 @@ void exchange_session_key(cryptostream *ingress, cryptostream *egress,
     memcpy(their_nonce, their_buffer_ciphertext.nonce, 24);
     
     // Decrypt encrypted buffer
-    buffer0 their_buffer_plaintext = {0};
     try(crypto_secretbox_xsalsa20poly1305_open((unsigned char*)&their_buffer_plaintext.prezeros,
                                                (unsigned char*)&their_buffer_ciphertext.prezeros,
-                                               512-8, their_buffer_ciphertext.nonce, long_term_key))
+                                               512+16-24, their_buffer_ciphertext.nonce, long_term_key))
     || oops_fatal("decryption failed");
     
     // Verify version
@@ -85,4 +101,41 @@ void exchange_session_key(cryptostream *ingress, cryptostream *egress,
     || oops_fatal("diffie-hellman failed");
     //  NOTE: Need to differentiate between server and client keys
     
+    //-----------------------------------------------------------------------------------------------
+    // Send buffer1 (i.e., an empty packet which serves as an auth step; i.e., 496 encrypted zeroes)
+    //-----------------------------------------------------------------------------------------------
+    
+    buffer1 my_buffer1_plaintext = {0};
+    buffer1 my_buffer1_ciphertext = {0};
+    
+    // Both buffer1 nonces will be 0
+    const unsigned char buffer1_nonce[8] = {0};
+    
+    // Encrypt buffer
+    try(crypto_secretbox_salsa20poly1305(my_buffer1_ciphertext.prezeros,
+                                         my_buffer1_plaintext.prezeros,
+                                         512+16, buffer1_nonce, session_key_out))
+    || oops_fatal("encryption failed");
+    
+    // Send encrypted buffer
+    try(uninterruptable_writen(write, egress->to_fd, (char*)&my_buffer1_ciphertext.auth, 512))
+    || oops_fatal("write failed");
+    
+    //-----------------------
+    // Receive buffer1
+    //-----------------------
+    
+    buffer1 their_buffer1_ciphertext = {0};
+    buffer1 their_buffer1_plaintext = {0};
+    
+    // Receive encrypted buffer
+    try(uninterruptable_readn(ingress->from_fd, (char*)&their_buffer1_ciphertext.auth, 512))
+    || oops_fatal("read failed");
+    
+    
+    // Decrypt encrypted buffer
+    try(crypto_secretbox_salsa20poly1305_open((unsigned char*)&their_buffer1_plaintext.prezeros,
+                                              (unsigned char*)&their_buffer1_ciphertext.prezeros,
+                                              512+16, buffer1_nonce, session_key_out))
+    || oops_fatal("authentication failed");
 }
