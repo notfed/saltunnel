@@ -7,6 +7,8 @@
 #include "test.h"
 #include "uninterruptable.h"
 #include "saltunnel.h"
+#include "saltunnel_tcp_server.h"
+#include "saltunnel_tcp_client.h"
 #include "sodium.h"
 #include "nonce.h"
 #include "stopwatch.h"
@@ -582,6 +584,18 @@ void test10() {
     if(vector[2].iov_len  != 0)         oops_fatal("assertion 10.5.7 failed");
 }
 
+// TCP Server test
+void test11() {
+//    // Thread:
+//        saltunnel_tcp_client("127.0.0.1", "3249", "127.0.0.1", "3250");
+//    // Thread:
+//        saltunnel_tcp_server("127.0.0.1", "3250", "127.0.0.1", "3251");
+//    // Thread:
+//      tcpstub_server_write("127.0.0.1", "3251", "this string from TCP server stub to client stub");
+//    
+//    tcpstub_client_assert("127.0.0.1", "3249", "this string from TCP server stub to client stub");
+}
+
 int test() {
     
     log_info("test suite started");
@@ -592,9 +606,10 @@ int test() {
 //    run(test5, "test5");
 //    run(test6, "test6");
 //    run(test7, "test7");
-    run(test8, "test8");  // <<
+//    run(test8, "test8");  // <<
 //    run(test9,"test9");
 //    run(test10,"test10");
+    run(test11, "test11");
     
     log_info("all tests passed");
     return 0;
