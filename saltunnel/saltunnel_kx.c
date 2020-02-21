@@ -14,7 +14,8 @@
 #include <errno.h>
 
 int saltunnel_kx_packet0_trywrite(unsigned char* long_term_key,
-                                 int to_fd) {
+                                 int to_fd,
+                                 unsigned char my_sk_out[32]) {
     
      packet0 my_buffer_plaintext = {0};
      packet0 my_buffer_ciphertext = {0};
@@ -24,7 +25,7 @@ int saltunnel_kx_packet0_trywrite(unsigned char* long_term_key,
     //-----------------------
     
     unsigned char my_sk[32];
-    crypto_box_curve25519xsalsa20poly1305_keypair(my_buffer_plaintext.pk,my_sk);
+    crypto_box_curve25519xsalsa20poly1305_keypair(my_buffer_plaintext.pk,my_sk_out);
     
     //-----------------------
     // Send packet0
@@ -90,6 +91,16 @@ int saltunnel_kx_packet0_tryread(unsigned char* long_term_key,
     // Success
     return 0;
 }
+
+int saltunnel_kx_calculate_shared_key(unsigned char* session_key_out,
+                                      unsigned char* their_pk,
+                                      unsigned char* my_sk) {
+     if(crypto_box_curve25519xsalsa20poly1305_beforenm(session_key_out, their_pk, my_sk)<0)
+         return oops_warn("diffie-hellman failed");
+     //  NOTE: Need to differentiate between server and client keys
+    return 0;
+}
+    
 
 
 void exchange_session_key(int from_fd, int to_fd,

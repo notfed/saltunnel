@@ -54,10 +54,12 @@
 
 typedef struct cryptostream {
     
+    /* These fields are required input */
     int from_fd;
     int to_fd;
     nonce8 nonce;
-    
+
+    /* The remaining fields will be auto-populated */
     int vector_init_complete;
     
     unsigned char plaintext[CRYPTOSTREAM_SPAN_MAXBYTES];
