@@ -6,6 +6,7 @@
 #include "stopwatch.h"
 #include "log.h"
 
+// TODO: Use clock_gettime w/ CLOCK_MONOTONIC
 void stopwatch_start(stopwatch* stopwatch) {
     gettimeofday(&stopwatch->time_started, NULL);
 }

@@ -3,7 +3,7 @@
 //  saltunnel2
 //
 
-//TODO: Rename to uninterruptible
+//TODO: We don't need these if we have SA_RESTART
 
 #ifndef uninterruptable_h
 #define uninterruptable_h

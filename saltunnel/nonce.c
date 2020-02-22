@@ -31,6 +31,12 @@ void nonce24_clear(nonce24 nonce) {
     }
 }
 
+void nonce24_copy(nonce8 nonce_from, nonce8 nonce_to) {
+    for(int i = 0; i < 24; i++) {
+        nonce_to[i] = nonce_from[i];
+    }
+}
+
 void nonce24_increment(nonce24 nonce) {
     unsigned char carry = 1;
     for(int i = 0; i < 24; i++) {

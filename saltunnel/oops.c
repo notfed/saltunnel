@@ -13,5 +13,5 @@
 
 int intexit(int exitcode) {
     _exit(exitcode);
-    return -1;
+    return -1; // Satisfies macro expression requirements
 }

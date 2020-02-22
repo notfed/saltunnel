@@ -11,7 +11,7 @@
 #define CHAOS_READ_N 512
 #define CHAOS_WRITE_N 512
 
-// Only read chaos_n bytes at a time
+// Only read at most CHAOS_READ_N bytes at a time (for testing)
 int chaos_readv(int fd, struct iovec* vector, int count) {
     if(vector[0].iov_len == 0)
         oops_fatal("chaos_readv currently requires first vector to be non-zero size");
@@ -23,7 +23,7 @@ int chaos_readv(int fd, struct iovec* vector, int count) {
     return r;
 }
 
-// Only write chaos_n bytes at a time
+// Only write at most CHAOS_WRITE_N bytes at a time (for testing)
 int chaos_writev(int fd, struct iovec* vector, int count) {
     if(vector[0].iov_len == 0)
         oops_fatal("chaos_writev currently requires first vector to be non-zero size");

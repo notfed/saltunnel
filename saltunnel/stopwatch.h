@@ -2,9 +2,6 @@
 //  stopwatch.h
 //  saltunnel2
 //
-//  Created by Jay Sullivan on 1/26/20.
-//  Copyright © 2020 Jay Sullivan. All rights reserved.
-//
 
 #ifndef stopwatch_h
 #define stopwatch_h

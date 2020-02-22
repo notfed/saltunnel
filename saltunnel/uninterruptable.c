@@ -40,6 +40,7 @@ ssize_t writen(ssize_t (*op)(int,const void*,size_t),int fd,const char *buf,unsi
     return (ssize_t)(len);
 }
 
+// TODO: Get rid of the extra op arg; we never use it
 ssize_t uninterruptable_read(ssize_t (*op)(int,void*,size_t),int fd,const char* buf,unsigned int len)
 {
   ssize_t r;
