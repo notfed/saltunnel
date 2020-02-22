@@ -58,8 +58,8 @@ ssize_t uninterruptable_readn(int fd, char *buf, size_t len)
   while (len)
   {
     ssize_t r = read(fd, buf2, len);
-    if(r==-1 && errno == EINTR) continue;
-    if(r==-1) { return -1; }
+    if(r<0 && errno == EINTR) continue;
+    if(r<0) { return r; }
     if(r==0)  { errno = EIO; return -1; }
     bytesread += r;
     buf2 += r;
@@ -75,7 +75,7 @@ ssize_t readn(int fd, char *buf, size_t len)
   while (len)
   {
     ssize_t r = read(fd, buf2, len);
-    if(r==-1) { return -1; }
+    if(r<0) { return r; }
     if(r==0)  { errno = EIO; return -1; }
     bytesread += r;
     buf2 += r;

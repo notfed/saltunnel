@@ -14,6 +14,7 @@
 #include "tcpclient.h"
 #include "tcpserver.h"
 #include "stopwatch.h"
+#include "uninterruptable.h"
 #include "log.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -647,7 +648,7 @@ static void* tcpstub_server_write_inner(void* v)
     tcpserver_options options = {
      .OPT_TCP_NODELAY = 1,
      .OPT_SO_REUSEADDR = 1,
-     .OPT_TCP_FASTOPEN = 1
+//     .OPT_TCP_FASTOPEN = 1
     };
     int tcpserver = tcpserver_new(ip, port, options);
     if(tcpserver<0)
@@ -684,46 +685,51 @@ static pthread_t tcpstub_server_writer(const char* ip,
     pthread_create(&thread, NULL, tcpstub_server_write_inner, (void*)c)==0 || oops_fatal("pthread_create failed");
     return thread;
 }
-static int tcpstub_client_reader(const char* ip, const char* port, const char* message)
+static void tcpstub_client_reader(const char* ip, const char* port, const char* message)
 {
-    // Create a TCP client
-    tcpclient_options options = {
-     .OPT_TCP_NODELAY = 1,
-     .OPT_TCP_FASTOPEN = 1,
-     .OPT_RETRY_FOREVER = 1
-    };
-    int tcpclient = tcpclient_new(ip, port, options);
-    if(tcpclient<0)
-        oops_fatal("failed to establish TCP connection");
-    
-    // Read a message
-    log_info("tcpstub_client_assert: about to read message");
     char actual_message[512] = {0};
-    int len = (int)strlen(message);
-    int rc = 0;
-    sleep(1);
-    for(;;) {
-        rc = (int)uninterruptable_readn(tcpclient, actual_message, len);
+    
+    for(int tries_left=10000; tries_left>0; tries_left--) {
+        if(tries_left==0)
+            oops_fatal("failed to connect too many times");
+            
+        // Create a TCP client
+        tcpclient_options options = {
+         .OPT_TCP_NODELAY = 1,
+         //.OPT_TCP_FASTOPEN = 1,
+         .OPT_RETRY_FOREVER = 1
+        };
+        int tcpclient = tcpclient_new(ip, port, options);
+        if(tcpclient<0)
+            oops_fatal("failed to establish TCP connection");
+        
+        // Read a message
+        log_info("tcpstub_client_assert: about to read message");
+        int len = (int)strlen(message);
+        int rc; rc = (int)uninterruptable_readn(tcpclient, actual_message, len);
+        
+        // If connection was refused, try to connect again
         if(rc<0 && errno == ECONNREFUSED) {
-            log_info("tcpstub_client_assert: connection refused; trying again");
-            sleep(1);
+            log_info("tcpstub_client_assert: connection refused; trying again...");
+            usleep(1000); errno = 0;
+            try(close(tcpclient)) || oops_fatal("failed to close socket");
             continue;
         }
+        // If read encountered a different error, that's bad
+        if(rc<0) oops_fatal("failed to read");
+        // If read didn't read enough bytes, that's bad
+        if(rc != len) oops_fatal("partial read after connectx");
+        
+        // Clean up
+        try(close(tcpclient)) || oops_fatal("failed to close socket");
         break;
     }
-    if(rc<0)
-        oops_fatal("failed to read");
-    if(rc != len) oops_fatal("partial read after connectx");
+    log_info("tcpstub_client_assert: connection succeeded");
     
     // Assert that it was valid
     if(strcmp(actual_message,message)!=0)
         oops_fatal("tcpstub_client_assert: message differed");
     log_info("tcpstub_client_assert: successfully read message");
-    
-    // Clean up
-    try(close(tcpclient)) || oops_fatal("failed to close socket");
-    
-    return tcpclient;
 }
 
 // TCP Server test

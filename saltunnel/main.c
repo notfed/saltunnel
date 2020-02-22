@@ -12,7 +12,7 @@
 #include <unistd.h>
 
 int main(int argc, const char * argv[]) {
-    
+    errno=0;
     // Seed random bytes
     try(sodium_init())
     || oops_fatal("sodium init");
