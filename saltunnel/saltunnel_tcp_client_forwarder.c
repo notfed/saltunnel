@@ -44,6 +44,7 @@ static void* connection_thread(void* v)
      .OPT_TCP_FASTOPEN = 1,
 //     .OPT_SO_SNDLOWAT = 512
     };
+    log_warn("(CLIENT FORWARDER) ABOUT TO CONNECT TO %s:%s", c->remote_ip, c->remote_port);
     int remote_fd = tcpclient_new(c->remote_ip, c->remote_port, options);
     if(remote_fd<0) {
         log_warn("!!!!!!!!!!! failed to create TCP client connection"); return 0;
@@ -54,6 +55,7 @@ static void* connection_thread(void* v)
     if(saltunnel_kx_packet0_trywrite(c->long_term_key, remote_fd, my_sk)<0) {
         close(remote_fd); log_warn("failed to write packet0"); return 0;
     }
+    log_warn("(CLIENT FORWARDER) SUCCESSFULLY CONNECTED TO %s:%s", c->remote_ip, c->remote_port);
     
     log_info("client forwarder successfully wrote packet0");
                                      

@@ -635,14 +635,16 @@ static pthread_t saltunnel_forwarder_thread(int client_or_server,
 typedef struct tcpstub_server_write_context {
     const char* ip;
     const char* port;
-    const char *message;
+    const char *writemsg;
+    const char *readmsg;
 } tcpstub_server_write_context;
 static void* tcpstub_server_write_inner(void* v)
 {
     tcpstub_server_write_context* c = (tcpstub_server_write_context*)v;
     const char* ip = c->ip;
     const char* port = c->port;
-    const char *message = c->message;
+    const char *writemsg = c->writemsg;
+    const char *readmsg = c->readmsg;
     
     // Create a TCP server
     tcpserver_options options = {
@@ -659,37 +661,55 @@ static void* tcpstub_server_write_inner(void* v)
     int fd_conn = tcpserver_accept(tcpserver);
     if(fd_conn<0)
         oops_fatal("failed to establish TCP connection");
-    log_info("(TCPSTUB SERVER) ACCEPTED ON", ip, port);
+    log_info("(TCPSTUB SERVER) ACCEPTED ON %s:%s", ip, port);
     
-    // Write the message
-    int len = (int)strlen(c->message);
-    if(uninterruptable_writen(write, fd_conn, message, len)<0)
-        oops_fatal("failed to write");
+    // ---- Write a message ----
+    int wlen = (int)strlen(writemsg);
+    log_info("(TCPSTUB SERVER) WRITING %d BYTES.",wlen);
+    int wrc = (int)write(fd_conn, writemsg, wlen); // TODO: Change to readn.  Just testing.
+    if(wrc<0) oops_fatal("failed to read");
+    if(wrc != wlen) { log_info("partial write (%d/%d)", wrc, wlen); oops_fatal("..."); }
+    log_info("(TCPSTUB SERVER) WROTE %d BYTES TO CONNECTION", wlen);
+    
+    // ---- Read a message ----
+    char actual_readmsg[512] = {0};
+    int rlen = (int)strlen(readmsg);
+    log_info("(TCPSTUB SERVER) READING %d BYTES.",rlen);
+    int rrc = (int)read(fd_conn, actual_readmsg, rlen); // TODO: Change to readn.  Just testing.
+    if(rrc<0) oops_fatal("failed to read");
+    if(rrc != rlen) { log_info("partial read (%d/%d)", rrc, rlen); oops_fatal("..."); }
+    log_info("(TCPSTUB SERVER) READ %d BYTES FROM CONNECTION", rrc);
+    
+    // Assert that what we read is valid
+    if(strcmp(actual_readmsg,readmsg)==0)
+        log_info("(TCPSTUB SERVER) successfully read CORRECT message");
+    else
+        oops_fatal("(TCPSTUB SERVER) readmsg differed");
     
     // Clean up
     try(close(fd_conn)) || oops_fatal("failed to close TCP connection");
     try(close(tcpserver)) || oops_fatal("failed to close TCP server");
     
-    log_info("tcpstub_server_write_inner: wrote the message '%s' (%d bytes) to fd %d !!!!!!!!!!!!!", c->message, len, fd_conn);
-    
     free(v);
     return 0;
 }
-static pthread_t tcpstub_server_writer(const char* ip,
+static pthread_t tcpstub_server_writer_reader(const char* ip,
                                       const char* port,
-                                      const char *message)
+                                      const char *writemsg,
+                                      const char *readmsg)
 {
     tcpstub_server_write_context* c = calloc(1,sizeof(tcpstub_server_write_context));
     c->ip = ip;
     c->port = port;
-    c->message = message;
+    c->readmsg = readmsg;
+    c->writemsg = writemsg;
     pthread_t thread;
     pthread_create(&thread, NULL, tcpstub_server_write_inner, (void*)c)==0 || oops_fatal("pthread_create failed");
     return thread;
 }
-static void tcpstub_client_reader(const char* ip, const char* port, const char* message)
+static void tcpstub_client_writer_reader(const char* ip, const char* port, const char* writemsg, const char* readmsg)
 {
-    char actual_message[512] = {0};
+    char actual_readmsg[512] = {0};
     
     for(int tries_left=10000; tries_left>0; tries_left--) {
         if(tries_left==0)
@@ -709,22 +729,27 @@ static void tcpstub_client_reader(const char* ip, const char* port, const char* 
             usleep(10000); errno = 0;
             continue;
         }
-        
-        // Any other error is bad
+        // Any other error is test failure
         if(tcpclient<0)
             oops_fatal("failed to establish TCP connection");
         
-        // Read a message
-        int len = (int)strlen(message);
-        log_info("(TCPSTUB CLIENT) CONNECTION SUCCEEDED (TO %s:%s). READING %d BYTES FROM IT.", ip, port, len);
-//        int rc; rc = (int)readn(tcpclient, actual_message, len);
-        int rc = (int)read(tcpclient, actual_message, len); // TODO: Change back to readn.  Just testing.
+        log_info("(TCPSTUB CLIENT) CONNECTION SUCCEEDED (TO %s:%s).", ip, port);
         
-        log_info("(TCPSTUB CLIENT) READ BYTES FROM CONNECTION (%d bytes)", rc);
-        // If read encountered a different error, that's bad
-        if(rc<0) oops_fatal("failed to read");
-        // If read didn't read enough bytes, that's bad
-        if(rc != len) { log_info("partial read (%d,%d)", rc, len); oops_fatal("..."); }
+        // ---- Write a message ----
+        int wlen = (int)strlen(writemsg);
+        log_info("(TCPSTUB CLIENT) WRITING %d BYTES.",wlen);
+        int wrc = (int)write(tcpclient, writemsg, wlen); // TODO: Change to readn.  Just testing.
+        if(wrc<0) oops_fatal("failed to read");
+        if(wrc != wlen) { log_info("partial write (%d/%d)", wrc, wlen); oops_fatal("..."); }
+        log_info("(TCPSTUB SERVER) WROTE %d BYTES TO CONNECTION", wlen);
+        
+        // ---- Read a message ----
+        int rlen = (int)strlen(readmsg);
+        log_info("(TCPSTUB CLIENT) READING %d BYTES.",rlen);
+        int rrc = (int)read(tcpclient, actual_readmsg, rlen); // TODO: Change to readn.  Just testing.
+        if(rrc<0) oops_fatal("failed to read");
+        if(rrc != rlen) { log_info("partial read (%d/%d)", rrc, rlen); oops_fatal("..."); }
+        log_info("(TCPSTUB CLIENT) READ %d BYTES FROM CONNECTION", rrc);
         
         // Clean up
         try(close(tcpclient)) || oops_fatal("failed to close socket");
@@ -732,10 +757,11 @@ static void tcpstub_client_reader(const char* ip, const char* port, const char* 
     }
     log_info("(TCPSTUB CLIENT) connection succeeded");
     
-    // Assert that it was valid
-    if(strcmp(actual_message,message)!=0)
-        oops_fatal("tcpstub_client_assert: message differed");
-    log_info("tcpstub_client_assert: successfully read message");
+    // Assert that what we read is valid
+    if(strcmp(actual_readmsg,readmsg)==0)
+        log_info("(TCPSTUB CLIENT) successfully read CORRECT message");
+    else
+        oops_fatal("(TCPSTUB CLIENT) readmsg differed");
 }
 
 // TCP Server test
@@ -744,7 +770,9 @@ void test11() {
     // Arrange  Threads
     
     // Writer Server:
-    tcpstub_server_writer("127.0.0.1", "3270", "this string from TCP server stub to client stub");
+    tcpstub_server_writer_reader("127.0.0.1", "3270",
+                          "this string from TCP server stub to client stub",
+                          "this string from TCP client stub to server stub");
     
     // Server Forwarder Thread:
     pthread_t thread1 = saltunnel_forwarder_thread(1, "127.0.0.1", "3260", "127.0.0.1", "3270");
@@ -753,10 +781,14 @@ void test11() {
     pthread_t thread2 = saltunnel_forwarder_thread(0, "127.0.0.1", "3250", "127.0.0.1", "3260");
     
     // Reader Client:
-    tcpstub_client_reader("127.0.0.1", "3250", "this string from TCP server stub to client stub");
+    tcpstub_client_writer_reader("127.0.0.1", "3250",
+                                 "this string from TCP client stub to server stub",
+                                 "this string from TCP server stub to client stub");
     log_info("test11 assertion successfully completed");
     
     // Clean up
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
 //    pthread_kill(thread1, SIGKILL);
 //    pthread_kill(thread2, SIGKILL);
 }
