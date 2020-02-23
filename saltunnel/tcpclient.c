@@ -65,19 +65,15 @@ int tcpclient_new(const char* ip, const char* port, tcpclient_options options)
     log_info("tcpclient_socket created, fd %d", s);
     
     // Connect using the socket
-    for(;;) {
-        int MAYBE_CONNECT_DATA_IDEMPOTENT = options.OPT_TCP_FASTOPEN ? 1 : 0;
-        unsigned int connectx_options = CONNECT_RESUME_ON_READ_WRITE | MAYBE_CONNECT_DATA_IDEMPOTENT;
+    if(options.OPT_TCP_FASTOPEN) {
+        unsigned int connectx_options = CONNECT_RESUME_ON_READ_WRITE | CONNECT_DATA_IDEMPOTENT;
         if(connectx(s, &endpoints, SAE_ASSOCID_ANY, connectx_options, NULL, 0, NULL, NULL)<0) {
-            if(options.OPT_RETRY_FOREVER && errno == ECONNREFUSED) {
-                log_info("TCP client connection refused; trying again...");
-                sleep(1);
-                continue;
-            }
             if(close(s)<0) oops_warn("failed to close TCP client connection");
             return oops_warn("error establishing connection to TCP server");
         }
-        break;
+    } else {
+        if(connect(s, (struct sockaddr*)&server_address, sizeof(server_address))<0)
+            return oops_warn("failed to connect");
     }
     
     // Make it non-blocking

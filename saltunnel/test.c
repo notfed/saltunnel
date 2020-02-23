@@ -655,9 +655,11 @@ static void* tcpstub_server_write_inner(void* v)
         oops_fatal("failed to create TCP server");
     
     // Accept a connection
+    log_info("(TCPSTUB SERVER) WAITING FOR ACCEPT ON %s:%s", ip, port);
     int fd_conn = tcpserver_accept(tcpserver);
     if(fd_conn<0)
         oops_fatal("failed to establish TCP connection");
+    log_info("(TCPSTUB SERVER) ACCEPTED ON", ip, port);
     
     // Write the message
     int len = (int)strlen(c->message);
@@ -668,7 +670,7 @@ static void* tcpstub_server_write_inner(void* v)
     try(close(fd_conn)) || oops_fatal("failed to close TCP connection");
     try(close(tcpserver)) || oops_fatal("failed to close TCP server");
     
-    log_info("tcpstub_server_write_inner: wrote message");
+    log_info("tcpstub_server_write_inner: wrote the message '%s' (%d bytes) to fd %d !!!!!!!!!!!!!", c->message, len, fd_conn);
     
     free(v);
     return 0;
@@ -696,35 +698,39 @@ static void tcpstub_client_reader(const char* ip, const char* port, const char* 
         // Create a TCP client
         tcpclient_options options = {
          .OPT_TCP_NODELAY = 1,
-         //.OPT_TCP_FASTOPEN = 1,
-         .OPT_RETRY_FOREVER = 1
+         //.OPT_TCP_FASTOPEN = 1
         };
+        
         int tcpclient = tcpclient_new(ip, port, options);
+        
+        // If connection was refused, try to connect again
+        if(tcpclient<0 && errno == ECONNREFUSED) {
+            log_info("(TCPSTUB CLIENT) CONNECTION REFUSED (TO %s:%s), TRYING AGAIN...", ip, port);
+            usleep(10000); errno = 0;
+            continue;
+        }
+        
+        // Any other error is bad
         if(tcpclient<0)
             oops_fatal("failed to establish TCP connection");
         
         // Read a message
-        log_info("tcpstub_client_assert: about to read message");
         int len = (int)strlen(message);
-        int rc; rc = (int)uninterruptable_readn(tcpclient, actual_message, len);
+        log_info("(TCPSTUB CLIENT) CONNECTION SUCCEEDED (TO %s:%s). READING %d BYTES FROM IT.", ip, port, len);
+//        int rc; rc = (int)readn(tcpclient, actual_message, len);
+        int rc = (int)read(tcpclient, actual_message, len); // TODO: Change back to readn.  Just testing.
         
-        // If connection was refused, try to connect again
-        if(rc<0 && errno == ECONNREFUSED) {
-            log_info("tcpstub_client_assert: connection refused; trying again...");
-            usleep(1000); errno = 0;
-            try(close(tcpclient)) || oops_fatal("failed to close socket");
-            continue;
-        }
+        log_info("(TCPSTUB CLIENT) READ BYTES FROM CONNECTION (%d bytes)", rc);
         // If read encountered a different error, that's bad
         if(rc<0) oops_fatal("failed to read");
         // If read didn't read enough bytes, that's bad
-        if(rc != len) oops_fatal("partial read after connectx");
+        if(rc != len) { log_info("partial read (%d,%d)", rc, len); oops_fatal("..."); }
         
         // Clean up
         try(close(tcpclient)) || oops_fatal("failed to close socket");
         break;
     }
-    log_info("tcpstub_client_assert: connection succeeded");
+    log_info("(TCPSTUB CLIENT) connection succeeded");
     
     // Assert that it was valid
     if(strcmp(actual_message,message)!=0)

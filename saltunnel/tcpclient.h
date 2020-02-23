@@ -12,7 +12,6 @@ typedef struct tcpclient_options {
     char OPT_TCP_NODELAY;
     char OPT_TCP_FASTOPEN;
     char OPT_NONBLOCK;
-    char OPT_RETRY_FOREVER;
     // Valued Parameters
     unsigned short OPT_SO_SNDLOWAT;
 } tcpclient_options;

@@ -40,11 +40,11 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress, unsig
     while(pfds[0].fd != FD_EOF || pfds[1].fd != FD_EOF || pfds[2].fd != FD_EOF || pfds[3].fd != FD_EOF) {
         
         /* Poll */
-        log_debug("poll: polling [%2d->D->%2d, %2d->E->%2d]...", pfds[0].fd, pfds[1].fd,pfds[2].fd, pfds[3].fd);
+        log_info("poll: polling [%2d->D->%2d, %2d->E->%2d]...", pfds[0].fd, pfds[1].fd,pfds[2].fd, pfds[3].fd);
         int rc = poll(pfds,4,-1);
         if(rc<0 && errno == EINTR) continue;
         if(rc<0) oops_fatal("poll: failed to poll");
-        log_debug("poll: polled  [%2d->D->%2d, %2d->E->%2d].", pfds[0].fd, pfds[1].fd,pfds[2].fd, pfds[3].fd);
+        log_info("poll: polled  [%2d->D->%2d, %2d->E->%2d].", pfds[0].fd, pfds[1].fd,pfds[2].fd, pfds[3].fd);
         
         /* If an fd is ready, mark it as FD_READY */
         

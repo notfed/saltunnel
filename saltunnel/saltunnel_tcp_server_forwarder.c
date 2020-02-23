@@ -25,13 +25,10 @@
 
 typedef struct connection_thread_context {
     unsigned char* long_term_key;
-    int fd_conn;
+    int remote_fd;
     const char* to_ip;
     const char* to_port;
     packet0 their_packet_zero;
-    packet0 my_packet_zero;
-    packet1 their_packet_one;
-    packet1 my_packet_one;
 } connection_thread_context;
 
 static void* connection_thread(void* v)
@@ -39,33 +36,63 @@ static void* connection_thread(void* v)
     connection_thread_context* c = (connection_thread_context*)v;
     log_set_thread_name("conn");
     
-    log_debug("connection thread entered");
-    
-    log_info("saltunnel_tcp_server_forwarder about to write packet0");
+    log_info("connection thread entered");
+
+    // Create a TCP Client
+    tcpclient_options options = {
+     .OPT_TCP_NODELAY = 1,
+     .OPT_TCP_FASTOPEN = 1,
+//     .OPT_SO_SNDLOWAT = 512
+    };
+    int local_fd = tcpclient_new(c->to_ip, c->to_port, options);
+    if(local_fd<0)
+    { oops_warn("!!!!!!!!!!!!!!! failed to create TCP client connection"); return 0; }
     
     // Write packet0
     unsigned char my_sk[32];
-    if(saltunnel_kx_packet0_trywrite(c->long_term_key, c->fd_conn, my_sk)<0)
-    { oops_warn("failed to write packet0"); return 0; }
+    if(saltunnel_kx_packet0_trywrite(c->long_term_key, c->remote_fd, my_sk)<0)
+    { close(local_fd); oops_warn("failed to write packet0"); return 0; }
     
-    log_info("saltunnel_tcp_server_forwarder wrote packet0 !!!!!!!!!!!!");
+    log_info("server forwarder successfully wrote packet0");
     
-//    if(saltunnel_kx_packet0_trywrite(long_term_key, c, &packet)<0)
-//        return;
+    // Exchange packet1
+    
+    // TODO: Exchange single packet to completely prevent replay attacks
+    
+    
+    // Calculate shared key
+    unsigned char session_key[32];
+    if(saltunnel_kx_calculate_shared_key(session_key, c->their_packet_zero.pk, my_sk)<0)
+    { close(local_fd); oops_warn("failed to calculate shared key"); return 0; }
+    
+    log_info("calculated shared key");
+    
+    // Run saltunnel
+    cryptostream ingress = {
+        .from_fd = c->remote_fd,
+        .to_fd = local_fd
+    };
+    cryptostream egress = {
+        .from_fd = local_fd,
+        .to_fd = c->remote_fd
+    };
+    log_info("running saltunnel");
+    log_info("server forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
+    saltunnel(&ingress, &egress);
     
     free(v);
     return 0;
 }
 
 static pthread_t connection_thread_spawn(unsigned char* long_term_key,
-                                         int fd_conn, packet0* their_packet_zero,
+                                         int remote_fd, packet0* their_packet_zero,
                                          const char* to_ip, const char* to_port)
 {
     connection_thread_context* c = calloc(1,sizeof(connection_thread_context));
     log_info("handling connection");
     
     c->long_term_key = long_term_key;
-    c->fd_conn = fd_conn;
+    c->remote_fd = remote_fd;
     c->to_ip = to_ip;
     c->to_port = to_port;
     memcpy(&c->their_packet_zero, their_packet_zero, sizeof(packet0));
@@ -79,15 +106,19 @@ static pthread_t connection_thread_spawn(unsigned char* long_term_key,
 }
 
 static int maybe_handle_connection(unsigned char* long_term_key,
-                                   int fd_conn,
+                                   int remote_fd,
                                    const char* to_ip, const char* to_port) {
     log_info("maybe handling connection");
+    
     // Read packet0
     packet0 packet_zero = {0};
-    if(saltunnel_kx_packet0_tryread(long_term_key, fd_conn, &packet_zero)<0)
+    if(saltunnel_kx_packet0_tryread(long_term_key, remote_fd, &packet_zero)<0)
         return oops_warn("failed to read packet0");
+    
+    log_info("server forwarder successfully read packet0");
+    
     // If it succeeded, handle the connection
-    pthread_t thread = connection_thread_spawn(long_term_key, fd_conn, &packet_zero, to_ip, to_port);
+    pthread_t thread = connection_thread_spawn(long_term_key, remote_fd, &packet_zero, to_ip, to_port);
     if(thread==0) return -1;
     else return 1;
 }
@@ -107,21 +138,30 @@ int saltunnel_tcp_server_forwarder(const char* from_ip, const char* from_port,
      .OPT_SO_REUSEADDR = 1,
      .OPT_TCP_DEFER_ACCEPT = 1,
      .OPT_TCP_FASTOPEN = 1,
-     .OPT_SO_RCVLOWAT = 512
+//     .OPT_SO_RCVLOWAT = 512
     };
-    int s = tcpserver_new(from_ip, from_port, options);
-    if(s<0) oops_fatal("error creating socket");
     
-    // Listen for new connections
-    log_info("waiting for connections on %s:%s", from_ip, from_port);
+    int s = tcpserver_new(from_ip, from_port, options);
+    if(s<0)
+        return oops_warn("error creating socket");
+    
     for(;;) {
-        // Accept a new connection
-        int fd_conn = tcpserver_accept(s);
-        if(fd_conn<0) oops_fatal("accepting connection");
+        log_info("(SERVER FORWARDER) WAITING FOR ACCEPT ON %s:%s", from_ip, from_port);
         
+        // Accept a new connection (or wait for one to arrive)
+        int remote_fd = tcpserver_accept(s);
+        if(remote_fd<0) {
+            log_warn("failed to accept connection");
+            sleep(1); errno = 0;
+            continue;
+        }
+        
+        log_info("(SERVER FORWARDER) ACCEPTED ON %s:%s", from_ip, from_port);
+
         // Handle the connection
-        if(maybe_handle_connection(long_term_key, fd_conn, to_ip,to_port)<0) {
-            try(close(fd_conn)) || oops_fatal("failed to close connection");
+        if(maybe_handle_connection(long_term_key, remote_fd, to_ip, to_port)<0) {
+            try(close(remote_fd)) || log_warn("failed to close connection");
+            log_warn("encountered error with TCP connection");
         }
     }
     

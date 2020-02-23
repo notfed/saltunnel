@@ -113,7 +113,7 @@ void threadpool_for(int threadpool_index, threadpool_task* tasks) {
     // Take big lock
     pthread_mutex_lock(&tp->parallel_for_mutex)==0 || oops_fatal("pthread_mutex_lock");
     
-    // Point the threadpool to (except, we'll do the first task in the current thread)
+    // Point the threadpool to the provided tasks (except, skip the first task, because we'll do that in the calling thread)
     tp->tasks = &tasks[1];
     
     // Broadcast start signal
@@ -124,7 +124,7 @@ void threadpool_for(int threadpool_index, threadpool_task* tasks) {
     log_debug("threadpool_for: sent 'start' signal");
     pthread_mutex_unlock(&tp->mutex)==0 || oops_fatal("pthread_mutex_unlock");
     
-    // Run the first task in the current thread
+    // Run the first task in the calling thread
     tasks[0].action(tasks[0].param);
     
     // Wait for all threads to finish

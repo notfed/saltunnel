@@ -1,5 +1,5 @@
 //
-//  saltunnel_tcp_client.c
+//  saltunnel_tcp_client_forwarder.c
 //  saltunnel
 //
 
@@ -26,9 +26,9 @@
 
 typedef struct connection_thread_context {
     unsigned char* long_term_key;
-    int fd_conn;
-    const char* to_ip;
-    const char* to_port;
+    int local_fd;
+    const char* remote_ip;
+    const char* remote_port;
 } connection_thread_context;
 
 static void* connection_thread(void* v)
@@ -37,52 +37,57 @@ static void* connection_thread(void* v)
     log_set_thread_name("conn");
     
     log_info("connection thread entered");
-    
-    // Write packet0
-    unsigned char my_sk[32];
-    if(saltunnel_kx_packet0_trywrite(c->long_term_key, c->fd_conn, my_sk)<0)
-    { oops_warn("failed to write packet0"); return 0; }
-    
-    log_info("client forwarder wrote packet0");
-    log_info("client forwarder about to read packet0");
-                                     
-    // Read packet0
-    packet0 their_packet0 = {0};
-    if(saltunnel_kx_packet0_tryread(c->long_term_key, c->fd_conn, &their_packet0)<0)
-    { oops_warn("failed to read packet0"); return 0; }
-    
-    log_info("client forwarder read packet0");
-        
-    // Calculate shared key
-    unsigned char session_key[32];
-    if(saltunnel_kx_calculate_shared_key(session_key, their_packet0.pk, my_sk)<0)
-    { oops_warn("failed to calculate shared key"); return 0; }
-    
-    log_info("calculated shared key");
-    
-    // Exchange packet1
-    
-    // TODO: Exchange single packet to completely prevent replay attacks
 
     // Create a TCP Client
     tcpclient_options options = {
      .OPT_TCP_NODELAY = 1,
      .OPT_TCP_FASTOPEN = 1,
-     .OPT_SO_SNDLOWAT = 512
+//     .OPT_SO_SNDLOWAT = 512
     };
-    int tcpclient = tcpclient_new(c->to_ip, c->to_port, options);
-    if(tcpclient<0)
-    { oops_warn("failed to create TCP client connection"); return 0; }
+    int remote_fd = tcpclient_new(c->remote_ip, c->remote_port, options);
+    if(remote_fd<0) {
+        log_warn("!!!!!!!!!!! failed to create TCP client connection"); return 0;
+    }
+    
+    // Write packet0
+    unsigned char my_sk[32];
+    if(saltunnel_kx_packet0_trywrite(c->long_term_key, remote_fd, my_sk)<0) {
+        close(remote_fd); log_warn("failed to write packet0"); return 0;
+    }
+    
+    log_info("client forwarder successfully wrote packet0");
+                                     
+    // Read packet0
+    packet0 their_packet0 = {0};
+    if(saltunnel_kx_packet0_tryread(c->long_term_key, remote_fd, &their_packet0)<0) {
+        close(remote_fd); log_warn("failed to read packet0"); return 0;
+    }
+    
+    log_info("client forwarder successfully read packet0");
+    
+    // Exchange packet1
+    
+    // TODO: Exchange single packet to completely prevent replay attacks
+        
+    // Calculate shared key
+    unsigned char session_key[32];
+    if(saltunnel_kx_calculate_shared_key(session_key, their_packet0.pk, my_sk)<0) {
+        close(remote_fd); log_warn("failed to calculate shared key"); return 0;
+    }
+    
+    log_info("calculated shared key");
     
     // Run saltunnel
     cryptostream ingress = {
-        .from_fd = c->fd_conn,
-        .to_fd = tcpclient
+        .from_fd = remote_fd,
+        .to_fd = c->local_fd
     };
     cryptostream egress = {
-        .from_fd = tcpclient,
-        .to_fd = c->fd_conn
+        .from_fd = c->local_fd,
+        .to_fd = remote_fd
     };
+    log_info("running saltunnel");
+    log_info("client forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
     saltunnel(&ingress, &egress);
     
     free(v);
@@ -90,15 +95,15 @@ static void* connection_thread(void* v)
 }
 
 static pthread_t connection_thread_spawn(unsigned char* long_term_key,
-                                         int fd_conn, const char* to_ip, const char* to_port)
+                                         int local_fd, const char* to_ip, const char* to_port)
 {
     connection_thread_context* c = calloc(1,sizeof(connection_thread_context));
     log_info("handling connection");
     
     c->long_term_key = long_term_key;
-    c->fd_conn = fd_conn;
-    c->to_ip = to_ip;
-    c->to_port = to_port;
+    c->local_fd = local_fd;
+    c->remote_ip = to_ip;
+    c->remote_port = to_port;
     
     pthread_t thread;
     if(pthread_create(&thread, NULL, connection_thread, (void*)c)!=0) {
@@ -130,22 +135,30 @@ int saltunnel_tcp_client_forwarder(const char* from_ip, const char* from_port,
     tcpserver_options options = {
      .OPT_TCP_NODELAY = 1,
      .OPT_SO_REUSEADDR = 1,
-     .OPT_TCP_DEFER_ACCEPT = 1,
-     .OPT_TCP_FASTOPEN = 1
+     .OPT_TCP_FASTOPEN = 1,
+     //     .OPT_SO_RCVLOWAT = 512
     };
     int s = tcpserver_new(from_ip, from_port, options);
-    if(s<0) oops_fatal("error creating socket");
+    if(s<0)
+        return oops_warn("error creating socket");
     
-    // Listen for new connections
-    log_info("waiting for connections on %s:%s", from_ip, from_port);
     for(;;) {
-        // Accept a new connection
-        int fd_conn = tcpserver_accept(s);
-        if(fd_conn<0) oops_fatal("accepting connection");
+        log_info("(CLIENT FORWARDER) WAITING FOR ACCEPT ON %s:%s", from_ip, from_port);
+        
+        // Accept a new connection (or wait for one to arrive)
+        int local_fd = tcpserver_accept(s);
+        if(local_fd<0) {
+            log_warn("failed to accept connection");
+            sleep(1); errno = 0;
+            continue;
+        }
+        
+        log_info("(CLIENT FORWARDER) ACCEPTED ON %s:%s", from_ip, from_port);
         
         // Handle the connection
-        if(handle_connection(long_term_key, fd_conn, to_ip,to_port)<0) {
-            try(close(fd_conn)) || oops_fatal("failed to close connection");
+        if(handle_connection(long_term_key, local_fd, to_ip, to_port)<0) {
+            try(close(local_fd)) || log_warn("failed to close connection");
+            log_warn("encountered error with TCP connection");
         }
     }
     
