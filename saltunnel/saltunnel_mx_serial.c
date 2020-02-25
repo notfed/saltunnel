@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/socket.h>
 
 #define FD_EOF   (-2)
 #define FD_READY (-1)
@@ -80,7 +81,12 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress, unsig
         // close 'to' when: 'from' is EOF, and all buffers are empty
         if(pfds[2].fd == FD_EOF && pfds[3].fd != FD_EOF && !cryptostream_encrypt_feed_canwrite(egress)) {
             log_debug("egress is done; closing egress->to_fd (%d)", egress->to_fd);
-            try(close(egress->to_fd)) || oops_fatal("failed to close");
+            int fd_is_socket = 1;
+            if(fd_is_socket) {
+                try(shutdown(egress->to_fd, SHUT_WR)) || oops_fatal("failed to close");
+            } else {
+                try(close(egress->to_fd)) || oops_fatal("failed to close");
+            }
             pfds[3].fd = FD_EOF;
         }
 
@@ -104,7 +110,12 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress, unsig
         // close 'to' when: 'from' is EOF, and all buffers are empty
         if(pfds[0].fd == FD_EOF && pfds[1].fd != FD_EOF && !cryptostream_decrypt_feed_canwrite(ingress)) {
             log_debug("ingress is done; closing ingress->to_fd (%d)", ingress->to_fd);
-            try(close(ingress->to_fd)) || oops_fatal("failed to close");
+            int fd_is_socket = 1;
+            if(fd_is_socket) {
+                try(shutdown(ingress->to_fd, SHUT_WR)) || oops_fatal("failed to close");
+            } else {
+                try(close(ingress->to_fd)) || oops_fatal("failed to close");
+            }
             pfds[1].fd = FD_EOF;
         }
 

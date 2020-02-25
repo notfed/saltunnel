@@ -34,7 +34,7 @@ typedef struct connection_thread_context {
 static void* connection_thread(void* v)
 {
     connection_thread_context* c = (connection_thread_context*)v;
-    log_set_thread_name("conn");
+    log_set_thread_name(" sf ");
     
     log_info("connection thread entered");
 
@@ -42,7 +42,7 @@ static void* connection_thread(void* v)
     tcpclient_options options = {
      .OPT_TCP_NODELAY = 1,
      .OPT_TCP_FASTOPEN = 1,
-//     .OPT_SO_SNDLOWAT = 512
+     .OPT_SO_SNDLOWAT = 512
     };
     log_warn("(SERVER FORWARDER) ABOUT TO CONNECT TO %s:%s", c->to_ip, c->to_port);
     
@@ -170,5 +170,5 @@ int saltunnel_tcp_server_forwarder(const char* from_ip, const char* from_port,
     }
     
     
-    return s;
+    return s; \
 }

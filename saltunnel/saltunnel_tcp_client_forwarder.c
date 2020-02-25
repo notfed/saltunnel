@@ -34,7 +34,7 @@ typedef struct connection_thread_context {
 static void* connection_thread(void* v)
 {
     connection_thread_context* c = (connection_thread_context*)v;
-    log_set_thread_name("conn");
+    log_set_thread_name(" cf ");
     
     log_info("connection thread entered");
 
@@ -42,7 +42,7 @@ static void* connection_thread(void* v)
     tcpclient_options options = {
      .OPT_TCP_NODELAY = 1,
      .OPT_TCP_FASTOPEN = 1,
-//     .OPT_SO_SNDLOWAT = 512
+     .OPT_SO_SNDLOWAT = 512
     };
     log_warn("(CLIENT FORWARDER) ABOUT TO CONNECT TO %s:%s", c->remote_ip, c->remote_port);
     int remote_fd = tcpclient_new(c->remote_ip, c->remote_port, options);
@@ -90,7 +90,11 @@ static void* connection_thread(void* v)
     };
     log_info("running saltunnel");
     log_info("client forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
+    
     saltunnel(&ingress, &egress);
+    
+    if(close(remote_fd)<0)
+        oops_warn("failed to close fd");
     
     free(v);
     return 0;

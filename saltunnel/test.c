@@ -671,6 +671,10 @@ static void* tcpstub_server_write_inner(void* v)
     if(wrc != wlen) { log_info("partial write (%d/%d)", wrc, wlen); oops_fatal("..."); }
     log_info("(TCPSTUB SERVER) WROTE %d BYTES TO CONNECTION", wlen);
     
+    // ---- Signal EOF ----
+    if(shutdown(fd_conn, SHUT_WR)<0)
+        oops_fatal("failed to shutdown");
+    
     // ---- Read a message ----
     char actual_readmsg[512] = {0};
     int rlen = (int)strlen(readmsg);
@@ -680,15 +684,19 @@ static void* tcpstub_server_write_inner(void* v)
     if(rrc != rlen) { log_info("partial read (%d/%d)", rrc, rlen); oops_fatal("..."); }
     log_info("(TCPSTUB SERVER) READ %d BYTES FROM CONNECTION", rrc);
     
-    // Assert that what we read is valid
-    if(strcmp(actual_readmsg,readmsg)==0)
-        log_info("(TCPSTUB SERVER) successfully read CORRECT message");
-    else
-        oops_fatal("(TCPSTUB SERVER) readmsg differed");
+    // ---- Receive EOF ----
+    if(read(fd_conn, actual_readmsg, rlen)!=0)
+        oops_fatal("expected EOF from socket");
     
     // Clean up
     try(close(fd_conn)) || oops_fatal("failed to close TCP connection");
     try(close(tcpserver)) || oops_fatal("failed to close TCP server");
+    
+    // Assert that what we read is valid
+    if(strcmp(actual_readmsg,readmsg)==0)
+        log_info("(TCPSTUB SERVER) successfully read CORRECT message");
+    else
+        oops_fatal("(TCPSTUB SERVER) readmsg differed from expected");
     
     free(v);
     return 0;
@@ -742,6 +750,10 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
         if(wrc<0) oops_fatal("failed to read");
         if(wrc != wlen) { log_info("partial write (%d/%d)", wrc, wlen); oops_fatal("..."); }
         log_info("(TCPSTUB SERVER) WROTE %d BYTES TO CONNECTION", wlen);
+
+        // ---- Signal EOF ----
+        if(shutdown(tcpclient, SHUT_WR)<0)
+            oops_fatal("failed to shutdown");
         
         // ---- Read a message ----
         int rlen = (int)strlen(readmsg);
@@ -750,6 +762,10 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
         if(rrc<0) oops_fatal("failed to read");
         if(rrc != rlen) { log_info("partial read (%d/%d)", rrc, rlen); oops_fatal("..."); }
         log_info("(TCPSTUB CLIENT) READ %d BYTES FROM CONNECTION", rrc);
+
+        // ---- Receive EOF ----
+        if(read(tcpclient, actual_readmsg, rlen)!=0)
+            oops_fatal("expected EOF from socket");
         
         // Clean up
         try(close(tcpclient)) || oops_fatal("failed to close socket");
@@ -761,7 +777,7 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
     if(strcmp(actual_readmsg,readmsg)==0)
         log_info("(TCPSTUB CLIENT) successfully read CORRECT message");
     else
-        oops_fatal("(TCPSTUB CLIENT) readmsg differed");
+        oops_fatal("(TCPSTUB CLIENT) readmsg differed from expected");
 }
 
 // TCP Server test
@@ -769,18 +785,18 @@ void test11() {
     
     // Arrange  Threads
     
-    // Writer Server:
-    tcpstub_server_writer_reader("127.0.0.1", "3270",
+    // Server Writer-Reader Thread:
+    pthread_t thread1 = tcpstub_server_writer_reader("127.0.0.1", "3270",
                           "this string from TCP server stub to client stub",
                           "this string from TCP client stub to server stub");
     
     // Server Forwarder Thread:
-    pthread_t thread1 = saltunnel_forwarder_thread(1, "127.0.0.1", "3260", "127.0.0.1", "3270");
+    pthread_t thread2 = saltunnel_forwarder_thread(1, "127.0.0.1", "3260", "127.0.0.1", "3270");
 
     // Client Forwarder Thread:
-    pthread_t thread2 = saltunnel_forwarder_thread(0, "127.0.0.1", "3250", "127.0.0.1", "3260");
+    pthread_t thread3 = saltunnel_forwarder_thread(0, "127.0.0.1", "3250", "127.0.0.1", "3260");
     
-    // Reader Client:
+    // Client Writer-Reader:
     tcpstub_client_writer_reader("127.0.0.1", "3250",
                                  "this string from TCP client stub to server stub",
                                  "this string from TCP server stub to client stub");
@@ -789,6 +805,7 @@ void test11() {
     // Clean up
     pthread_join(thread1, NULL);
     pthread_join(thread2, NULL);
+    pthread_join(thread3, NULL);
 //    pthread_kill(thread1, SIGKILL);
 //    pthread_kill(thread2, SIGKILL);
 }
