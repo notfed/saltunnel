@@ -671,10 +671,6 @@ static void* tcpstub_server_write_inner(void* v)
     if(wrc != wlen) { log_info("partial write (%d/%d)", wrc, wlen); oops_fatal("..."); }
     log_info("(TCPSTUB SERVER) WROTE %d BYTES TO CONNECTION", wlen);
     
-    // ---- Signal EOF ----
-    if(shutdown(fd_conn, SHUT_WR)<0)
-        oops_fatal("failed to shutdown");
-    
     // ---- Read a message ----
     char actual_readmsg[512] = {0};
     int rlen = (int)strlen(readmsg);
@@ -683,6 +679,10 @@ static void* tcpstub_server_write_inner(void* v)
     if(rrc<0) oops_fatal("failed to read");
     if(rrc != rlen) { log_info("partial read (%d/%d)", rrc, rlen); oops_fatal("..."); }
     log_info("(TCPSTUB SERVER) READ %d BYTES FROM CONNECTION", rrc);
+    
+    // ---- Signal EOF ----
+    if(shutdown(fd_conn, SHUT_WR)<0)
+        oops_fatal("failed to shutdown");
     
     // ---- Receive EOF ----
     if(read(fd_conn, actual_readmsg, rlen)!=0)
@@ -749,19 +749,20 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
         int wrc = (int)write(tcpclient, writemsg, wlen); // TODO: Change to readn.  Just testing.
         if(wrc<0) oops_fatal("failed to read");
         if(wrc != wlen) { log_info("partial write (%d/%d)", wrc, wlen); oops_fatal("..."); }
-        log_info("(TCPSTUB SERVER) WROTE %d BYTES TO CONNECTION", wlen);
-
-        // ---- Signal EOF ----
-        if(shutdown(tcpclient, SHUT_WR)<0)
-            oops_fatal("failed to shutdown");
+        log_info("(TCPSTUB CLIENT) WROTE %d BYTES TO CONNECTION", wlen);
         
         // ---- Read a message ----
         int rlen = (int)strlen(readmsg);
         log_info("(TCPSTUB CLIENT) READING %d BYTES.",rlen);
         int rrc = (int)read(tcpclient, actual_readmsg, rlen); // TODO: Change to readn.  Just testing.
         if(rrc<0) oops_fatal("failed to read");
-        if(rrc != rlen) { log_info("partial read (%d/%d)", rrc, rlen); oops_fatal("..."); }
+        if(rrc != rlen) { log_info("(TCPSTUB CLIENT) partial read (%d/%d)", rrc, rlen); oops_fatal("..."); }
         log_info("(TCPSTUB CLIENT) READ %d BYTES FROM CONNECTION", rrc);
+        
+        // ---- Signal EOF ----
+        if(shutdown(tcpclient, SHUT_WR)<0)
+            oops_fatal("failed to shutdown");
+        
 
         // ---- Receive EOF ----
         if(read(tcpclient, actual_readmsg, rlen)!=0)
