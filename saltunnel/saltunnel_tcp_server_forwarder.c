@@ -170,5 +170,5 @@ int saltunnel_tcp_server_forwarder(const char* from_ip, const char* from_port,
     }
     
     
-    return s; \
+    return s;
 }

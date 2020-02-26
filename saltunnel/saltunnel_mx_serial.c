@@ -45,7 +45,6 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress, unsig
         int rc = poll(pfds,4,-1);
         if(rc<0 && errno == EINTR) continue;
         if(rc<0) oops_fatal("poll: failed to poll");
-        log_info("poll: polled  [%2d->D->%2d, %2d->E->%2d].", pfds[0].fd, pfds[1].fd,pfds[2].fd, pfds[3].fd);
         
         /* If an fd is ready, mark it as FD_READY */
         
@@ -54,13 +53,16 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress, unsig
 //        if ((pfds[1].fd>=0) && (pfds[1].revents & (POLLOUT)))        { log_debug("%d is ready to write to",  pfds[1].fd); pfds[1].fd = FD_READY; }
 //        if ((pfds[2].fd>=0) && (pfds[2].revents & (POLLIN|POLLHUP))) { log_debug("%d is ready to read from", pfds[2].fd); pfds[2].fd = FD_READY; }
 //        if ((pfds[3].fd>=0) && (pfds[3].revents & (POLLOUT)))        { log_debug("%d is ready to write to",  pfds[3].fd); pfds[3].fd = FD_READY; }
-//
+        
         /* Quiet Version */
         if ((pfds[0].fd>=0) && (pfds[0].revents & (POLLIN|POLLHUP))) { pfds[0].fd = FD_READY; }
         if ((pfds[1].fd>=0) && (pfds[1].revents & (POLLOUT)))        { pfds[1].fd = FD_READY; }
         if ((pfds[2].fd>=0) && (pfds[2].revents & (POLLIN|POLLHUP))) { pfds[2].fd = FD_READY; }
         if ((pfds[3].fd>=0) && (pfds[3].revents & (POLLOUT)))        { pfds[3].fd = FD_READY; }
+        log_info("poll: polled  [%2d->D->%2d, %2d->E->%2d].", pfds[0].fd, pfds[1].fd,pfds[2].fd, pfds[3].fd);
 //
+        
+        
         //
         // Handle egress data
         //
@@ -70,6 +72,7 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress, unsig
             int r = cryptostream_encrypt_feed_read(egress,key);
             if(r>0) { pfds[2].fd = egress->from_fd; }
             if(r==0) { pfds[2].fd = FD_EOF; }
+            if(r<0) { oops_fatal("assertion failed"); }
         }
         
         // write to 'to' when: 'to' is ready, and buffers not empty
@@ -77,6 +80,7 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress, unsig
             cryptostream_encrypt_feed_write(egress,key);
             pfds[3].fd = egress->to_fd;
         }
+        
         
         // close 'to' when: 'from' is EOF, and all buffers are empty
         if(pfds[2].fd == FD_EOF && pfds[3].fd != FD_EOF && !cryptostream_encrypt_feed_canwrite(egress)) {
@@ -89,7 +93,6 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress, unsig
             }
             pfds[3].fd = FD_EOF;
         }
-
         //
         // Handle ingress data
         //
@@ -99,6 +102,7 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress, unsig
             int r = cryptostream_decrypt_feed_read(ingress,key);
             if(r>0) { pfds[0].fd = ingress->from_fd; }
             if(r==0) { pfds[0].fd = FD_EOF; }
+            if(r<0) { oops_fatal("assertion failed"); }
         }
         
         // write to 'to' when: 'to' is ready, and buffers not empty
@@ -106,6 +110,7 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress, unsig
             cryptostream_decrypt_feed_write(ingress,key);
             pfds[1].fd = ingress->to_fd;
         }
+        
         
         // close 'to' when: 'from' is EOF, and all buffers are empty
         if(pfds[0].fd == FD_EOF && pfds[1].fd != FD_EOF && !cryptostream_decrypt_feed_canwrite(ingress)) {
@@ -120,5 +125,5 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress, unsig
         }
 
     }
-    log_debug("all fds are closed [%d,%d,%d,%d]; done polling", ingress->from_fd, ingress->to_fd, egress->from_fd, egress->to_fd);
+    log_info("all fds are closed [%d,%d,%d,%d]; done polling", ingress->from_fd, ingress->to_fd, egress->from_fd, egress->to_fd);
 }

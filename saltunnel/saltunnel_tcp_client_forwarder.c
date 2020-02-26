@@ -155,7 +155,6 @@ int saltunnel_tcp_client_forwarder(const char* from_ip, const char* from_port,
         int local_fd = tcpserver_accept(s);
         if(local_fd<0) {
             log_warn("failed to accept connection");
-            sleep(1); errno = 0;
             continue;
         }
         

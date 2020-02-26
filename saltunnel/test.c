@@ -719,14 +719,14 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
 {
     char actual_readmsg[512] = {0};
     
-    for(int tries_left=10000; tries_left>0; tries_left--) {
+    for(int tries_left=100; tries_left>0; tries_left--) {
         if(tries_left==0)
             oops_fatal("failed to connect too many times");
             
         // Create a TCP client
         tcpclient_options options = {
          .OPT_TCP_NODELAY = 1,
-         //.OPT_TCP_FASTOPEN = 1
+         .OPT_TCP_FASTOPEN = 1
         };
         
         int tcpclient = tcpclient_new(ip, port, options);
@@ -734,7 +734,7 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
         // If connection was refused, try to connect again
         if(tcpclient<0 && errno == ECONNREFUSED) {
             log_info("(TCPSTUB CLIENT) CONNECTION REFUSED (TO %s:%s), TRYING AGAIN...", ip, port);
-            usleep(10000); errno = 0;
+            usleep(50000); errno = 0;
             continue;
         }
         // Any other error is test failure
@@ -750,6 +750,7 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
         if(wrc<0) oops_fatal("failed to read");
         if(wrc != wlen) { log_info("partial write (%d/%d)", wrc, wlen); oops_fatal("..."); }
         log_info("(TCPSTUB CLIENT) WROTE %d BYTES TO CONNECTION", wlen);
+        
         
         // ---- Read a message ----
         int rlen = (int)strlen(readmsg);
