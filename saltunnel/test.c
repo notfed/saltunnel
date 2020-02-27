@@ -650,7 +650,7 @@ static void* tcpstub_server_write_inner(void* v)
     tcpserver_options options = {
      .OPT_TCP_NODELAY = 1,
      .OPT_SO_REUSEADDR = 1,
-//     .OPT_TCP_FASTOPEN = 1
+     .OPT_TCP_FASTOPEN = 1
     };
     int tcpserver = tcpserver_new(ip, port, options);
     if(tcpserver<0)
@@ -804,9 +804,9 @@ void test11() {
     log_info("test11 assertion successfully completed");
     
     // Clean up
-    pthread_join(thread1, NULL);
-    pthread_join(thread2, NULL);
-    pthread_join(thread3, NULL);
+    pthread_kill(thread1, NULL);
+    pthread_kill(thread2, NULL);
+    pthread_kill(thread3, NULL);
 //    pthread_kill(thread1, SIGKILL);
 //    pthread_kill(thread2, SIGKILL);
 }
@@ -824,7 +824,8 @@ int test() {
 //    run(test8, "test8");  // <<
 //    run(test9,"test9");
 //    run(test10,"test10");
-    run(test11, "test11");
+    for(int i = 0; i < 100; i++)
+        run(test11, "test11");
     
     log_info("all tests passed");
     return 0;

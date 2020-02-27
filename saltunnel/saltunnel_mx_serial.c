@@ -125,5 +125,6 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress, unsig
         }
 
     }
+    // TODO: Close sockets. 
     log_info("all fds are closed [%d,%d,%d,%d]; done polling", ingress->from_fd, ingress->to_fd, egress->from_fd, egress->to_fd);
 }

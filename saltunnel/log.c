@@ -51,7 +51,7 @@ char* log_filename_idempotent_fill(char* log_name, char* log_filename_from_macro
     return log_name;
 }
 
-static __thread char log_thread_name[64] = " [ main ]:";
+static __thread char log_thread_name[64] = " [main]:";
 
 void log_set_thread_name(const char* str)
 {

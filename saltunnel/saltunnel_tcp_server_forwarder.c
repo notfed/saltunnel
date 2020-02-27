@@ -41,10 +41,10 @@ static void* connection_thread(void* v)
     // Create a TCP Client
     tcpclient_options options = {
      .OPT_TCP_NODELAY = 1,
-     .OPT_TCP_FASTOPEN = 1,
+//     .OPT_TCP_FASTOPEN = 1, // This will only work if the root-originating-client writes first. Make this an option.
      .OPT_SO_SNDLOWAT = 512
     };
-    log_warn("(SERVER FORWARDER) ABOUT TO CONNECT TO %s:%s", c->to_ip, c->to_port);
+    log_info("(SERVER FORWARDER) ABOUT TO CONNECT TO %s:%s", c->to_ip, c->to_port);
     
     int local_fd = tcpclient_new(c->to_ip, c->to_port, options);
     if(local_fd<0)
@@ -55,7 +55,7 @@ static void* connection_thread(void* v)
     if(saltunnel_kx_packet0_trywrite(c->long_term_key, c->remote_fd, my_sk)<0)
     { close(local_fd); oops_warn("failed to write packet0"); return 0; }
     
-    log_warn("(SERVER FORWARDER) SUCCESSFULLY CONNECTED TO %s:%s", c->to_ip, c->to_port);
+    log_info("(SERVER FORWARDER) SUCCESSFULLY CONNECTED TO %s:%s", c->to_ip, c->to_port);
     
     log_info("server forwarder successfully wrote packet0");
     
