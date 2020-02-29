@@ -29,8 +29,9 @@ typedef struct connection_thread_context {
     int local_fd;
     const char* remote_ip;
     const char* remote_port;
-    unsigned char long_term_key[32];
-    unsigned char session_key[32];
+    unsigned char long_term_shared_key[32];
+    unsigned char session_secret_key[32];
+    unsigned char session_shared_key[32];
 } connection_thread_context;
 
 static void* connection_thread(void* v)
@@ -53,8 +54,7 @@ static void* connection_thread(void* v)
     }
     
     // Write packet0
-    unsigned char my_sk[32];
-    if(saltunnel_kx_packet0_trywrite(c->long_term_key, remote_fd, my_sk)<0) {
+    if(saltunnel_kx_packet0_trywrite(c->long_term_shared_key, remote_fd, c->session_secret_key)<0) {
         close(remote_fd); log_warn("failed to write packet0"); return 0;
     }
     log_info("(CLIENT FORWARDER) SUCCESSFULLY CONNECTED TO %s:%s", c->remote_ip, c->remote_port);
@@ -63,7 +63,7 @@ static void* connection_thread(void* v)
                                      
     // Read packet0
     packet0 their_packet0 = {0};
-    if(saltunnel_kx_packet0_tryread(c->long_term_key, remote_fd, &their_packet0)<0) {
+    if(saltunnel_kx_packet0_tryread(c->long_term_shared_key, remote_fd, &their_packet0)<0) {
         close(remote_fd); log_warn("failed to read packet0"); return 0;
     }
     
@@ -74,7 +74,7 @@ static void* connection_thread(void* v)
     // TODO: Exchange single packet to completely prevent replay attacks
         
     // Calculate shared key
-    if(saltunnel_kx_calculate_shared_key(c->session_key, their_packet0.pk, my_sk)<0) {
+    if(saltunnel_kx_calculate_shared_key(c->session_shared_key, their_packet0.pk, c->session_secret_key)<0) {
         close(remote_fd); log_warn("failed to calculate shared key"); return 0;
     }
     
@@ -86,12 +86,12 @@ static void* connection_thread(void* v)
     cryptostream ingress = {
         .from_fd = remote_fd,
         .to_fd = c->local_fd,
-        .key = c->session_key
+        .key = c->session_shared_key
     };
     cryptostream egress = {
         .from_fd = c->local_fd,
         .to_fd = remote_fd,
-        .key = c->session_key
+        .key = c->session_shared_key
     };
     
     log_info("client forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
@@ -157,7 +157,7 @@ int saltunnel_tcp_client_forwarder(const char* from_ip, const char* from_port,
         ctx->local_fd = local_fd;
         ctx->remote_ip = to_ip;
         ctx->remote_port = to_port;
-        for(int i = 0; i<32;  i++) ctx->long_term_key[i] = i; // Hard-code long-term key (TODO: Remove this)
+        for(int i = 0; i<32;  i++) ctx->long_term_shared_key[i] = i; // Hard-code long-term key (TODO: Remove this)
         
         if(handle_connection(ctx)<0) {
             free(ctx);

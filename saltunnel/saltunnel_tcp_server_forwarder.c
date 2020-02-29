@@ -28,8 +28,9 @@ typedef struct connection_thread_context {
     int remote_fd;
     const char* to_ip;
     const char* to_port;
-    unsigned char long_term_key[32];
-    unsigned char session_key[32];
+    unsigned char long_term_shared_key[32];
+    unsigned char session_secret_key[32];
+    unsigned char session_shared_key[32];
     packet0 their_packet_zero;
 } connection_thread_context;
 
@@ -52,8 +53,7 @@ static void* connection_thread(void* v)
     { oops_warn("!!!!!!!!!!!!!!! failed to create TCP client connection"); return 0; }
     
     // Write packet0
-    unsigned char my_sk[32];
-    if(saltunnel_kx_packet0_trywrite(c->long_term_key, c->remote_fd, my_sk)<0)
+    if(saltunnel_kx_packet0_trywrite(c->long_term_shared_key, c->remote_fd, c->session_secret_key)<0)
     { close(local_fd); oops_warn("failed to write packet0"); return 0; }
     
     log_info("(SERVER FORWARDER) SUCCESSFULLY CONNECTED TO %s:%s", c->to_ip, c->to_port);
@@ -66,7 +66,7 @@ static void* connection_thread(void* v)
     
     
     // Calculate shared key
-    if(saltunnel_kx_calculate_shared_key(c->session_key, c->their_packet_zero.pk, my_sk)<0)
+    if(saltunnel_kx_calculate_shared_key(c->session_shared_key, c->their_packet_zero.pk, c->session_secret_key)<0)
     { close(local_fd); oops_warn("failed to calculate shared key"); return 0; }
     
     log_info("calculated shared key");
@@ -77,12 +77,12 @@ static void* connection_thread(void* v)
     cryptostream ingress = {
         .from_fd = c->remote_fd,
         .to_fd = local_fd,
-        .key = c->session_key
+        .key = c->session_shared_key
     };
     cryptostream egress = {
         .from_fd = local_fd,
         .to_fd = c->remote_fd,
-        .key = c->session_key
+        .key = c->session_shared_key
     };
     
     log_info("server forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
@@ -112,7 +112,7 @@ static int maybe_handle_connection(connection_thread_context* ctx) {
     log_info("maybe handling connection");
     
     // Read packet0
-    if(saltunnel_kx_packet0_tryread(ctx->long_term_key, ctx->remote_fd, &ctx->their_packet_zero)<0) {
+    if(saltunnel_kx_packet0_tryread(ctx->long_term_shared_key, ctx->remote_fd, &ctx->their_packet_zero)<0) {
         return oops_warn("failed to read packet0");
     }
     
@@ -165,7 +165,7 @@ int saltunnel_tcp_server_forwarder(const char* from_ip, const char* from_port,
         ctx->remote_fd = remote_fd;
         ctx->to_ip = to_ip;
         ctx->to_port = to_port;
-        for(int i = 0; i<32;  i++) ctx->long_term_key[i] = i; // Hard-code long-term key (TODO: Remove this)
+        for(int i = 0; i<32;  i++) ctx->long_term_shared_key[i] = i; // Hard-code long-term key (TODO: Remove this)
         
         if(maybe_handle_connection(ctx)<0) {
             free(ctx);
