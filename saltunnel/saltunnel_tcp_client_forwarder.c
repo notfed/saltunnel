@@ -112,7 +112,7 @@ static void* connection_thread(void* v)
     // Memory-lock the plaintext buffers
     if(mlock(ingress.plaintext, sizeof(ingress.plaintext))<0)
        oops_warn("failed to mlock");
-   if(mlock(egress.plaintext, sizeof(egress.plaintext))<0)
+    if(mlock(egress.plaintext, sizeof(egress.plaintext))<0)
        oops_warn("failed to mlock");
     
     // Run saltunnel
@@ -121,7 +121,7 @@ static void* connection_thread(void* v)
     
     // Clear the plaintext buffers
     memset(ingress.plaintext, 0, sizeof(ingress.plaintext));
-    memset(egress.plaintext, 0, sizeof(ingress.plaintext));
+    memset(egress.plaintext, 0, sizeof(egress.plaintext));
     
     // Un-memory-lock the plaintext buffers
     if(munlock(ingress.plaintext, sizeof(ingress.plaintext))<0)
@@ -129,6 +129,7 @@ static void* connection_thread(void* v)
     if(munlock(egress.plaintext, sizeof(egress.plaintext))<0)
         oops_warn("failed to munlock");
     
+    // Clean up
     return connection_thread_cleanup(ctx, remote_fd);
 }
 

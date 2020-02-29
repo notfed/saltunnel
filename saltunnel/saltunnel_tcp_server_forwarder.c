@@ -89,7 +89,7 @@ static void* connection_thread(void* v)
     
     log_info("running saltunnel");
     
-    // Run saltunnel
+    // Initialize saltunnel parameters
     cryptostream ingress = {
         .from_fd = ctx->remote_fd,
         .to_fd = local_fd,
@@ -100,10 +100,26 @@ static void* connection_thread(void* v)
         .to_fd = ctx->remote_fd,
         .key = ctx->session_shared_key
     };
-    
+
+    // Memory-lock the plaintext buffers
+    if(mlock(ingress.plaintext, sizeof(ingress.plaintext))<0)
+        oops_warn("failed to mlock");
+    if(mlock(egress.plaintext, sizeof(egress.plaintext))<0)
+        oops_warn("failed to mlock");
+     
+     // Run saltunnel
     log_info("server forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
-    
     saltunnel(&ingress, &egress);
+    
+    // Clear the plaintext buffers
+    memset(ingress.plaintext, 0, sizeof(ingress.plaintext));
+    memset(egress.plaintext, 0, sizeof(egress.plaintext));
+    
+    // Un-memory-lock the plaintext buffers
+    if(munlock(ingress.plaintext, sizeof(ingress.plaintext))<0)
+        oops_warn("failed to munlock");
+    if(munlock(egress.plaintext, sizeof(egress.plaintext))<0)
+        oops_warn("failed to munlock");
     
     // Clean up
     return connection_thread_cleanup(v,local_fd);
