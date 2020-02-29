@@ -26,17 +26,26 @@
 #include <sys/mman.h>
 
 typedef struct connection_thread_context {
-    int local_fd;
-    const char* remote_ip;
-    const char* remote_port;
     unsigned char long_term_shared_key[32];
     unsigned char session_secret_key[32];
     unsigned char session_shared_key[32];
+    int local_fd;
+    const char* remote_ip;
+    const char* remote_port;
 } connection_thread_context;
+
+static void* connection_thread_cleanup(void* ctx, int fd) {
+    memset(ctx,0,sizeof(connection_thread_context));
+    free(ctx);
+    if(fd>=0)
+        if(close(fd)<0)
+            oops_warn("failed to close fd");
+    return 0;
+}
 
 static void* connection_thread(void* v)
 {
-    connection_thread_context* c = (connection_thread_context*)v;
+    connection_thread_context* ctx = (connection_thread_context*)v;
     log_set_thread_name(" cf ");
     
     log_info("connection thread entered");
@@ -47,24 +56,27 @@ static void* connection_thread(void* v)
      .OPT_TCP_FASTOPEN = 1,
      .OPT_SO_SNDLOWAT = 512
     };
-    log_info("(CLIENT FORWARDER) ABOUT TO CONNECT TO %s:%s", c->remote_ip, c->remote_port);
-    int remote_fd = tcpclient_new(c->remote_ip, c->remote_port, options);
+    log_info("(CLIENT FORWARDER) ABOUT TO CONNECT TO %s:%s", ctx->remote_ip, ctx->remote_port);
+    int remote_fd = tcpclient_new(ctx->remote_ip, ctx->remote_port, options);
     if(remote_fd<0) {
-        log_warn("!!!!!!!!!!! failed to create TCP client connection"); return 0;
+        log_warn("failed to create TCP client connection");
+        return connection_thread_cleanup(ctx, remote_fd);
     }
     
     // Write packet0
-    if(saltunnel_kx_packet0_trywrite(c->long_term_shared_key, remote_fd, c->session_secret_key)<0) {
-        close(remote_fd); log_warn("failed to write packet0"); return 0;
+    if(saltunnel_kx_packet0_trywrite(ctx->long_term_shared_key, remote_fd, ctx->session_secret_key)<0) {
+        log_warn("failed to write packet0");
+        return connection_thread_cleanup(ctx, remote_fd);
     }
-    log_info("(CLIENT FORWARDER) SUCCESSFULLY CONNECTED TO %s:%s", c->remote_ip, c->remote_port);
+    log_info("(CLIENT FORWARDER) SUCCESSFULLY CONNECTED TO %s:%s", ctx->remote_ip, ctx->remote_port);
     
     log_info("client forwarder successfully wrote packet0");
                                      
     // Read packet0
     packet0 their_packet0 = {0};
-    if(saltunnel_kx_packet0_tryread(c->long_term_shared_key, remote_fd, &their_packet0)<0) {
-        close(remote_fd); log_warn("failed to read packet0"); return 0;
+    if(saltunnel_kx_packet0_tryread(ctx->long_term_shared_key, remote_fd, &their_packet0)<0) {
+        log_warn("failed to read packet0");
+        return connection_thread_cleanup(ctx, remote_fd);
     }
     
     log_info("client forwarder successfully read packet0");
@@ -74,8 +86,9 @@ static void* connection_thread(void* v)
     // TODO: Exchange single packet to completely prevent replay attacks
         
     // Calculate shared key
-    if(saltunnel_kx_calculate_shared_key(c->session_shared_key, their_packet0.pk, c->session_secret_key)<0) {
-        close(remote_fd); log_warn("failed to calculate shared key"); return 0;
+    if(saltunnel_kx_calculate_shared_key(ctx->session_shared_key, their_packet0.pk, ctx->session_secret_key)<0) {
+        log_warn("failed to calculate shared key");
+        return connection_thread_cleanup(ctx, remote_fd);
     }
     
     log_info("calculated shared key");
@@ -85,24 +98,20 @@ static void* connection_thread(void* v)
     // Run saltunnel
     cryptostream ingress = {
         .from_fd = remote_fd,
-        .to_fd = c->local_fd,
-        .key = c->session_shared_key
+        .to_fd = ctx->local_fd,
+        .key = ctx->session_shared_key
     };
     cryptostream egress = {
-        .from_fd = c->local_fd,
+        .from_fd = ctx->local_fd,
         .to_fd = remote_fd,
-        .key = c->session_shared_key
+        .key = ctx->session_shared_key
     };
     
     log_info("client forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
     
     saltunnel(&ingress, &egress);
     
-    if(close(remote_fd)<0)
-        oops_warn("failed to close fd");
-    
-    free(v);
-    return 0;
+    return connection_thread_cleanup(ctx, remote_fd);
 }
 
 static pthread_t connection_thread_spawn(connection_thread_context* ctx)

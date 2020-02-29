@@ -25,20 +25,20 @@
 #include <sys/mman.h>
 
 typedef struct connection_thread_context {
-    int remote_fd;
-    const char* to_ip;
-    const char* to_port;
     unsigned char long_term_shared_key[32];
     unsigned char session_secret_key[32];
     unsigned char session_shared_key[32];
+    int remote_fd;
+    const char* to_ip;
+    const char* to_port;
     packet0 their_packet_zero;
 } connection_thread_context;
 
-void* connection_thread_cleanup(void* ctx, int local_fd) {
+static void* connection_thread_cleanup(void* ctx, int fd) {
     memset(ctx,0,sizeof(connection_thread_context));
     free(ctx);
-    if(local_fd>=0)
-        if(close(local_fd)<0)
+    if(fd>=0)
+        if(close(fd)<0)
             oops_warn("failed to close fd");
     return 0;
 }
@@ -59,7 +59,7 @@ static void* connection_thread(void* v)
     
     int local_fd = tcpclient_new(ctx->to_ip, ctx->to_port, options);
     if(local_fd<0) {
-        oops_warn("!!!!!!!!!!!!!!! failed to create TCP client connection");
+        oops_warn("failed to create TCP client connection");
         return connection_thread_cleanup(v,local_fd);
     }
     
@@ -76,7 +76,6 @@ static void* connection_thread(void* v)
     // Exchange packet1
     
     // TODO: Exchange single packet to completely prevent replay attacks
-    
     
     // Calculate shared key
     if(saltunnel_kx_calculate_shared_key(ctx->session_shared_key, ctx->their_packet_zero.pk, ctx->session_secret_key)<0) {
@@ -105,9 +104,7 @@ static void* connection_thread(void* v)
     saltunnel(&ingress, &egress);
     
     // Clean up
-    connection_thread_cleanup(v,local_fd);
-    
-    return 0;
+    return connection_thread_cleanup(v,local_fd);
 }
 
 static pthread_t connection_thread_spawn(connection_thread_context* ctx)
@@ -141,12 +138,6 @@ static int maybe_handle_connection(connection_thread_context* ctx) {
 int saltunnel_tcp_server_forwarder(const char* from_ip, const char* from_port,
                          const char* to_ip, const char* to_port)
 {
-    
-    // Input Long-term Key (For now, just hard-coding to [0..31])
-    unsigned char long_term_key[32] = {0};
-    for(int i = 0; i<32;  i++)
-        long_term_key[i] = i;
-    
     // Create socket
     tcpserver_options options = {
      .OPT_TCP_NODELAY = 1,
