@@ -71,18 +71,31 @@ static void* connection_thread(void* v)
     
     log_info("calculated shared key");
     
+    log_info("running saltunnel");
+    
+    // Input Session Key (For now, just hard-coding to [0..31])
+    unsigned char fake_key[32] = {0};
+    for(int i = 0; i<32;  i++)
+        fake_key[i] = i;
+    
     // Run saltunnel
     cryptostream ingress = {
         .from_fd = c->remote_fd,
-        .to_fd = local_fd
+        .to_fd = local_fd,
+        .key = fake_key
     };
     cryptostream egress = {
         .from_fd = local_fd,
-        .to_fd = c->remote_fd
+        .to_fd = c->remote_fd,
+        .key = fake_key
     };
-    log_info("running saltunnel");
+    
     log_info("server forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
+    
     saltunnel(&ingress, &egress);
+    
+    if(close(local_fd)<0)
+        oops_warn("failed to close fd");
     
     free(v);
     return 0;

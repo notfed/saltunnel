@@ -57,9 +57,10 @@ typedef struct cryptostream {
     /* These fields are required input */
     int from_fd;
     int to_fd;
-    nonce8 nonce;
+    unsigned char* key;
 
     /* The remaining fields will be auto-populated */
+    nonce8 nonce;
     int vector_init_complete;
     
     unsigned char plaintext[CRYPTOSTREAM_SPAN_MAXBYTES];
@@ -82,7 +83,7 @@ typedef struct cryptostream {
 int cryptostream_encrypt_feed_canread(cryptostream* cs);
 int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key);
 int cryptostream_encrypt_feed_canwrite(cryptostream* cs);
-int cryptostream_encrypt_feed_write(cryptostream* cs, unsigned char* key);
+int cryptostream_encrypt_feed_write(cryptostream* cs);
 
 void encrypt_all(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs, unsigned char *key);
 void encrypt_all_serial(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs, unsigned char *key, nonce8 nonce);
@@ -92,7 +93,7 @@ void encrypt_one(int buffer_i, int buffer_n, int bytesread, cryptostream *cs, un
 int cryptostream_decrypt_feed_canread(cryptostream* cs);
 int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key);
 int cryptostream_decrypt_feed_canwrite(cryptostream* cs);
-int cryptostream_decrypt_feed_write(cryptostream* cs, unsigned char* key);
+int cryptostream_decrypt_feed_write(cryptostream* cs);
 
 void decrypt_all(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream *cs, unsigned char *key);
 void decrypt_all_serial(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream *cs, unsigned char *key);

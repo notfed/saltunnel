@@ -744,14 +744,12 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
         log_info("(TCPSTUB CLIENT) CONNECTION SUCCEEDED (TO %s:%s).", ip, port);
         
         // ---- Read a message ----
-        for(int c = 0; c<1000; c++) {
-            int rlen = (int)strlen(readmsg);
-            log_info("(TCPSTUB CLIENT) READING %d BYTES.",rlen);
-            int rrc = (int)read(tcpclient, actual_readmsg, rlen); // TODO: Change to readn.  Just testing.
-            if(rrc<0) oops_fatal("failed to read");
-            if(rrc != rlen) { log_info("(TCPSTUB CLIENT) partial read (%d/%d)", rrc, rlen); oops_fatal("..."); }
-            log_info("(TCPSTUB CLIENT) READ %d BYTES FROM CONNECTION", rrc);
-        }
+        int rlen = (int)strlen(readmsg);
+        log_info("(TCPSTUB CLIENT) READING %d BYTES.",rlen);
+        int rrc = (int)read(tcpclient, actual_readmsg, rlen); // TODO: Change to readn.  Just testing.
+        if(rrc<0) oops_fatal("failed to read");
+        if(rrc != rlen) { log_info("(TCPSTUB CLIENT) partial read (%d/%d)", rrc, rlen); oops_fatal("..."); }
+        log_info("(TCPSTUB CLIENT) READ %d BYTES FROM CONNECTION", rrc);
         
         // ---- Write a message ----
         int wlen = (int)strlen(writemsg);
@@ -765,7 +763,6 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
         if(shutdown(tcpclient, SHUT_WR)<0)
             oops_fatal("failed to shutdown");
         
-
         // ---- Receive EOF ----
         if(read(tcpclient, actual_readmsg, rlen)!=0)
             oops_fatal("expected EOF from socket");
@@ -806,9 +803,9 @@ void test11() {
     log_info("test11 assertion successfully completed");
     
     // Clean up
-    pthread_kill(thread1, NULL);
-    pthread_kill(thread2, NULL);
-    pthread_kill(thread3, NULL);
+    pthread_kill(thread1, 0);
+    pthread_kill(thread2, 0);
+    pthread_kill(thread3, 0);
 //    pthread_kill(thread1, SIGKILL);
 //    pthread_kill(thread2, SIGKILL);
 }

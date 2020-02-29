@@ -71,7 +71,7 @@ void* exchange_messages_egress(void* ctx_void) {
         
         // write to 'to' when: 'to' is ready, and buffers not empty
         if ((pfds[1].fd == FD_READY) && cryptostream_encrypt_feed_canwrite(egress)) {
-            cryptostream_encrypt_feed_write(egress,key);
+            cryptostream_encrypt_feed_write(egress);
             pfds[1].fd = egress->to_fd;
         }
         
@@ -131,7 +131,7 @@ void* exchange_messages_ingress(void* ctx_void) {
         
         // write to 'to' when: 'to' is ready, and buffers not empty
         if ((pfds[1].fd == FD_READY) && cryptostream_decrypt_feed_canwrite(ingress)) {
-            cryptostream_decrypt_feed_write(ingress,key);
+            cryptostream_decrypt_feed_write(ingress);
             pfds[1].fd = ingress->to_fd;
         }
         

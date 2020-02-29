@@ -97,7 +97,7 @@ int cryptostream_encrypt_feed_canwrite(cryptostream* cs) {
 //   >1 => ok
 //    0 => nothing to write
 //
-int cryptostream_encrypt_feed_write(cryptostream* cs, unsigned char* key) {
+int cryptostream_encrypt_feed_write(cryptostream* cs) {
     
     // Calculate the first writable buffer, and how many buffers to write
     int buffer_full_start_i = cs->vector_start;

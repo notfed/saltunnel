@@ -23,7 +23,7 @@ static void fd_nonblock(int fd) {
     try(fcntl(fd, F_SETFL, flags|O_NONBLOCK)) || oops_fatal("setting O_NONBLOCK");
 }
 
-void exchange_messages_serial(cryptostream *ingress, cryptostream *egress, unsigned char* key) {
+void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
     
     // Configure poll (we will poll both "readable" fds)
     struct pollfd pfds[] = {
@@ -60,8 +60,6 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress, unsig
         if ((pfds[2].fd>=0) && (pfds[2].revents & (POLLIN|POLLHUP))) { pfds[2].fd = FD_READY; }
         if ((pfds[3].fd>=0) && (pfds[3].revents & (POLLOUT)))        { pfds[3].fd = FD_READY; }
         log_info("poll: polled  [%2d->D->%2d, %2d->E->%2d].", pfds[0].fd, pfds[1].fd,pfds[2].fd, pfds[3].fd);
-//
-        
         
         //
         // Handle egress data
@@ -69,7 +67,7 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress, unsig
 
         // read from 'from' when: 'from' is ready, and buffers not full
         if ((pfds[2].fd == FD_READY) && cryptostream_encrypt_feed_canread(egress)) {
-            int r = cryptostream_encrypt_feed_read(egress,key);
+            int r = cryptostream_encrypt_feed_read(egress,egress->key);
             if(r>0) { pfds[2].fd = egress->from_fd; }
             if(r==0) { pfds[2].fd = FD_EOF; }
             if(r<0) { oops_fatal("assertion failed"); }
@@ -77,7 +75,7 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress, unsig
         
         // write to 'to' when: 'to' is ready, and buffers not empty
         if ((pfds[3].fd == FD_READY) && cryptostream_encrypt_feed_canwrite(egress)) {
-            cryptostream_encrypt_feed_write(egress,key);
+            cryptostream_encrypt_feed_write(egress);
             pfds[3].fd = egress->to_fd;
         }
         
@@ -99,7 +97,7 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress, unsig
 
         // read from 'from' when: 'from' is ready, and buffers not full
         if ((pfds[0].fd == FD_READY) && cryptostream_decrypt_feed_canread(ingress)) {
-            int r = cryptostream_decrypt_feed_read(ingress,key);
+            int r = cryptostream_decrypt_feed_read(ingress,ingress->key);
             if(r>0) { pfds[0].fd = ingress->from_fd; }
             if(r==0) { pfds[0].fd = FD_EOF; }
             if(r<0) { oops_fatal("assertion failed"); }
@@ -107,7 +105,7 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress, unsig
         
         // write to 'to' when: 'to' is ready, and buffers not empty
         if ((pfds[1].fd == FD_READY) && cryptostream_decrypt_feed_canwrite(ingress)) {
-            cryptostream_decrypt_feed_write(ingress,key);
+            cryptostream_decrypt_feed_write(ingress);
             pfds[1].fd = ingress->to_fd;
         }
         

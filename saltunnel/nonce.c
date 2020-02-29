@@ -25,6 +25,14 @@ void nonce8_increment(nonce8 nonce_from, nonce8 nonce_to) {
     }
 }
 
+void nonce8_decrement(nonce8 nonce_from, nonce8 nonce_to) {
+    unsigned char carry = 1;
+    for(int i = 7; i >= 0; i--) {
+        nonce_to[i] = nonce_from[i] - carry;
+        carry &= (nonce_from[i] == 0);
+    }
+}
+
 void nonce24_clear(nonce24 nonce) {
     for(int i = 0; i < 24; i++) {
         nonce[i] = 0;
