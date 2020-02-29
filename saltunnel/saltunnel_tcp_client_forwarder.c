@@ -82,10 +82,6 @@ static void* connection_thread(void* v)
     
     log_info("running saltunnel");
     
-    // Hard-coding session key to [0..31]) (TODO: Remove this)
-    for(int i = 0; i<32;  i++)
-        c->session_key[i] = i;
-    
     // Run saltunnel
     cryptostream ingress = {
         .from_fd = remote_fd,

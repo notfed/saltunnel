@@ -66,16 +66,12 @@ static void* connection_thread(void* v)
     
     
     // Calculate shared key
-    unsigned char session_key[32];
-    if(saltunnel_kx_calculate_shared_key(session_key, c->their_packet_zero.pk, my_sk)<0)
+    if(saltunnel_kx_calculate_shared_key(c->session_key, c->their_packet_zero.pk, my_sk)<0)
     { close(local_fd); oops_warn("failed to calculate shared key"); return 0; }
     
     log_info("calculated shared key");
     
     log_info("running saltunnel");
-    
-    // Hard-code Session Key to [0..31] (TODO: Remove this)
-    for(int i = 0; i<32;  i++) c->session_key[i] = i;
     
     // Run saltunnel
     cryptostream ingress = {
