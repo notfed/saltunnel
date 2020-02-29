@@ -12,15 +12,22 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 
 #define FD_EOF   (-2)
 #define FD_READY (-1)
-
 
 static void fd_nonblock(int fd) {
     int flags;
     try((flags=fcntl(fd, F_GETFL, 0))) || oops_fatal("setting O_NONBLOCK");
     try(fcntl(fd, F_SETFL, flags|O_NONBLOCK)) || oops_fatal("setting O_NONBLOCK");
+}
+
+static int fd_issocket(int fd) {
+    struct stat statbuf;
+    if(fstat(fd, &statbuf)<0)
+        oops_fatal("failed to fstat");
+    return S_ISSOCK(statbuf.st_mode);
 }
 
 void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
@@ -36,6 +43,10 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
     // Defensive Programming
     fd_nonblock(ingress->from_fd); fd_nonblock(ingress->to_fd);
     fd_nonblock(egress->from_fd);  fd_nonblock(egress->to_fd);
+    
+    // Determine if fds are sockets
+    int ingress_to_fd_is_socket   = fd_issocket(ingress->to_fd);   if(ingress_to_fd_is_socket<0)   oops_fatal("failed to fstat...");
+    int egress_to_fd_is_socket    = fd_issocket(egress->to_fd);    if(egress_to_fd_is_socket<0)    oops_fatal("failed to fstat...");
     
     // Main Loop
     while(pfds[0].fd != FD_EOF || pfds[1].fd != FD_EOF || pfds[2].fd != FD_EOF || pfds[3].fd != FD_EOF) {
@@ -82,8 +93,7 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
         // close 'to' when: 'from' is EOF, and all buffers are empty
         if(pfds[2].fd == FD_EOF && pfds[3].fd != FD_EOF && !cryptostream_encrypt_feed_canwrite(egress)) {
             log_debug("egress is done; closing egress->to_fd (%d)", egress->to_fd);
-            int fd_is_socket = 1; // TODO: Detect this
-            if(fd_is_socket) {
+            if(egress_to_fd_is_socket) {
                 try(shutdown(egress->to_fd, SHUT_WR)) || oops_fatal("failed to close");
             } else {
                 try(close(egress->to_fd)) || oops_fatal("failed to close");
@@ -112,8 +122,7 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
         // close 'to' when: 'from' is EOF, and all buffers are empty
         if(pfds[0].fd == FD_EOF && pfds[1].fd != FD_EOF && !cryptostream_decrypt_feed_canwrite(ingress)) {
             log_debug("ingress is done; closing ingress->to_fd (%d)", ingress->to_fd);
-            int fd_is_socket = 1; // TODO: Detect this
-            if(fd_is_socket) {
+            if(ingress_to_fd_is_socket) {
                 try(shutdown(ingress->to_fd, SHUT_WR)) || oops_fatal("failed to close");
             } else {
                 try(close(ingress->to_fd)) || oops_fatal("failed to close");
@@ -122,6 +131,6 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
         }
 
     }
-    // TODO: Close sockets. 
+    // TODO: Close sockets (?)
     log_info("all fds are closed [%d,%d,%d,%d]; done polling", ingress->from_fd, ingress->to_fd, egress->from_fd, egress->to_fd);
 }
