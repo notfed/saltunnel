@@ -36,6 +36,8 @@ typedef struct connection_thread_context {
 
 static void* connection_thread_cleanup(void* ctx, int fd) {
     memset(ctx,0,sizeof(connection_thread_context));
+    if(munlock(ctx, sizeof(connection_thread_context))<0)
+       oops_warn("failed to munlock");
     free(ctx);
     if(fd>=0)
         if(close(fd)<0)
@@ -169,6 +171,8 @@ int saltunnel_tcp_client_forwarder(const char* from_ip, const char* from_port,
         for(int i = 0; i<32;  i++) ctx->long_term_shared_key[i] = i; // Hard-code long-term key (TODO: Remove this)
         
         if(handle_connection(ctx)<0) {
+            if(munlock(ctx, sizeof(connection_thread_context))<0)
+               oops_warn("failed to munlock");
             free(ctx);
             try(close(local_fd)) || log_warn("failed to close connection");
             log_warn("encountered error with TCP connection");

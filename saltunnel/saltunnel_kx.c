@@ -89,6 +89,7 @@ int saltunnel_kx_packet0_tryread(unsigned char* long_term_key,
     // Verify client-specific incrementing nonce (TODO)
     
     // Success
+    errno = 0;
     return 0;
 }
 
