@@ -180,5 +180,7 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
         }
     }
     
-    return s;
+    // The above loop should never exit
+    oops_fatal("this should never happen");
+    return 0;
 }
