@@ -46,9 +46,10 @@ int tcpserver_new(const char* ip, const char* port, tcpserver_options options)
         
     // Open a socket
     int s = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-    log_info("from_socket created, fd %d", s);
     if (s == -1)
         return oops_warn("error creating socket");
+    
+    log_info("from_socket created, fd %d", s);
     
     // Make it non-blocking
     if(options.OPT_NONBLOCK) {
@@ -77,11 +78,12 @@ int tcpserver_new(const char* ip, const char* port, tcpserver_options options)
     }
     
     // Bind to a port
-    if(bind(s, (struct sockaddr*) &server_address, sizeof(server_address)) < 0)
+    if(bind(s, (struct sockaddr*) &server_address, sizeof(server_address))<0)
         return oops_warn("error binding");
     
     // Start listening for connections
-    listen(s,1000);
+    if(listen(s,1000)<0)
+        return oops_warn("error listening");
     
     // Set receive-low-water-mark
     if(options.OPT_SO_RCVLOWAT>0) {
@@ -118,7 +120,7 @@ int tcpserver_accept_nonblock(int s) {
         return oops_warn("error accepting connection");
     
     // Make it non-blocking
-    if(fd_nonblock(fd_conn) == -1) {
+    if(fd_nonblock(fd_conn)<0) {
         if(close(fd_conn)<0) oops_warn("failed to close TCP server connection");
         return oops_warn("error setting O_NONBLOCK");
     }

@@ -744,12 +744,14 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
         log_info("(TCPSTUB CLIENT) CONNECTION SUCCEEDED (TO %s:%s).", ip, port);
         
         // ---- Read a message ----
-        int rlen = (int)strlen(readmsg);
-        log_info("(TCPSTUB CLIENT) READING %d BYTES.",rlen);
-        int rrc = (int)read(tcpclient, actual_readmsg, rlen); // TODO: Change to readn.  Just testing.
-        if(rrc<0) oops_fatal("failed to read");
-        if(rrc != rlen) { log_info("(TCPSTUB CLIENT) partial read (%d/%d)", rrc, rlen); oops_fatal("..."); }
-        log_info("(TCPSTUB CLIENT) READ %d BYTES FROM CONNECTION", rrc);
+        for(int c = 0; c<1000; c++) {
+            int rlen = (int)strlen(readmsg);
+            log_info("(TCPSTUB CLIENT) READING %d BYTES.",rlen);
+            int rrc = (int)read(tcpclient, actual_readmsg, rlen); // TODO: Change to readn.  Just testing.
+            if(rrc<0) oops_fatal("failed to read");
+            if(rrc != rlen) { log_info("(TCPSTUB CLIENT) partial read (%d/%d)", rrc, rlen); oops_fatal("..."); }
+            log_info("(TCPSTUB CLIENT) READ %d BYTES FROM CONNECTION", rrc);
+        }
         
         // ---- Write a message ----
         int wlen = (int)strlen(writemsg);

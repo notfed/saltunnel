@@ -42,7 +42,7 @@ static void* connection_thread(void* v)
     tcpclient_options options = {
      .OPT_TCP_NODELAY = 1,
 //     .OPT_TCP_FASTOPEN = 1, // This will only work if the root-originating-client writes first. Make this an option.
-     .OPT_SO_SNDLOWAT = 512
+//     .OPT_SO_SNDLOWAT = 512
     };
     log_info("(SERVER FORWARDER) ABOUT TO CONNECT TO %s:%s", c->to_ip, c->to_port);
     
@@ -142,7 +142,7 @@ int saltunnel_tcp_server_forwarder(const char* from_ip, const char* from_port,
      .OPT_SO_REUSEADDR = 1,
      .OPT_TCP_DEFER_ACCEPT = 1,
      .OPT_TCP_FASTOPEN = 1,
-//     .OPT_SO_RCVLOWAT = 512
+     .OPT_SO_RCVLOWAT = 512
     };
     
     int s = tcpserver_new(from_ip, from_port, options);

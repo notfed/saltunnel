@@ -9,9 +9,9 @@
 #define BOOL int
 typedef struct tcpclient_options {
     // Boolean Parameters (0 or 1)
-    char OPT_TCP_NODELAY;
-    char OPT_TCP_FASTOPEN;
-    char OPT_NONBLOCK;
+    int OPT_TCP_NODELAY : 1;
+    int OPT_TCP_FASTOPEN : 1;
+    int OPT_NONBLOCK : 1;
     // Valued Parameters
     unsigned short OPT_SO_SNDLOWAT;
 } tcpclient_options;

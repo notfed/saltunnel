@@ -8,11 +8,11 @@
 
 typedef struct tcpserver_options {
     // Boolean Parameters (0 or 1)
-    char OPT_TCP_NODELAY;
-    char OPT_SO_REUSEADDR;
-    char OPT_TCP_DEFER_ACCEPT;
-    char OPT_TCP_FASTOPEN;
-    char OPT_NONBLOCK;
+    int OPT_TCP_NODELAY : 1;
+    int OPT_SO_REUSEADDR : 1;
+    int OPT_TCP_DEFER_ACCEPT : 1;
+    int OPT_TCP_FASTOPEN : 1;
+    int OPT_NONBLOCK : 1;
     // Valued Parameters
     unsigned short OPT_SO_RCVLOWAT;
 } tcpserver_options;

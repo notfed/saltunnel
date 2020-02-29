@@ -20,14 +20,6 @@ static int fd_nonblock(int fd)
   return fcntl(fd,F_SETFL,fcntl(fd,F_GETFL,0) | O_NONBLOCK);
 }
 
-static int enable_tcp_defer_accept(int socket_fd) {
-#ifdef TCP_DEFER_ACCEPT
-    int on = 1;
-    try(setsockopt(s, SOL_SOCKET, TCP_DEFER_ACCEPT, &on, sizeof(int))) || return -1;
-#endif
-    return 0;
-}
-
 static int ignore_sigpipe() {
     return (signal(SIGPIPE, SIG_IGN) == SIG_ERR ? -1 : 1);
 }
