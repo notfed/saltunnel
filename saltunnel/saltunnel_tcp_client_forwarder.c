@@ -157,14 +157,14 @@ int saltunnel_tcp_client_forwarder(const char* from_ip, const char* from_port,
         // Handle the connection
         connection_thread_context* ctx = calloc(1,sizeof(connection_thread_context));
         if(mlock(ctx, sizeof(connection_thread_context))<0)
-            return oops_warn("error with mlock");
+           oops_warn("failed to mlock");
         ctx->local_fd = local_fd;
         ctx->remote_ip = to_ip;
         ctx->remote_port = to_port;
         for(int i = 0; i<32;  i++) ctx->long_term_key[i] = i; // Hard-code long-term key (TODO: Remove this)
         
-        int rc = handle_connection(ctx);
-        if(rc<0) {
+        if(handle_connection(ctx)<0) {
+            free(ctx);
             try(close(local_fd)) || log_warn("failed to close connection");
             log_warn("encountered error with TCP connection");
         }
