@@ -349,23 +349,23 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     
     // Initialize thread contexts
     cryptostream context1_ingress = {
-//        .op = cryptostream_decrypt_feed,
+        .key = testkey,
         .from_fd = peer2_pipe_to_peer1[0],
         .to_fd = peer1_pipe_local_output[1],
     };
     cryptostream context1_egress = {
-//        .op = cryptostream_encrypt_feed,
+        .key = testkey,
         .from_fd = peer1_pipe_local_input[0],
         .to_fd = peer1_pipe_to_peer2[1]
     };
     
     cryptostream context2_ingress = {
-//        .op = cryptostream_decrypt_feed,
+        .key = testkey,
         .from_fd = peer1_pipe_to_peer2[0],
         .to_fd = peer2_pipe_local_output[1]
     };
     cryptostream context2_egress = {
-//        .op = cryptostream_encrypt_feed,
+        .key = testkey,
         .from_fd = peer2_pipe_local_input[0],
         .to_fd = peer2_pipe_to_peer1[1]
     };
@@ -820,11 +820,11 @@ int test() {
 //    run(test5, "test5");
 //    run(test6, "test6");
 //    run(test7, "test7");
-//    run(test8, "test8");  // <<
-//    run(test9,"test9");
-//    run(test10,"test10");
-    for(int i = 0; i < 100; i++)
-        run(test11, "test11");
+    run(test8, "test8");  // <<
+    run(test9,"test9");
+    run(test10,"test10");
+//    for(int i = 0; i < 100; i++)
+//        run(test11, "test11");
     
     log_info("all tests passed");
     return 0;
