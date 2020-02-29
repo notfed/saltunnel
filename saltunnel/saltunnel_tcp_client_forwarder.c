@@ -23,12 +23,14 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <sys/mman.h>
 
 typedef struct connection_thread_context {
-    unsigned char* long_term_key;
     int local_fd;
     const char* remote_ip;
     const char* remote_port;
+    unsigned char long_term_key[32];
+    unsigned char session_key[32];
 } connection_thread_context;
 
 static void* connection_thread(void* v)
@@ -72,8 +74,7 @@ static void* connection_thread(void* v)
     // TODO: Exchange single packet to completely prevent replay attacks
         
     // Calculate shared key
-    unsigned char session_key[32];
-    if(saltunnel_kx_calculate_shared_key(session_key, their_packet0.pk, my_sk)<0) {
+    if(saltunnel_kx_calculate_shared_key(c->session_key, their_packet0.pk, my_sk)<0) {
         close(remote_fd); log_warn("failed to calculate shared key"); return 0;
     }
     
@@ -81,21 +82,20 @@ static void* connection_thread(void* v)
     
     log_info("running saltunnel");
     
-    // Input Session Key (For now, just hard-coding to [0..31])
-    unsigned char fake_key[32] = {0};
+    // Hard-coding session key to [0..31]) (TODO: Remove this)
     for(int i = 0; i<32;  i++)
-        fake_key[i] = i;
+        c->session_key[i] = i;
     
     // Run saltunnel
     cryptostream ingress = {
         .from_fd = remote_fd,
         .to_fd = c->local_fd,
-        .key = fake_key
+        .key = c->session_key
     };
     cryptostream egress = {
         .from_fd = c->local_fd,
         .to_fd = remote_fd,
-        .key = fake_key
+        .key = c->session_key
     };
     
     log_info("client forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
@@ -109,29 +109,18 @@ static void* connection_thread(void* v)
     return 0;
 }
 
-static pthread_t connection_thread_spawn(unsigned char* long_term_key,
-                                         int local_fd, const char* to_ip, const char* to_port)
+static pthread_t connection_thread_spawn(connection_thread_context* ctx)
 {
-    connection_thread_context* c = calloc(1,sizeof(connection_thread_context));
-    log_info("handling connection");
-    
-    c->long_term_key = long_term_key;
-    c->local_fd = local_fd;
-    c->remote_ip = to_ip;
-    c->remote_port = to_port;
-    
     pthread_t thread;
-    if(pthread_create(&thread, NULL, connection_thread, (void*)c)!=0) {
+    if(pthread_create(&thread, NULL, connection_thread, (void*)ctx)!=0) {
         oops_warn("failed to spawn thread");
         return 0;
     }
     return thread;
 }
 
-static int handle_connection(unsigned char* long_term_key,
-                             int fd_conn,
-                             const char* to_ip, const char* to_port) {
-    pthread_t thread = connection_thread_spawn(long_term_key, fd_conn, to_ip, to_port);
+static int handle_connection(connection_thread_context* ctx) {
+    pthread_t thread = connection_thread_spawn(ctx);
     if(thread==0) return -1;
     else return 1;
 }
@@ -141,10 +130,7 @@ int saltunnel_tcp_client_forwarder(const char* from_ip, const char* from_port,
                          const char* to_ip, const char* to_port)
 {
     
-    // Input Long-term Key (For now, just hard-coding to [0..31])
-    unsigned char long_term_key[32] = {0};
-    for(int i = 0; i<32;  i++)
-        long_term_key[i] = i;
+    log_info("handling connection");
     
     // Create socket
     tcpserver_options options = {
@@ -170,7 +156,15 @@ int saltunnel_tcp_client_forwarder(const char* from_ip, const char* from_port,
         log_info("(CLIENT FORWARDER) ACCEPTED ON %s:%s", from_ip, from_port);
         
         // Handle the connection
-        int rc = handle_connection(long_term_key, local_fd, to_ip, to_port);
+        connection_thread_context* ctx = calloc(1,sizeof(connection_thread_context));
+        if(mlock(ctx, sizeof(connection_thread_context))<0)
+            return oops_warn("error with mlock");
+        ctx->local_fd = local_fd;
+        ctx->remote_ip = to_ip;
+        ctx->remote_port = to_port;
+        for(int i = 0; i<32;  i++) ctx->long_term_key[i] = i; // Hard-code long-term key (TODO: Remove this)
+        
+        int rc = handle_connection(ctx);
         if(rc<0) {
             try(close(local_fd)) || log_warn("failed to close connection");
             log_warn("encountered error with TCP connection");
