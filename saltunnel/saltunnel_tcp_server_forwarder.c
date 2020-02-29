@@ -184,6 +184,5 @@ int saltunnel_tcp_server_forwarder(unsigned char* long_term_shared_key,
         }
     }
     
-    
     return s;
 }
