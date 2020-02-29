@@ -136,8 +136,7 @@ int saltunnel_tcp_client_forwarder(const char* from_ip, const char* from_port,
     tcpserver_options options = {
      .OPT_TCP_NODELAY = 1,
      .OPT_SO_REUSEADDR = 1,
-     .OPT_TCP_FASTOPEN = 1,
-     //     .OPT_SO_RCVLOWAT = 512
+     .OPT_TCP_FASTOPEN = 1
     };
     int s = tcpserver_new(from_ip, from_port, options);
     if(s<0)
