@@ -13,18 +13,18 @@
 #include <string.h>
 #include <errno.h>
 
-int saltunnel_kx_packet0_trywrite(unsigned char* long_term_key,
-                                 int to_fd,
-                                 unsigned char my_sk_out[32]) {
+int saltunnel_kx_packet0_trywrite(const unsigned char long_term_key[32],
+                                  int to_fd,
+                                  unsigned char my_sk_out[32]) {
     
-     packet0 my_packet0_plaintext = {0};
-     packet0 my_packet0_ciphertext = {0};
+    packet0 my_packet0_plaintext = {0};
+    packet0 my_packet0_ciphertext = {0};
     
     //-----------------------
     // Create an ephemeral keypair
     //-----------------------
     
-    crypto_box_curve25519xsalsa20poly1305_keypair(my_packet0_plaintext.pk,my_sk_out);
+    crypto_box_curve25519xsalsa20poly1305_keypair(my_packet0_plaintext.pk, my_sk_out);
     
     //-----------------------
     // Send packet0
@@ -34,9 +34,8 @@ int saltunnel_kx_packet0_trywrite(unsigned char* long_term_key,
     unsigned char my_nonce[24];
     randombytes(my_nonce, 24);
     
-    // Serialize buffer
+    // Put version in buffer
     memcpy(my_packet0_plaintext.version, version, 8);
-    memcpy(my_packet0_plaintext.pk, my_packet0_plaintext.pk, 32);
     
     // Encrypt buffer
     if(crypto_secretbox_xsalsa20poly1305(my_packet0_ciphertext.prezeros,
@@ -51,10 +50,13 @@ int saltunnel_kx_packet0_trywrite(unsigned char* long_term_key,
     if(uninterruptable_writen(write, to_fd, (char*)&my_packet0_ciphertext, 512)<0)
     { return oops_warn("write failed"); }
     
+    // Erase keys
+    memset(my_packet0_plaintext.pk, 0, sizeof(my_packet0_plaintext.pk));
+    
     return 0;
 }
 
-int saltunnel_kx_packet0_tryread(unsigned char* long_term_key,
+int saltunnel_kx_packet0_tryread(const unsigned char long_term_key[32],
                                  int from_fd,
                                  unsigned char their_pk_out[32]) {
     errno = EBADMSG;
@@ -97,9 +99,9 @@ int saltunnel_kx_packet0_tryread(unsigned char* long_term_key,
     return 0;
 }
 
-int saltunnel_kx_calculate_shared_key(unsigned char* session_key_out,
-                                      unsigned char* their_pk,
-                                      unsigned char* my_sk) {
+int saltunnel_kx_calculate_shared_key(unsigned char session_key_out[32],
+                                      const unsigned char their_pk[32],
+                                      const unsigned char my_sk[32]) {
      if(crypto_box_curve25519xsalsa20poly1305_beforenm(session_key_out, their_pk, my_sk)<0)
          return oops_warn("diffie-hellman failed");
      //  NOTE: Need to differentiate between server and client keys

@@ -31,15 +31,17 @@ typedef struct packet1 {
 } packet1;
 
 // New
-int saltunnel_kx_packet0_tryread(unsigned char* long_term_key,
-                                 int from_fd,
-                                 unsigned char their_pk_out[32]);
-int saltunnel_kx_packet0_trywrite(unsigned char* long_term_key,
+int saltunnel_kx_packet0_trywrite(const unsigned char long_term_key[32],
                                   int to_fd,
                                   unsigned char my_sk_out[32]);
-int saltunnel_kx_calculate_shared_key(unsigned char* session_key_out,
-                                      unsigned char* their_pk,
-                                      unsigned char* my_sk);
+
+int saltunnel_kx_packet0_tryread(const unsigned char long_term_key[32],
+                                 int from_fd,
+                                 unsigned char their_pk_out[32]);
+
+int saltunnel_kx_calculate_shared_key(unsigned char session_key_out[32],
+                                      const unsigned char their_pk[32],
+                                      const unsigned char my_sk[32]);
 
 // Old
 void exchange_session_key(int from_fd, int to_fd,
