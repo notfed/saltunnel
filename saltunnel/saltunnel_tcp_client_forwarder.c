@@ -27,7 +27,8 @@
 
 typedef struct connection_thread_context {
     unsigned char long_term_shared_key[32];
-    unsigned char session_secret_key[32];
+    unsigned char my_sk[32];
+    unsigned char their_pk[32];
     unsigned char session_shared_key[32];
     int local_fd;
     const char* remote_ip;
@@ -66,7 +67,7 @@ static void* connection_thread(void* v)
     }
     
     // Write packet0
-    if(saltunnel_kx_packet0_trywrite(ctx->long_term_shared_key, remote_fd, ctx->session_secret_key)<0) {
+    if(saltunnel_kx_packet0_trywrite(ctx->long_term_shared_key, remote_fd, ctx->my_sk)<0) {
         log_warn("failed to write packet0");
         return connection_thread_cleanup(ctx, remote_fd);
     }
@@ -75,8 +76,7 @@ static void* connection_thread(void* v)
     log_info("client forwarder successfully wrote packet0");
                                      
     // Read packet0
-    packet0 their_packet0 = {0};
-    if(saltunnel_kx_packet0_tryread(ctx->long_term_shared_key, remote_fd, &their_packet0)<0) {
+    if(saltunnel_kx_packet0_tryread(ctx->long_term_shared_key, remote_fd, ctx->their_pk)<0) {
         log_warn("failed to read packet0");
         return connection_thread_cleanup(ctx, remote_fd);
     }
@@ -88,7 +88,7 @@ static void* connection_thread(void* v)
     // TODO: Exchange single packet to completely prevent replay attacks
         
     // Calculate shared key
-    if(saltunnel_kx_calculate_shared_key(ctx->session_shared_key, their_packet0.pk, ctx->session_secret_key)<0) {
+    if(saltunnel_kx_calculate_shared_key(ctx->session_shared_key, ctx->their_pk, ctx->my_sk)<0) {
         log_warn("failed to calculate shared key");
         return connection_thread_cleanup(ctx, remote_fd);
     }
@@ -119,7 +119,7 @@ static void* connection_thread(void* v)
     log_info("client forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
     saltunnel(&ingress, &egress);
     
-    // Clear the plaintext buffers
+    // Clear the plaintext buffers/keys
     memset(ingress.plaintext, 0, sizeof(ingress.plaintext));
     memset(egress.plaintext, 0, sizeof(egress.plaintext));
     

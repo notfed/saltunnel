@@ -26,12 +26,12 @@
 
 typedef struct connection_thread_context {
     unsigned char long_term_shared_key[32];
-    unsigned char session_secret_key[32];
+    unsigned char my_sk[32];
+    unsigned char their_pk[32];
     unsigned char session_shared_key[32];
     int remote_fd;
     const char* to_ip;
     const char* to_port;
-    packet0 their_packet_zero;
 } connection_thread_context;
 
 static void* connection_thread_cleanup(void* ctx, int fd) {
@@ -66,7 +66,7 @@ static void* connection_thread(void* v)
     }
     
     // Write packet0
-    if(saltunnel_kx_packet0_trywrite(ctx->long_term_shared_key, ctx->remote_fd, ctx->session_secret_key)<0) {
+    if(saltunnel_kx_packet0_trywrite(ctx->long_term_shared_key, ctx->remote_fd, ctx->my_sk)<0) {
         oops_warn("failed to write packet0");
         return connection_thread_cleanup(v,local_fd);
     }
@@ -80,7 +80,7 @@ static void* connection_thread(void* v)
     // TODO: Exchange single packet to completely prevent replay attacks
     
     // Calculate shared key
-    if(saltunnel_kx_calculate_shared_key(ctx->session_shared_key, ctx->their_packet_zero.pk, ctx->session_secret_key)<0) {
+    if(saltunnel_kx_calculate_shared_key(ctx->session_shared_key, ctx->their_pk, ctx->my_sk)<0) {
         oops_warn("failed to calculate shared key");
         return connection_thread_cleanup(v,local_fd);
     }
@@ -141,7 +141,7 @@ static int maybe_handle_connection(connection_thread_context* ctx) {
     log_info("maybe handling connection");
     
     // Read packet0
-    if(saltunnel_kx_packet0_tryread(ctx->long_term_shared_key, ctx->remote_fd, &ctx->their_packet_zero)<0) {
+    if(saltunnel_kx_packet0_tryread(ctx->long_term_shared_key, ctx->remote_fd, ctx->their_pk)<0) {
         return oops_warn("failed to read packet0");
     }
     

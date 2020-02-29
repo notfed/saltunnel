@@ -17,15 +17,14 @@ int saltunnel_kx_packet0_trywrite(unsigned char* long_term_key,
                                  int to_fd,
                                  unsigned char my_sk_out[32]) {
     
-     packet0 my_buffer_plaintext = {0};
-     packet0 my_buffer_ciphertext = {0};
+     packet0 my_packet0_plaintext = {0};
+     packet0 my_packet0_ciphertext = {0};
     
     //-----------------------
     // Create an ephemeral keypair
     //-----------------------
     
-    unsigned char my_sk[32];
-    crypto_box_curve25519xsalsa20poly1305_keypair(my_buffer_plaintext.pk,my_sk_out);
+    crypto_box_curve25519xsalsa20poly1305_keypair(my_packet0_plaintext.pk,my_sk_out);
     
     //-----------------------
     // Send packet0
@@ -36,32 +35,35 @@ int saltunnel_kx_packet0_trywrite(unsigned char* long_term_key,
     randombytes(my_nonce, 24);
     
     // Serialize buffer
-    memcpy(my_buffer_plaintext.version, version, 8);
-    memcpy(my_buffer_plaintext.pk, my_buffer_plaintext.pk, 32);
+    memcpy(my_packet0_plaintext.version, version, 8);
+    memcpy(my_packet0_plaintext.pk, my_packet0_plaintext.pk, 32);
     
     // Encrypt buffer
-    if(crypto_secretbox_xsalsa20poly1305(my_buffer_ciphertext.prezeros,
-                                          my_buffer_plaintext.prezeros,
+    if(crypto_secretbox_xsalsa20poly1305(my_packet0_ciphertext.prezeros,
+                                          my_packet0_plaintext.prezeros,
                                           512+16-24, my_nonce, long_term_key)<0)
     { return oops_warn("encryption failed"); }
     
     // Put nonce in buffer
-    memcpy(my_buffer_ciphertext.nonce, my_nonce, 24);
+    memcpy(my_packet0_ciphertext.nonce, my_nonce, 24);
     
     // Send encrypted buffer
-    if(uninterruptable_writen(write, to_fd, (char*)&my_buffer_ciphertext, 512)<0)
+    if(uninterruptable_writen(write, to_fd, (char*)&my_packet0_ciphertext, 512)<0)
     { return oops_warn("write failed"); }
     
     return 0;
 }
 
 int saltunnel_kx_packet0_tryread(unsigned char* long_term_key,
-                                 int from_fd, packet0* their_buffer_plaintext) {
+                                 int from_fd,
+                                 unsigned char their_pk_out[32]) {
     errno = EBADMSG;
     log_info("kx on fd %d", from_fd);
     
-    // Receive encrypted buffer
     packet0 their_buffer_ciphertext = {0};
+    packet0 their_buffer_plaintext = {0};
+    
+    // Receive encrypted buffer
     ssize_t bytes_read = read(from_fd, (char*)&their_buffer_ciphertext, 512);
     if(bytes_read<0 && errno==EWOULDBLOCK)
         return oops_warn("empty packet0");
@@ -75,13 +77,13 @@ int saltunnel_kx_packet0_tryread(unsigned char* long_term_key,
     memcpy(their_nonce, their_buffer_ciphertext.nonce, 24);
     
     // Decrypt encrypted buffer
-    if(crypto_secretbox_xsalsa20poly1305_open((unsigned char*)&their_buffer_plaintext->prezeros,
-                                               (unsigned char*)&their_buffer_ciphertext.prezeros,
+    if(crypto_secretbox_xsalsa20poly1305_open((unsigned char*)their_buffer_plaintext.prezeros,
+                                               (unsigned char*)their_buffer_ciphertext.prezeros,
                                                512+16-24, their_buffer_ciphertext.nonce, long_term_key)<0)
         return oops_warn("decryption failed");
     
     // Verify version
-    if(sodium_compare(their_buffer_plaintext->version, version, 8) != 0)
+    if(sodium_compare(their_buffer_plaintext.version, version, 8) != 0)
         return oops_warn("version mismatch");
     
     // Verify timetamp (TODO)
@@ -89,6 +91,8 @@ int saltunnel_kx_packet0_tryread(unsigned char* long_term_key,
     // Verify client-specific incrementing nonce (TODO)
     
     // Success
+    memcpy(their_pk_out, their_buffer_plaintext.pk, sizeof(their_buffer_plaintext.pk));
+    memset(their_buffer_plaintext.pk, 0, sizeof(their_buffer_plaintext.pk));
     errno = 0;
     return 0;
 }
