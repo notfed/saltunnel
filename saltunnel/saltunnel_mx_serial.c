@@ -83,7 +83,7 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
         // close 'to' when: 'from' is EOF, and all buffers are empty
         if(pfds[2].fd == FD_EOF && pfds[3].fd != FD_EOF && !cryptostream_encrypt_feed_canwrite(egress)) {
             log_debug("egress is done; closing egress->to_fd (%d)", egress->to_fd);
-            int fd_is_socket = 1;
+            int fd_is_socket = 1; // TODO: Detect this
             if(fd_is_socket) {
                 try(shutdown(egress->to_fd, SHUT_WR)) || oops_fatal("failed to close");
             } else {
@@ -113,7 +113,7 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
         // close 'to' when: 'from' is EOF, and all buffers are empty
         if(pfds[0].fd == FD_EOF && pfds[1].fd != FD_EOF && !cryptostream_decrypt_feed_canwrite(ingress)) {
             log_debug("ingress is done; closing ingress->to_fd (%d)", ingress->to_fd);
-            int fd_is_socket = 1;
+            int fd_is_socket = 1; // TODO: Detect this
             if(fd_is_socket) {
                 try(shutdown(ingress->to_fd, SHUT_WR)) || oops_fatal("failed to close");
             } else {
