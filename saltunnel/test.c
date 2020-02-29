@@ -606,10 +606,10 @@ static void* saltunnel_forwarder_thread_inner(void* v)
     saltunnel_forwarder_thread_context* c = (saltunnel_forwarder_thread_context*)v;
     if(c->client_or_server==0) {
         log_set_thread_name("cfwd");
-        saltunnel_tcp_client_forwarder(c->from_ip, c->from_port, c->to_ip, c->to_port);
+        saltunnel_tcp_client_forwarder(testkey, c->from_ip, c->from_port, c->to_ip, c->to_port);
     } else {
         log_set_thread_name("sfwd");
-        saltunnel_tcp_server_forwarder(c->from_ip, c->from_port, c->to_ip, c->to_port);
+        saltunnel_tcp_server_forwarder(testkey, c->from_ip, c->from_port, c->to_ip, c->to_port);
     }
     free(v);
     return 0;

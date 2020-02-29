@@ -133,7 +133,8 @@ static int handle_connection(connection_thread_context* ctx) {
 }
 
 
-int saltunnel_tcp_client_forwarder(const char* from_ip, const char* from_port,
+int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
+                         const char* from_ip, const char* from_port,
                          const char* to_ip, const char* to_port)
 {
     
@@ -168,7 +169,7 @@ int saltunnel_tcp_client_forwarder(const char* from_ip, const char* from_port,
         ctx->local_fd = local_fd;
         ctx->remote_ip = to_ip;
         ctx->remote_port = to_port;
-        for(int i = 0; i<32;  i++) ctx->long_term_shared_key[i] = i; // Hard-code long-term key (TODO: Remove this)
+        memcpy(ctx->long_term_shared_key, long_term_shared_key, 32);
         
         if(handle_connection(ctx)<0) {
             if(munlock(ctx, sizeof(connection_thread_context))<0)

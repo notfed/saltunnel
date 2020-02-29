@@ -137,7 +137,8 @@ static int maybe_handle_connection(connection_thread_context* ctx) {
     else return 1;
 }
 
-int saltunnel_tcp_server_forwarder(const char* from_ip, const char* from_port,
+int saltunnel_tcp_server_forwarder(unsigned char* long_term_shared_key,
+                         const char* from_ip, const char* from_port,
                          const char* to_ip, const char* to_port)
 {
     // Create socket
@@ -172,7 +173,7 @@ int saltunnel_tcp_server_forwarder(const char* from_ip, const char* from_port,
         ctx->remote_fd = remote_fd;
         ctx->to_ip = to_ip;
         ctx->to_port = to_port;
-        for(int i = 0; i<32;  i++) ctx->long_term_shared_key[i] = i; // Hard-code long-term key (TODO: Remove this)
+        memcpy(ctx->long_term_shared_key, long_term_shared_key, 32);
         
         if(maybe_handle_connection(ctx)<0) {
             if(munlock(ctx, sizeof(connection_thread_context))<0)
