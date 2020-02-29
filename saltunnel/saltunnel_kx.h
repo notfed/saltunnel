@@ -31,11 +31,13 @@ typedef struct packet1 {
 } packet1;
 
 // New
-int saltunnel_kx_packet0_trywrite(const unsigned char long_term_key[32],
+int saltunnel_kx_packet0_trywrite(packet0* tmp_pinned,
+                                  const unsigned char long_term_key[32],
                                   int to_fd,
                                   unsigned char my_sk_out[32]);
 
-int saltunnel_kx_packet0_tryread(const unsigned char long_term_key[32],
+int saltunnel_kx_packet0_tryread(packet0* tmp_pinned,
+                                 const unsigned char long_term_key[32],
                                  int from_fd,
                                  unsigned char their_pk_out[32]);
 

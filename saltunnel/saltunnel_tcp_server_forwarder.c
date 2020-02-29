@@ -25,6 +25,7 @@
 #include <sys/mman.h>
 
 typedef struct connection_thread_context {
+    packet0 tmp_pinned;
     unsigned char long_term_shared_key[32];
     unsigned char my_sk[32];
     unsigned char their_pk[32];
@@ -66,7 +67,7 @@ static void* connection_thread(void* v)
     }
     
     // Write packet0
-    if(saltunnel_kx_packet0_trywrite(ctx->long_term_shared_key, ctx->remote_fd, ctx->my_sk)<0) {
+    if(saltunnel_kx_packet0_trywrite(&ctx->tmp_pinned, ctx->long_term_shared_key, ctx->remote_fd, ctx->my_sk)<0) {
         oops_warn("failed to write packet0");
         return connection_thread_cleanup(v,local_fd);
     }
@@ -141,7 +142,7 @@ static int maybe_handle_connection(connection_thread_context* ctx) {
     log_info("maybe handling connection");
     
     // Read packet0
-    if(saltunnel_kx_packet0_tryread(ctx->long_term_shared_key, ctx->remote_fd, ctx->their_pk)<0) {
+    if(saltunnel_kx_packet0_tryread(&ctx->tmp_pinned, ctx->long_term_shared_key, ctx->remote_fd, ctx->their_pk)<0) {
         return oops_warn("failed to read packet0");
     }
     

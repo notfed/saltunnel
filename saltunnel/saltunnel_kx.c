@@ -13,18 +13,19 @@
 #include <string.h>
 #include <errno.h>
 
-int saltunnel_kx_packet0_trywrite(const unsigned char long_term_key[32],
+int saltunnel_kx_packet0_trywrite(packet0* my_packet0_plaintext_pinned,
+                                  const unsigned char long_term_key[32],
                                   int to_fd,
                                   unsigned char my_sk_out[32]) {
     
-    packet0 my_packet0_plaintext = {0};
     packet0 my_packet0_ciphertext = {0};
+    memset(my_packet0_plaintext_pinned, 0, sizeof(packet0));
     
     //-----------------------
     // Create an ephemeral keypair
     //-----------------------
     
-    crypto_box_curve25519xsalsa20poly1305_keypair(my_packet0_plaintext.pk, my_sk_out);
+    crypto_box_curve25519xsalsa20poly1305_keypair(my_packet0_plaintext_pinned->pk, my_sk_out);
     
     //-----------------------
     // Send packet0
@@ -35,11 +36,11 @@ int saltunnel_kx_packet0_trywrite(const unsigned char long_term_key[32],
     randombytes(my_nonce, 24);
     
     // Put version in buffer
-    memcpy(my_packet0_plaintext.version, version, 8);
+    memcpy(my_packet0_plaintext_pinned->version, version, 8);
     
     // Encrypt buffer
     if(crypto_secretbox_xsalsa20poly1305(my_packet0_ciphertext.prezeros,
-                                          my_packet0_plaintext.prezeros,
+                                          my_packet0_plaintext_pinned->prezeros,
                                           512+16-24, my_nonce, long_term_key)<0)
     { return oops_warn("encryption failed"); }
     
@@ -51,19 +52,20 @@ int saltunnel_kx_packet0_trywrite(const unsigned char long_term_key[32],
     { return oops_warn("write failed"); }
     
     // Erase keys
-    memset(my_packet0_plaintext.pk, 0, sizeof(my_packet0_plaintext.pk));
+    memset(my_packet0_plaintext_pinned->pk, 0, sizeof(my_packet0_plaintext_pinned->pk));
     
     return 0;
 }
 
-int saltunnel_kx_packet0_tryread(const unsigned char long_term_key[32],
+int saltunnel_kx_packet0_tryread(packet0* their_packet0_plaintext_pinned,
+                                 const unsigned char long_term_key[32],
                                  int from_fd,
                                  unsigned char their_pk_out[32]) {
     errno = EBADMSG;
     log_info("kx on fd %d", from_fd);
     
     packet0 their_buffer_ciphertext = {0};
-    packet0 their_buffer_plaintext = {0};
+    memset(their_packet0_plaintext_pinned, 0, sizeof(packet0));
     
     // Receive encrypted buffer
     ssize_t bytes_read = read(from_fd, (char*)&their_buffer_ciphertext, 512);
@@ -79,22 +81,26 @@ int saltunnel_kx_packet0_tryread(const unsigned char long_term_key[32],
     memcpy(their_nonce, their_buffer_ciphertext.nonce, 24);
     
     // Decrypt encrypted buffer
-    if(crypto_secretbox_xsalsa20poly1305_open((unsigned char*)their_buffer_plaintext.prezeros,
+    if(crypto_secretbox_xsalsa20poly1305_open((unsigned char*)their_packet0_plaintext_pinned->prezeros,
                                                (unsigned char*)their_buffer_ciphertext.prezeros,
                                                512+16-24, their_buffer_ciphertext.nonce, long_term_key)<0)
         return oops_warn("decryption failed");
     
     // Verify version
-    if(sodium_compare(their_buffer_plaintext.version, version, 8) != 0)
+    if(sodium_compare(their_packet0_plaintext_pinned->version, version, 8) != 0)
         return oops_warn("version mismatch");
     
     // Verify timetamp (TODO)
     
     // Verify client-specific incrementing nonce (TODO)
     
+    // Copy their_pk to output
+    memcpy(their_pk_out, their_packet0_plaintext_pinned->pk, sizeof(their_packet0_plaintext_pinned->pk));
+    
+    // Erase local copy of their_pk
+    memset(their_packet0_plaintext_pinned->pk, 0, sizeof(their_packet0_plaintext_pinned->pk));
+    
     // Success
-    memcpy(their_pk_out, their_buffer_plaintext.pk, sizeof(their_buffer_plaintext.pk));
-    memset(their_buffer_plaintext.pk, 0, sizeof(their_buffer_plaintext.pk));
     errno = 0;
     return 0;
 }

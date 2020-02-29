@@ -26,6 +26,7 @@
 #include <sys/mman.h>
 
 typedef struct connection_thread_context {
+    packet0 tmp_pinned;
     unsigned char long_term_shared_key[32];
     unsigned char my_sk[32];
     unsigned char their_pk[32];
@@ -67,7 +68,7 @@ static void* connection_thread(void* v)
     }
     
     // Write packet0
-    if(saltunnel_kx_packet0_trywrite(ctx->long_term_shared_key, remote_fd, ctx->my_sk)<0) {
+    if(saltunnel_kx_packet0_trywrite(&ctx->tmp_pinned, ctx->long_term_shared_key, remote_fd, ctx->my_sk)<0) {
         log_warn("failed to write packet0");
         return connection_thread_cleanup(ctx, remote_fd);
     }
@@ -76,7 +77,7 @@ static void* connection_thread(void* v)
     log_info("client forwarder successfully wrote packet0");
                                      
     // Read packet0
-    if(saltunnel_kx_packet0_tryread(ctx->long_term_shared_key, remote_fd, ctx->their_pk)<0) {
+    if(saltunnel_kx_packet0_tryread(&ctx->tmp_pinned, ctx->long_term_shared_key, remote_fd, ctx->their_pk)<0) {
         log_warn("failed to read packet0");
         return connection_thread_cleanup(ctx, remote_fd);
     }
