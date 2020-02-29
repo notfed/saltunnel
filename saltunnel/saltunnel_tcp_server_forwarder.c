@@ -34,9 +34,18 @@ typedef struct connection_thread_context {
     packet0 their_packet_zero;
 } connection_thread_context;
 
+void* connection_thread_cleanup(void* ctx, int local_fd) {
+    memset(ctx,0,sizeof(connection_thread_context));
+    free(ctx);
+    if(local_fd>=0)
+        if(close(local_fd)<0)
+            oops_warn("failed to close fd");
+    return 0;
+}
+
 static void* connection_thread(void* v)
 {
-    connection_thread_context* c = (connection_thread_context*)v;
+    connection_thread_context* ctx = (connection_thread_context*)v;
     log_set_thread_name(" sf ");
     
     log_info("connection thread entered");
@@ -46,17 +55,21 @@ static void* connection_thread(void* v)
      .OPT_TCP_NODELAY = 1,
 //     .OPT_TCP_FASTOPEN = 1, // This will only work if the root-originating-client writes first. Make this an option.
     };
-    log_info("(SERVER FORWARDER) ABOUT TO CONNECT TO %s:%s", c->to_ip, c->to_port);
+    log_info("(SERVER FORWARDER) ABOUT TO CONNECT TO %s:%s", ctx->to_ip, ctx->to_port);
     
-    int local_fd = tcpclient_new(c->to_ip, c->to_port, options);
-    if(local_fd<0)
-    { oops_warn("!!!!!!!!!!!!!!! failed to create TCP client connection"); return 0; }
+    int local_fd = tcpclient_new(ctx->to_ip, ctx->to_port, options);
+    if(local_fd<0) {
+        oops_warn("!!!!!!!!!!!!!!! failed to create TCP client connection");
+        return connection_thread_cleanup(v,local_fd);
+    }
     
     // Write packet0
-    if(saltunnel_kx_packet0_trywrite(c->long_term_shared_key, c->remote_fd, c->session_secret_key)<0)
-    { close(local_fd); oops_warn("failed to write packet0"); return 0; }
+    if(saltunnel_kx_packet0_trywrite(ctx->long_term_shared_key, ctx->remote_fd, ctx->session_secret_key)<0) {
+        oops_warn("failed to write packet0");
+        return connection_thread_cleanup(v,local_fd);
+    }
     
-    log_info("(SERVER FORWARDER) SUCCESSFULLY CONNECTED TO %s:%s", c->to_ip, c->to_port);
+    log_info("(SERVER FORWARDER) SUCCESSFULLY CONNECTED TO %s:%s", ctx->to_ip, ctx->to_port);
     
     log_info("server forwarder successfully wrote packet0");
     
@@ -66,8 +79,10 @@ static void* connection_thread(void* v)
     
     
     // Calculate shared key
-    if(saltunnel_kx_calculate_shared_key(c->session_shared_key, c->their_packet_zero.pk, c->session_secret_key)<0)
-    { close(local_fd); oops_warn("failed to calculate shared key"); return 0; }
+    if(saltunnel_kx_calculate_shared_key(ctx->session_shared_key, ctx->their_packet_zero.pk, ctx->session_secret_key)<0) {
+        oops_warn("failed to calculate shared key");
+        return connection_thread_cleanup(v,local_fd);
+    }
     
     log_info("calculated shared key");
     
@@ -75,24 +90,23 @@ static void* connection_thread(void* v)
     
     // Run saltunnel
     cryptostream ingress = {
-        .from_fd = c->remote_fd,
+        .from_fd = ctx->remote_fd,
         .to_fd = local_fd,
-        .key = c->session_shared_key
+        .key = ctx->session_shared_key
     };
     cryptostream egress = {
         .from_fd = local_fd,
-        .to_fd = c->remote_fd,
-        .key = c->session_shared_key
+        .to_fd = ctx->remote_fd,
+        .key = ctx->session_shared_key
     };
     
     log_info("server forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
     
     saltunnel(&ingress, &egress);
     
-    if(close(local_fd)<0)
-        oops_warn("failed to close fd");
+    // Clean up
+    connection_thread_cleanup(v,local_fd);
     
-    free(v);
     return 0;
 }
 
