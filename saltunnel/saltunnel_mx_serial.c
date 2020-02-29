@@ -79,7 +79,6 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
             pfds[3].fd = egress->to_fd;
         }
         
-        
         // close 'to' when: 'from' is EOF, and all buffers are empty
         if(pfds[2].fd == FD_EOF && pfds[3].fd != FD_EOF && !cryptostream_encrypt_feed_canwrite(egress)) {
             log_debug("egress is done; closing egress->to_fd (%d)", egress->to_fd);

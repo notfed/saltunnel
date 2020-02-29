@@ -76,8 +76,6 @@ typedef struct cryptostream {
     long debug_encrypted_blocks_total;
     long debug_decrypted_blocks_total;
     
-    threadpool tp;
-    
 } cryptostream;
 
 int cryptostream_encrypt_feed_canread(cryptostream* cs);
