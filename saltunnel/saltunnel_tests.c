@@ -1,10 +1,9 @@
 //
-//  test.c
+//  saltunnel_tests.c
 //  saltunnel2
 //
 #define _GNU_SOURCE
 #include "oops.h"
-#include "test.h"
 #include "uninterruptable.h"
 #include "saltunnel.h"
 #include "saltunnel_tcp_server_forwarder.h"

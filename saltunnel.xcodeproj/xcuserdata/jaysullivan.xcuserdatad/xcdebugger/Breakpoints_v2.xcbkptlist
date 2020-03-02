@@ -7,48 +7,48 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "E494D0D6-4531-4D29-95E0-1E7C7052524C"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "saltunnel/test.c"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "659"
-            endingLineNumber = "659"
-            landmarkName = "tcpstub_server_write_inner(v)"
-            landmarkType = "9">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "EADB7812-C202-49C4-A951-EACADDF5C4BC"
+            uuid = "8E0EAD3C-729F-4B09-9746-79162BAE86F5"
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "saltunnel/saltunnel_tcp_server_forwarder.c"
+            filePath = "saltunnel/saltunnel_tcp_client_forwarder.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "131"
-            endingLineNumber = "131"
-            landmarkName = "saltunnel_tcp_server_forwarder(from_ip, from_port, to_ip, to_port)"
+            startingLineNumber = "85"
+            endingLineNumber = "85"
+            landmarkName = "connection_thread(v)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "58A6EE9D-6312-49A3-9C8B-9874BF2948E5"
+            uuid = "83EE9127-6582-412C-B307-104675CAD691"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "saltunnel/saltunnel_tcp_server_forwarder.c"
+            filePath = "saltunnel/saltunnel_tcp_client_forwarder.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "152"
-            endingLineNumber = "152"
-            landmarkName = "saltunnel_tcp_server_forwarder(from_ip, from_port, to_ip, to_port)"
+            startingLineNumber = "80"
+            endingLineNumber = "80"
+            landmarkName = "connection_thread(v)"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "FDED8B47-B663-427C-A69C-E5203BDF91B8"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "saltunnel/saltunnel_kx.c"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "98"
+            endingLineNumber = "98"
+            landmarkName = "saltunnel_kx_packet0_tryread(their_packet0_plaintext_pinned, long_term_key, from_fd, their_pk_out)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>

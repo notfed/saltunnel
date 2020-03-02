@@ -1,15 +1,15 @@
 //
-//  main.c
+//  saltunnel_test_main.c
 //  saltunnel2
 //
 
-#include "oops.h"
-#include "test.h"
-#include "threadpool.h"
-#include "sodium.h"
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
+#include "oops.h"
+#include "threadpool.h"
+#include "sodium.h"
+#include "saltunnel_tests.h"
 
 int main(int argc, const char * argv[]) {
     errno=0;

@@ -3,8 +3,8 @@
 //  saltunnel2
 //
 
-#ifndef test_h
-#define test_h
+#ifndef saltunnel_tests_h
+#define saltunnel_tests_h
 
 int test(void);
 
