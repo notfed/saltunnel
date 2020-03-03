@@ -9,7 +9,8 @@
 #include "saltunnel_tcp_server_forwarder.h"
 
 void error_usage() {
-    oops_fatal("saltunnel-server: usage: saltunnel-server <key-file> <from-host>:<from-port> <to-host>:<to-port>");
+    fprintf(stderr,"saltunnel-server: %s: usage: saltunnel-server <key-file> <from-host>:<from-port> <to-host>:<to-port>\n");
+    exit(1);
 }
 
 int main(int argc, char * argv[])
@@ -19,25 +20,27 @@ int main(int argc, char * argv[])
     || oops_fatal("sodium init");
     
     // Validate argc
-     if(argc!=3) error_usage();
+     if(argc!=4) error_usage();
     
     // Read key
+    const char* key_path = argv[1];
     unsigned char key[32] = {0}; // TODO
     
     // Determine arguments
-    char* from_colon = strchr(argv[1], ':');
+    char* from_colon = strchr(argv[2], ':');
     if(from_colon==0) error_usage();
     *from_colon = 0;
-    const char* from_host = argv[1];
+    const char* from_host = argv[2];
     const char* from_port = from_colon+1;
     
-    char* to_colon = strchr(argv[2], ':');
+    char* to_colon = strchr(argv[3], ':');
     if(to_colon==0) error_usage();
     *to_colon = 0;
-    const char* to_host = argv[1];
+    const char* to_host = argv[3];
     const char* to_port = to_colon+1;
     
     // Call saltunnel
+//    fprintf(stderr, "key_path=%s, from_host=%s, from_port=%s, to_host=%s, to_port=%s\n", key_path, from_host, from_port, to_host, to_port);
     if(saltunnel_tcp_server_forwarder(key, from_host, from_port, to_host, to_port))
         oops_fatal("fatal error");
         
