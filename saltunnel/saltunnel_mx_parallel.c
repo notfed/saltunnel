@@ -23,13 +23,12 @@ static void fd_nonblock(int fd) {
 }
 
 typedef struct {
-    cryptostream *ingress; cryptostream *egress; unsigned char* key;
+    cryptostream *ingress; cryptostream *egress;
 } exchange_messages_thread_context;
 
 void* exchange_messages_egress(void* ctx_void) {
     exchange_messages_thread_context* ctx = (exchange_messages_thread_context*)ctx_void;
     cryptostream* egress = ctx->egress;
-    unsigned char* key = ctx->key;
 
     // Configure poll (we will poll both "readable" fds)
     struct pollfd pfds[] = {
@@ -64,7 +63,7 @@ void* exchange_messages_egress(void* ctx_void) {
 
         // read from 'from' when: 'from' is ready, and buffers not full
         if ((pfds[0].fd == FD_READY) && cryptostream_encrypt_feed_canread(egress)) {
-            int r = cryptostream_encrypt_feed_read(egress,key);
+            int r = cryptostream_encrypt_feed_read(egress,egress->key);
             if(r>0) { pfds[0].fd = egress->from_fd; }
             if(r==0) { pfds[0].fd = FD_EOF; }
         }
@@ -89,7 +88,6 @@ void* exchange_messages_egress(void* ctx_void) {
 void* exchange_messages_ingress(void* ctx_void) {
     exchange_messages_thread_context* ctx = (exchange_messages_thread_context*)ctx_void;
     cryptostream* ingress = ctx->ingress;
-    unsigned char* key = ctx->key;
     
     // Configure poll (we will poll both "readable" fds)
     struct pollfd pfds[] = {
@@ -124,7 +122,7 @@ void* exchange_messages_ingress(void* ctx_void) {
 
         // read from 'from' when: 'from' is ready, and buffers not full
         if ((pfds[0].fd == FD_READY) && cryptostream_decrypt_feed_canread(ingress)) {
-            int r = cryptostream_decrypt_feed_read(ingress,key);
+            int r = cryptostream_decrypt_feed_read(ingress,ingress->key);
             if(r>0) { pfds[0].fd = ingress->from_fd; }
             if(r==0) { pfds[0].fd = FD_EOF; }
         }
@@ -147,12 +145,11 @@ void* exchange_messages_ingress(void* ctx_void) {
     return 0;
 }
 
-void exchange_messages_parallel(cryptostream *ingress, cryptostream *egress, unsigned char* key) {
+void exchange_messages_parallel(cryptostream *ingress, cryptostream *egress) {
     
     exchange_messages_thread_context ctx;
     ctx.ingress = ingress;
     ctx.egress = egress;
-    ctx.key = key;
 
     pthread_t egress_thread;
     pthread_t ingress_thread;
