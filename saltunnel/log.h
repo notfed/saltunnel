@@ -40,7 +40,7 @@ const char* log_get_thread_name_formatted(void);
 
 //#define log_debug(...) MACRO_CHOOSER(__VA_ARGS__)("debug",__VA_ARGS__)
 #define log_debug(...)
-#define log_info(...)  //MACRO_CHOOSER(__VA_ARGS__)("info", __VA_ARGS__)
+#define log_info(...)  MACRO_CHOOSER(__VA_ARGS__)("info", __VA_ARGS__)
 #define log_warn(...)  MACRO_CHOOSER(__VA_ARGS__)("warn", __VA_ARGS__)
 #define log_fatal(...) MACRO_CHOOSER(__VA_ARGS__)("fatal",__VA_ARGS__)
 
