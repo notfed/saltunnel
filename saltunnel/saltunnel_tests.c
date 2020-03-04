@@ -818,12 +818,12 @@ int test() {
 //    run(test4, "test4");
 //    run(test5, "test5");
 //    run(test6, "test6");
-//    run(test7, "test7");
+    for(int i = 0; i < 100; i++)
+        run(test11, "test11");
+    run(test7, "test7");
     run(test8, "test8");  // <<
     run(test9,"test9");
-    run(test10,"test10");
-//    for(int i = 0; i < 100; i++)
-//        run(test11, "test11");
+//    run(test10,"test10");
     
     log_info("all tests passed");
     return 0;
