@@ -20,12 +20,12 @@
 #include <stdio.h>
 
 typedef struct decrypt_thread_param {
-    int buffer_decrypt_count; int buffer_decrypt_start; cryptostream *cs; nonce8 nonce;
+    int buffer_decrypt_count; int buffer_decrypt_start_i; cryptostream *cs; nonce8 nonce;
 } decrypt_thread_param;
 
 void decrypt_thread_action(void* params_v) {
     decrypt_thread_param* p = (decrypt_thread_param*)params_v;
-    decrypt_all_serial(p->buffer_decrypt_count, p->buffer_decrypt_start, p->cs, p->nonce);
+    decrypt_all_serial(p->buffer_decrypt_count, p->buffer_decrypt_start_i, p->cs, p->nonce);
 }
 
 void decrypt_all_parallel(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream *cs) {
@@ -41,7 +41,7 @@ void decrypt_all_parallel(int buffer_decrypt_count, int buffer_decrypt_start, cr
         // Initialize Task Params
         decrypt_thread_param* p = &params[thread_i];
         p->buffer_decrypt_count = buffer_decrypt_count/THREADPOOL_THREAD_COUNT;
-        p->buffer_decrypt_start = buffer_decrypt_start + thread_i*buffer_decrypt_count/THREADPOOL_THREAD_COUNT;
+        p->buffer_decrypt_start_i = buffer_decrypt_start + thread_i*buffer_decrypt_count/THREADPOOL_THREAD_COUNT;
         p->cs = cs;
         nonce8_copy(nonce_current, p->nonce);
         nonce8_increment_by(nonce_current, nonce_current, p->buffer_decrypt_count);
