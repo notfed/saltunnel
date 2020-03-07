@@ -29,7 +29,7 @@ int cryptostream_decrypt_feed_canread(cryptostream* cs) {
 //   >1 => ok
 //    0 => read fd closed
 //
-int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
+int cryptostream_decrypt_feed_read(cryptostream* cs) {
 
     // Lazily initialize the plaintext vector
     if(!cs->vector_init_complete) {
@@ -86,7 +86,7 @@ int cryptostream_decrypt_feed_read(cryptostream* cs, unsigned char* key) {
     int buffer_decrypt_count = buffers_filled;
 
     // Iterate the decryptable buffers (if any)
-    decrypt_all(buffer_decrypt_count, buffer_decrypt_start, cs, key);
+    decrypt_all(buffer_decrypt_count, buffer_decrypt_start, cs);
     log_debug("decrypted %d bytes from %d buffers", bytesread, buffer_decrypt_count);
 
     // Rotate buffer offsets

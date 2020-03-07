@@ -29,7 +29,7 @@ int cryptostream_encrypt_feed_canread(cryptostream* cs) {
 //   >1 => ok
 //    0 => read fd closed
 //
-int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key) {
+int cryptostream_encrypt_feed_read(cryptostream* cs) {
     
     // Lazily initialize the plaintext vector
     if(!cs->vector_init_complete) {
@@ -77,7 +77,7 @@ int cryptostream_encrypt_feed_read(cryptostream* cs, unsigned char* key) {
     int buffer_encrypt_count = ((bytesread-1) / CRYPTOSTREAM_BUFFER_MAXBYTES_DATA)+1;
 
     // Iterate the encryptable buffers (if any)
-    encrypt_all(buffer_encrypt_count, buffer_encrypt_start_i, bytesread, cs, key);
+    encrypt_all(buffer_encrypt_count, buffer_encrypt_start_i, bytesread, cs);
     
     // Rotate buffer offsets
     cs->vector_len += buffer_encrypt_count;

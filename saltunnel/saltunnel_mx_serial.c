@@ -106,7 +106,7 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
 
         // read from 'from' when: 'from' is ready, and buffers not full
         if ((pfds[0].fd == FD_READY) && cryptostream_decrypt_feed_canread(ingress)) {
-            int r = cryptostream_decrypt_feed_read(ingress,ingress->key);
+            int r = cryptostream_decrypt_feed_read(ingress);
             if(r>0) { pfds[0].fd = ingress->from_fd; }
             if(r==0) { pfds[0].fd = FD_EOF; }
             if(r<0) { oops_fatal("assertion failed"); }

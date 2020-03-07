@@ -18,19 +18,18 @@
 #include <unistd.h>
 #include <stdio.h>
 
-static unsigned long total_elapsed = 0;
-void encrypt_all(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs, unsigned char *key) {
+void encrypt_all(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs) {
 
 //    stopwatch sw;
 //    stopwatch_start(&sw);
     
     int all_buffers_full = (buffer_encrypt_count==CRYPTOSTREAM_BUFFER_COUNT);
     if(all_buffers_full && threadpool_enough_cpus_for_parallel()) {
-        encrypt_all_parallel(buffer_encrypt_count, buffer_encrypt_start_i, bytesread, cs, key);
+        encrypt_all_parallel(buffer_encrypt_count, buffer_encrypt_start_i, bytesread, cs);
     }
     else {
 //        log_info("encrypt serial");
-        encrypt_all_serial(buffer_encrypt_count, buffer_encrypt_start_i, bytesread, cs, key, cs->nonce);
+        encrypt_all_serial(buffer_encrypt_count, buffer_encrypt_start_i, bytesread, cs, cs->nonce);
     }
 //    
 //    long elapsed = stopwatch_elapsed(&sw);
@@ -38,15 +37,16 @@ void encrypt_all(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytes
 //    log_info("encrypt_all took %dus (total %dus)", (int)elapsed, (int)total_elapsed);
 }
 
-void encrypt_all_serial(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs, unsigned char *key, nonce8 nonce) {
+void encrypt_all_serial(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs, nonce8 nonce) {
     for(int buffer_i = buffer_encrypt_start_i; buffer_i < buffer_encrypt_start_i+buffer_encrypt_count; buffer_i++)
     {
-        encrypt_one(buffer_i, buffer_i-buffer_encrypt_start_i, bytesread, cs, key, nonce);
+        encrypt_one(buffer_i, buffer_i-buffer_encrypt_start_i, bytesread, cs, nonce);
+        nonce8_increment(nonce, nonce);
 //        log_debug("encrypt_all_serial: encrypted (buffer %d/%d)", buffer_i-buffer_encrypt_start_i+1, buffer_encrypt_count);
     }
 }
 
-void encrypt_one(int buffer_i, int buffer_n, int bytesread, cryptostream *cs, unsigned char *key, nonce8 nonce) {
+void encrypt_one(int buffer_i, int buffer_n, int bytesread, cryptostream *cs, nonce8 nonce) {
     
     int current_bytes_to_encrypt = MIN(CRYPTOSTREAM_BUFFER_MAXBYTES_DATA,
                                        bytesread - CRYPTOSTREAM_BUFFER_MAXBYTES_DATA*buffer_n);
@@ -78,7 +78,7 @@ void encrypt_one(int buffer_i, int buffer_n, int bytesread, cryptostream *cs, un
     //   - [16..32] == auth
     //   - [32..]   == ciphertext
     try(crypto_secretbox_salsa20poly1305(ciphertext_buffer_ptr, plaintext_buffer_ptr,
-                         CRYPTOSTREAM_BUFFER_MAXBYTES, nonce, key)) || oops_fatal("failed to encrypt");
+                         CRYPTOSTREAM_BUFFER_MAXBYTES, nonce, cs->key)) || oops_fatal("failed to encrypt");
     
     // Increment nonce
 //    nonce8_increment(cs->nonce,cs->nonce); // TODO: Using zero-nonce for now

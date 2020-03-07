@@ -20,22 +20,21 @@
 #include <stdio.h>
 
 typedef struct decrypt_thread_param {
-    int buffer_decrypt_count; int buffer_decrypt_start; cryptostream *cs; unsigned char *key;
+    int buffer_decrypt_count; int buffer_decrypt_start; cryptostream *cs; nonce8 nonce;
 } decrypt_thread_param;
 
 void decrypt_thread_action(void* params_v) {
     decrypt_thread_param* p = (decrypt_thread_param*)params_v;
-    nonce8 zero_nonce = {0}; // TODO: Use real nonce in parallel
-    decrypt_all_serial(p->buffer_decrypt_count, p->buffer_decrypt_start, p->cs, p->key);
+    decrypt_all_serial(p->buffer_decrypt_count, p->buffer_decrypt_start, p->cs, p->nonce);
 }
 
-void decrypt_all_parallel(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream *cs, unsigned char *key) {
-    
-//    log_info("decrypt_all_parallel: started");
+void decrypt_all_parallel(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream *cs) {
     
     // Allocate a list of "tasks" and their associated params
     threadpool_task tasks[THREADPOOL_THREAD_COUNT] = {0};
     decrypt_thread_param params[THREADPOOL_THREAD_COUNT] = {0};
+    nonce8 nonce_current;
+    nonce8_copy(cs->nonce, nonce_current);
     
     // Populate the tasks and params
     for(int thread_i = 0; thread_i < THREADPOOL_THREAD_COUNT; thread_i++) {
@@ -44,20 +43,15 @@ void decrypt_all_parallel(int buffer_decrypt_count, int buffer_decrypt_start, cr
         p->buffer_decrypt_count = buffer_decrypt_count/THREADPOOL_THREAD_COUNT;
         p->buffer_decrypt_start = buffer_decrypt_start + thread_i*buffer_decrypt_count/THREADPOOL_THREAD_COUNT;
         p->cs = cs;
-        p->key = key;
+        nonce8_copy(nonce_current, p->nonce);
+        nonce8_increment_by(nonce_current, nonce_current, p->buffer_decrypt_count);
         // Initialize Task
         tasks[thread_i].action = decrypt_thread_action;
         tasks[thread_i].param = p;
         // TODO: Debug
         if(buffer_decrypt_count%THREADPOOL_THREAD_COUNT!=0) oops_fatal("assertion failed");
     }
-    
-    // TODO: Using zero nonce for now
-//    nonce8_increment(cs->nonce, params[0].nonce);
-//    for(int i = 0; i < THREADPOOL_THREAD_COUNT-2; i++) {
-//        nonce8_increment(params[i].nonce, params[i+1].nonce);
-//    }
-//    nonce8_copy(params[THREADPOOL_THREAD_COUNT-1].nonce, cs->nonce);
+    nonce8_copy(nonce_current, cs->nonce);
     
     // Run tasks in parallel
     threadpool_for(1, tasks);

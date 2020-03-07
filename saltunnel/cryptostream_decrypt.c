@@ -18,36 +18,35 @@
 #include <stdio.h>
 
 static unsigned long total_elapsed = 0;
-void decrypt_all(int buffer_decrypt_count, int buffer_decrypt_start_i, cryptostream *cs, unsigned char *key) {
+void decrypt_all(int buffer_decrypt_count, int buffer_decrypt_start_i, cryptostream *cs) {
 
 //    stopwatch sw;
 //    stopwatch_start(&sw);
 //    log_info("decrypt_all: going to decrypt %d buffers", buffer_decrypt_count);
     int all_buffers_full = (buffer_decrypt_count==CRYPTOSTREAM_BUFFER_COUNT);
     if(all_buffers_full && threadpool_enough_cpus_for_parallel()) {
-        decrypt_all_parallel(buffer_decrypt_count, buffer_decrypt_start_i, cs, key);
+        decrypt_all_parallel(buffer_decrypt_count, buffer_decrypt_start_i, cs);
     }
     else {
 //        log_info("decrypt serial");
-        decrypt_all_serial(buffer_decrypt_count, buffer_decrypt_start_i, cs, key);
+        decrypt_all_serial(buffer_decrypt_count, buffer_decrypt_start_i, cs, cs->nonce);
     }
 //    long elapsed = stopwatch_elapsed(&sw);
 //    total_elapsed += elapsed;
 //    log_info("decrypt_all took %dus (total %dus)", (int)elapsed, (int)total_elapsed);
 }
 
-void decrypt_all_serial(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream *cs, unsigned char *key) {
+void decrypt_all_serial(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream *cs, nonce8 nonce) {
     for(int buffer_i = buffer_decrypt_start; buffer_i < buffer_decrypt_start+buffer_decrypt_count; buffer_i++)
     {
-        decrypt_one(buffer_i, cs, key);
+        decrypt_one(buffer_i, cs, nonce);
+        nonce8_increment(nonce, nonce);
 //        log_debug("cryptostream_decrypt_feed_read: decrypted (buffer %d/%d)", buffer_i-buffer_decrypt_start+1, buffer_decrypt_count);
     }
     log_debug("cryptostream_decrypt_feed_read: decrypted %d buffers", buffer_decrypt_count);
 }
 
-static nonce8 zero_nonce = {0}; // TODO: Use real nonce in parallel
-
-void decrypt_one(int buffer_i, cryptostream *cs, unsigned char *key) {
+void decrypt_one(int buffer_i, cryptostream *cs, nonce8 nonce) {
     
     unsigned char* plaintext_buffer_ptr = cs->plaintext_vector[buffer_i].iov_base - 32-2;
     unsigned char* ciphertext_buffer_ptr = cs->ciphertext_vector[buffer_i].iov_base - 16;
@@ -64,7 +63,7 @@ void decrypt_one(int buffer_i, cryptostream *cs, unsigned char *key) {
     //   - [0..32] == zero
     //   - [32..]  == plaintext
     try(crypto_secretbox_salsa20poly1305_open(plaintext_buffer_ptr, ciphertext_buffer_ptr,
-                              CRYPTOSTREAM_BUFFER_MAXBYTES,zero_nonce,key)) ||
+                              CRYPTOSTREAM_BUFFER_MAXBYTES, nonce, cs->key)) ||
         oops_fatal("failed to decrypt");
     
 //    // Increment nonce
