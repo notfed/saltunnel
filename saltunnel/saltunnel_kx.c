@@ -12,6 +12,20 @@
 #include "saltunnel_kx.h"
 #include <string.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <stdio.h>
+#include <string.h>
+
+void calculate_client_id(unsigned char out_client_id[16]) {
+    // client_id = H(mac_address||boot_time)
+}
+
+void calculate_timestamp(unsigned char out_timestamp[8]) {
+    // Get monotonic timestamp
+}
 
 int saltunnel_kx_packet0_trywrite(packet0* my_packet0_plaintext_pinned,
                                   const unsigned char long_term_key[32],

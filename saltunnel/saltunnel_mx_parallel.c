@@ -75,7 +75,7 @@ void* exchange_messages_egress(void* ctx_void) {
 
         // read from 'from' when: 'from' is ready, and buffers not full
         if ((pfds[0].fd == FD_READY) && cryptostream_encrypt_feed_canread(egress)) {
-            int r = cryptostream_encrypt_feed_read(egress,egress->key);
+            int r = cryptostream_encrypt_feed_read(egress);
             if(r>0) { pfds[0].fd = egress->from_fd; }
             if(r==0) { pfds[0].fd = FD_EOF; }
         }
@@ -141,7 +141,7 @@ void* exchange_messages_ingress(void* ctx_void) {
 
         // read from 'from' when: 'from' is ready, and buffers not full
         if ((pfds[0].fd == FD_READY) && cryptostream_decrypt_feed_canread(ingress)) {
-            int r = cryptostream_decrypt_feed_read(ingress,ingress->key);
+            int r = cryptostream_decrypt_feed_read(ingress);
             if(r>0) { pfds[0].fd = ingress->from_fd; }
             if(r==0) { pfds[0].fd = FD_EOF; }
         }

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		941587612413687E00CA793A /* get_mac_address.c in Sources */ = {isa = PBXBuildFile; fileRef = 941587602413687E00CA793A /* get_mac_address.c */; };
 		94ED038A240CB08A0093920F /* chaos.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971C32401895100DAC1E2 /* chaos.c */; };
 		94ED038B240CB08A0093920F /* chaos.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971AF2401895000DAC1E2 /* chaos.h */; };
 		94ED038C240CB08A0093920F /* config.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971A12401895000DAC1E2 /* config.h */; };
@@ -175,6 +176,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		9415875F2413687E00CA793A /* get_mac_address.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = get_mac_address.h; sourceTree = "<group>"; };
+		941587602413687E00CA793A /* get_mac_address.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = get_mac_address.c; sourceTree = "<group>"; };
 		942971932401894F00DAC1E2 /* saltunnel_mx_parallel.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = saltunnel_mx_parallel.c; sourceTree = "<group>"; };
 		942971942401894F00DAC1E2 /* threadpool_barrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = threadpool_barrier.h; sourceTree = "<group>"; };
 		942971952401894F00DAC1E2 /* saltunnel_tcp_client_forwarder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = saltunnel_tcp_client_forwarder.h; sourceTree = "<group>"; };
@@ -315,6 +318,8 @@
 				942971A42401895000DAC1E2 /* nonce.h */,
 				9429719D2401895000DAC1E2 /* oops.c */,
 				942971BC2401895100DAC1E2 /* oops.h */,
+				9415875F2413687E00CA793A /* get_mac_address.h */,
+				941587602413687E00CA793A /* get_mac_address.c */,
 				946FCDC8240C90BA00EEAB8B /* saltunnel_client.c */,
 				946FCDCE240C91BC00EEAB8B /* saltunnel_server.c */,
 				942971972401894F00DAC1E2 /* saltunnel_kx.c */,
@@ -514,6 +519,7 @@
 				94ED041D240CB82D0093920F /* uint16.c in Sources */,
 				94ED041E240CB82D0093920F /* uint16.h in Sources */,
 				94ED041F240CB82D0093920F /* uninterruptable.c in Sources */,
+				941587612413687E00CA793A /* get_mac_address.c in Sources */,
 				94ED0420240CB82D0093920F /* uninterruptable.h in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
