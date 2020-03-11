@@ -1,6 +1,8 @@
 #include "uint64.h"
 
-void uint32_unpack(char s[8],uint64 *u)
+#include <stdint.h>
+
+void uint64_unpack(char s[8], uint64_t *u)
 {
     uint64 result;
 
@@ -16,7 +18,7 @@ void uint32_unpack(char s[8],uint64 *u)
     *u = result;
 }
 
-void uint32_unpack_big(char s[8],uint64 *u)
+void uint64_unpack_big(char s[8], uint64_t *u)
 {
   uint64 result;
 
