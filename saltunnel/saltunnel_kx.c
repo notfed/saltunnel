@@ -49,6 +49,9 @@ int saltunnel_kx_packet0_trywrite(packet0* my_packet0_plaintext_pinned,
     unsigned char my_nonce[24];
     randombytes(my_nonce, 24);
     
+    
+    // Calculate a client_id
+    
     // Put version in buffer
     memcpy(my_packet0_plaintext_pinned->version, version, 8);
     
