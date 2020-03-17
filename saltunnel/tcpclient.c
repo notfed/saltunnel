@@ -20,10 +20,6 @@ static int fd_nonblock(int fd)
   return fcntl(fd,F_SETFL,fcntl(fd,F_GETFL,0) | O_NONBLOCK);
 }
 
-static int ignore_sigpipe() {
-    return (signal(SIGPIPE, SIG_IGN) == SIG_ERR ? -1 : 1);
-}
-
 int tcpclient_new(const char* ip, const char* port, tcpclient_options options)
 {
     // Resolve address

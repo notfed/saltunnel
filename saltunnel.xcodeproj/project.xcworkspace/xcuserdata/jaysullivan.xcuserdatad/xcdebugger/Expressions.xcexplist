@@ -9,6 +9,14 @@
          contextName = "threadpool_init:threadpool.c">
       </ContextState>
       <ContextState
+         contextName = "hashtable_insert:hashtable.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "hash(key,HASHTABLE_KEY_BYTES)">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
          contextName = "encrypt_one:cryptostream_encrypt.c">
       </ContextState>
       <ContextState
