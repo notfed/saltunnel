@@ -62,8 +62,8 @@
             filePath = "saltunnel/hashtable.test.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "13"
-            endingLineNumber = "13"
+            startingLineNumber = "26"
+            endingLineNumber = "26"
             landmarkName = "hashtable_test()"
             landmarkType = "9">
          </BreakpointContent>
@@ -78,8 +78,8 @@
             filePath = "saltunnel/hashtable.test.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "17"
-            endingLineNumber = "17"
+            startingLineNumber = "30"
+            endingLineNumber = "30"
             landmarkName = "hashtable_test()"
             landmarkType = "9">
          </BreakpointContent>
