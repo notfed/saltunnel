@@ -7,7 +7,7 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "6302EE4B-6448-4355-9F7E-D3EDBC8B6106"
+            uuid = "EC770693-2F69-40A9-871C-9834AFB1857C"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
@@ -23,16 +23,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "53D2A82F-8D0D-4E85-89FF-69EDC47988C4"
+            uuid = "53825987-ABDA-4155-B71A-24F8FF6797AD"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
-            condition = "i==768"
+            condition = "154883"
             continueAfterRunningActions = "No"
             filePath = "saltunnel/hashtable.test.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "26"
-            endingLineNumber = "26"
+            startingLineNumber = "48"
+            endingLineNumber = "48"
             landmarkName = "hashtable_test()"
             landmarkType = "9">
          </BreakpointContent>

@@ -14,6 +14,8 @@ static void testvalue(unsigned char* value_out, uint32_t val) {
 }
 
 int hashtable_test() {
+    int stress = 1000000;
+    
     // Arrange
     hashtable table = {0};
     unsigned char key[HASHTABLE_KEY_BYTES];
@@ -21,33 +23,33 @@ int hashtable_test() {
     
     
     // Assert (Pre-Insert)
-    for(int i = 1; i < 10000; i+=13) {
+    for(int i = 1; i < stress; i+=13) {
         testkey(key, i); testvalue(value, i*3);
         unsigned char* pre_insert_value = hashtable_get(table, key);
         pre_insert_value==0 || oops_fatal("hashtable: pre-insert get failed");
     }
     
     // Insert
-    for(int i = 1; i < 10000; i+=13) {
+    for(int i = 1; i < stress; i+=13) {
         testkey(key, i); testvalue(value,i*3);
         try(hashtable_insert(table, key, value)) || oops_fatal("hashtable: failed to insert");
     }
     
     // Assert (Post-Insert)
-    for(int i = 1; i < 10000; i+=13) {
+    for(int i = 1; i < stress; i+=13) {
         testkey(key, i); testvalue(value,i*3);
         unsigned char* post_insert_value = hashtable_get(table, key);
         memcmp(post_insert_value,value,HASHTABLE_VALUE_BYTES)==0 || oops_fatal("hashtable: insert+get failed");
     }
     
     // Delete
-    for(int i = 1; i < 10000; i+=13) {
+    for(int i = 1; i < stress; i+=13) {
         testkey(key, i); testvalue(value,i*3);
         hashtable_delete(table, key)==1 || oops_fatal("hashtable: failed to delete");
     }
     
     // Assert (Post-Delete)
-    for(int i = 1; i < 10000; i+=13) {
+    for(int i = 1; i < stress; i+=13) {
         unsigned char* post_delete_value = hashtable_get(table, key);
         post_delete_value==0 || oops_fatal("hashtable: post-delete get failed");
     }
