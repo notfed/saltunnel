@@ -83,7 +83,7 @@ int hashtable_delete(hashtable table, unsigned char* key) {
         maybe_entry != NULL;
         maybe_entry = maybe_entry->chain)
     {
-        // If we found the key, delete the value
+        // If we found the key...
         if(memcmp(maybe_entry->key,key,HASHTABLE_KEY_BYTES)==0) {
 
             hashtable_entry* next_entry = maybe_entry->chain;
@@ -93,18 +93,19 @@ int hashtable_delete(hashtable table, unsigned char* key) {
                 prev_entry->chain = next_entry;
                 memset(maybe_entry, 0, sizeof(hashtable_entry));
                 free(maybe_entry);
+                return 1;
             }
             // If this is the primary entry, and there's a next entry, copy next to cur and deallocate next
             else if(next_entry) {
                 memcpy(maybe_entry, next_entry, sizeof(hashtable_entry));
                 free(next_entry);
+                return 1;
             }
             // If this is the primary entry, and there's no next entry, simply clear it out
             else {
                 memset(maybe_entry, 0, sizeof(hashtable_entry));
+                return 1;
             }
-            
-            return 1;
         }
         
         // If we didn't find the key, can't delete it
