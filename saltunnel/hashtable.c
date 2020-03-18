@@ -74,6 +74,7 @@ int hashtable_insert(hashtable table, unsigned char* key, unsigned char* value) 
 }
 
 int hashtable_delete(hashtable table, unsigned char* key) {
+    
     hashtable_entry* prev_entry = 0;
     
     // Start at a slot, iterate its chain
@@ -86,6 +87,7 @@ int hashtable_delete(hashtable table, unsigned char* key) {
         if(memcmp(maybe_entry->key,key,HASHTABLE_KEY_BYTES)==0) {
 
             hashtable_entry* next_entry = maybe_entry->chain;
+            
             // If this is a non-primary entry, re-point prev to next and deallocate cur
             if(prev_entry) {
                 prev_entry->chain = next_entry;

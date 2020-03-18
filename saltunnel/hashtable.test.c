@@ -14,7 +14,7 @@ static void testvalue(unsigned char* value_out, uint32_t val) {
 }
 
 int hashtable_test() {
-    int stress = 1000000;
+    int stress = 10000000;
     
     // Arrange
     hashtable table = {0};
@@ -52,6 +52,11 @@ int hashtable_test() {
     for(int i = 1; i < stress; i+=13) {
         unsigned char* post_delete_value = hashtable_get(table, key);
         post_delete_value==0 || oops_fatal("hashtable: post-delete get failed");
+    }
+    
+    // Assert All Zero (Post-Delete)
+    for(int i = 0; i < sizeof(hashtable); i++) {
+        if(((char*)table)[i]!=0) oops_fatal("hashtable: wasn't zero after deleting all");
     }
     
     return 1;
