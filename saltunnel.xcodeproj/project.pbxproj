@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		94011EF3242322D8005AD00A /* nonce.test.c in Sources */ = {isa = PBXBuildFile; fileRef = 94011EF2242322D8005AD00A /* nonce.test.c */; };
 		9415876424136BB200CA793A /* hypercounter.c in Sources */ = {isa = PBXBuildFile; fileRef = 9415876324136BB200CA793A /* hypercounter.c */; };
 		9415876924186F2800CA793A /* uint64.c in Sources */ = {isa = PBXBuildFile; fileRef = 9415876624186F2700CA793A /* uint64.c */; };
 		9415876D2418880C00CA793A /* hashtable.c in Sources */ = {isa = PBXBuildFile; fileRef = 9415876C2418880C00CA793A /* hashtable.c */; };
@@ -182,6 +183,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		94011EF1242322D8005AD00A /* nonce.test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nonce.test.h; sourceTree = "<group>"; };
+		94011EF2242322D8005AD00A /* nonce.test.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = nonce.test.c; sourceTree = "<group>"; };
 		9415876224136BB200CA793A /* hypercounter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hypercounter.h; sourceTree = "<group>"; };
 		9415876324136BB200CA793A /* hypercounter.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = hypercounter.c; sourceTree = "<group>"; };
 		9415876624186F2700CA793A /* uint64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = uint64.c; sourceTree = "<group>"; };
@@ -330,6 +333,8 @@
 				942971A32401895000DAC1E2 /* math.h */,
 				9429719C2401894F00DAC1E2 /* nonce.c */,
 				942971A42401895000DAC1E2 /* nonce.h */,
+				94011EF2242322D8005AD00A /* nonce.test.c */,
+				94011EF1242322D8005AD00A /* nonce.test.h */,
 				9429719D2401895000DAC1E2 /* oops.c */,
 				942971BC2401895100DAC1E2 /* oops.h */,
 				9415876224136BB200CA793A /* hypercounter.h */,
@@ -523,6 +528,7 @@
 				94ED040A240CB82D0093920F /* saltunnel_mx_parallel.c in Sources */,
 				9415876D2418880C00CA793A /* hashtable.c in Sources */,
 				9415877224188B5D00CA793A /* uint32.c in Sources */,
+				94011EF3242322D8005AD00A /* nonce.test.c in Sources */,
 				94ED040B240CB82D0093920F /* saltunnel_mx_serial.c in Sources */,
 				94ED040C240CB82D0093920F /* saltunnel_mx.h in Sources */,
 				94ED040D240CB82D0093920F /* saltunnel_tcp_client_forwarder.c in Sources */,
