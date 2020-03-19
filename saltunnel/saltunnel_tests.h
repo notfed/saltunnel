@@ -6,6 +6,6 @@
 #ifndef saltunnel_tests_h
 #define saltunnel_tests_h
 
-int test(void);
+void test(void);
 
 #endif /* test_h */

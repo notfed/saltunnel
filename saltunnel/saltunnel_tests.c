@@ -813,7 +813,7 @@ void test11() {
 //    pthread_kill(thread2, SIGKILL);
 }
 
-int test() {
+void test() {
     
     log_info("test suite started");
     run(test1, "test1");
@@ -831,5 +831,4 @@ int test() {
     run(hashtable_test, "hashtable_test");
     
     log_info("all tests passed");
-    return 0;
 }
