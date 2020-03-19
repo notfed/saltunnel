@@ -28,7 +28,7 @@ void uint64_pack_big(char s[8], uint64_t u)
 
 void uint64_unpack(char s[8], uint64_t *u)
 {
-    uint64 result;
+    uint64_t result;
 
     result =  (unsigned char) s[7]; result <<= 8;
     result += (unsigned char) s[6]; result <<= 8;
@@ -44,7 +44,7 @@ void uint64_unpack(char s[8], uint64_t *u)
 
 void uint64_unpack_big(char s[8], uint64_t *u)
 {
-  uint64 result;
+  uint64_t result;
 
   result =  (unsigned char) s[0]; result <<= 8;
   result += (unsigned char) s[1]; result <<= 8;
