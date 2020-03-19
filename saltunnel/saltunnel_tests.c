@@ -150,45 +150,48 @@ void create_test_pipe(int fds[2]) {
     #endif
 }
 
-// test4: saltunnel works with cryptostream
-void test4() {
-    
-    // Create four "fake files" (i.e., pipes)
-    int pipe_local_read[2];  create_test_pipe(pipe_local_read);
-    int pipe_local_write[2]; create_test_pipe(pipe_local_write);
-    int pipe_net_read[2];    create_test_pipe(pipe_net_read);
-    int pipe_net_write[2];   create_test_pipe(pipe_net_write);
-    
-    // Start with "expected value" available for reading from net pipe
-//    const char net_teststr_expected[] = "from_net_pipe";
-    uninterruptable_writen(write, pipe_net_read[1],   test_encpacket,   512); close(pipe_net_read[1]);
-    
-    // Start with "expected value" available for reading from local pipe
-    const char local_teststr_expected[] = "from_lcl_pipe"; 
-    uninterruptable_writen(write, pipe_local_read[1], local_teststr_expected, 14); close(pipe_local_read[1]);
-    
-    // Run saltunnel
-    cryptostream ingress = {
-//        .op = cryptostream_decrypt_feed,
-        .from_fd = pipe_net_read[0],
-        .to_fd = pipe_local_write[1]
-    };
-    cryptostream egress = {
-//        .op = cryptostream_encrypt_feed,
-        .from_fd = pipe_local_read[0],
-        .to_fd = pipe_net_write[1]
-    };
-    saltunnel(&ingress, &egress);
-    
-    // Read "actual value" from both "write" pipes
-    char local_teststr_actual[14] = {0};
-    char net_teststr_actual[512] = {0};
-    uninterruptable_read(read, pipe_local_write[0], local_teststr_actual, 14);
-    uninterruptable_read(read, pipe_net_write[0], net_teststr_actual, 512) == 512 || oops_fatal("didn't write 512 bytes to net");
-    
-    // Assert "expected value" equals "actual value"
-    strcmp(local_teststr_actual, "from_net_pipe") == 0 || oops_fatal("local teststr did not match");
-}
+//// test4: saltunnel works with cryptostream
+//void test4() {
+//
+//    // Create four "fake files" (i.e., pipes)
+//    int pipe_local_read[2];  create_test_pipe(pipe_local_read);
+//    int pipe_local_write[2]; create_test_pipe(pipe_local_write);
+//    int pipe_net_read[2];    create_test_pipe(pipe_net_read);
+//    int pipe_net_write[2];   create_test_pipe(pipe_net_write);
+//
+//    // Start with "expected value" available for reading from net pipe
+////    const char net_teststr_expected[] = "from_net_pipe";
+//    if(sizeof(test_encpacket)!=512) oops_fatal("assertion failed");
+//    uninterruptable_writen(write, pipe_net_read[1],   test_encpacket,   512); close(pipe_net_read[1]);
+//
+//    // Start with "expected value" available for reading from local pipe
+//    const char local_teststr_expected[] = "from_lcl_pipe";
+//    uninterruptable_writen(write, pipe_local_read[1], local_teststr_expected, 14); close(pipe_local_read[1]);
+//
+//    // Run saltunnel
+//    cryptostream ingress = {
+////        .op = cryptostream_decrypt_feed,
+//        .from_fd = pipe_net_read[0],
+//        .to_fd = pipe_local_write[1],
+//        .key = testkey
+//    };
+//    cryptostream egress = {
+////        .op = cryptostream_encrypt_feed,
+//        .from_fd = pipe_local_read[0],
+//        .to_fd = pipe_net_write[1],
+//        .key = testkey
+//    };
+//    saltunnel(&ingress, &egress);
+//
+//    // Read "actual value" from both "write" pipes
+//    char local_teststr_actual[14] = {0};
+//    char net_teststr_actual[512] = {0};
+//    uninterruptable_read(read, pipe_local_write[0], local_teststr_actual, 14);
+//    uninterruptable_read(read, pipe_net_write[0], net_teststr_actual, 512) == 512 || oops_fatal("didn't write 512 bytes to net");
+//
+//    // Assert "expected value" equals "actual value"
+//    strcmp(local_teststr_actual, "from_net_pipe") == 0 || oops_fatal("local teststr did not match");
+//}
 
 //
 //typedef struct saltunnel_thread_context {
@@ -787,7 +790,7 @@ void test11() {
     
     // Server Writer-Reader Thread:
     pthread_t thread1 = tcpstub_server_writer_reader("127.0.0.1", "3270",
-                          "this string from TCP server stub to client stub",
+                          "this string from TCP server stub to client stub.",
                           "this string from TCP client stub to server stub");
     
     // Server Forwarder Thread:
@@ -799,7 +802,7 @@ void test11() {
     // Client Writer-Reader:
     tcpstub_client_writer_reader("127.0.0.1", "3250",
                                  "this string from TCP client stub to server stub",
-                                 "this string from TCP server stub to client stub");
+                                 "this string from TCP server stub to client stub.");
     log_info("test11 assertion successfully completed");
     
     // Clean up
