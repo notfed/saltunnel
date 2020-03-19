@@ -20,21 +20,13 @@
 
 void encrypt_all(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs) {
 
-//    stopwatch sw;
-//    stopwatch_start(&sw);
-    
     int all_buffers_full = (buffer_encrypt_count==CRYPTOSTREAM_BUFFER_COUNT);
     if(all_buffers_full && threadpool_enough_cpus_for_parallel()) {
         encrypt_all_parallel(buffer_encrypt_count, buffer_encrypt_start_i, bytesread, cs);
     }
     else {
-//        log_info("encrypt serial");
         encrypt_all_serial(buffer_encrypt_count, buffer_encrypt_start_i, bytesread, cs, cs->nonce);
     }
-//    
-//    long elapsed = stopwatch_elapsed(&sw);
-//    total_elapsed += elapsed;
-//    log_info("encrypt_all took %dus (total %dus)", (int)elapsed, (int)total_elapsed);
 }
 
 void encrypt_all_serial(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs, nonce8 nonce) {
@@ -42,7 +34,6 @@ void encrypt_all_serial(int buffer_encrypt_count, int buffer_encrypt_start_i, in
     {
         encrypt_one(buffer_i, buffer_i-buffer_encrypt_start_i, bytesread, cs, nonce);
         nonce8_increment(nonce, nonce);
-//        log_debug("encrypt_all_serial: encrypted (buffer %d/%d)", buffer_i-buffer_encrypt_start_i+1, buffer_encrypt_count);
     }
 }
 
@@ -50,8 +41,6 @@ void encrypt_one(int buffer_i, int buffer_n, int bytesread, cryptostream *cs, no
     
     int current_bytes_to_encrypt = MIN(CRYPTOSTREAM_BUFFER_MAXBYTES_DATA,
                                        bytesread - CRYPTOSTREAM_BUFFER_MAXBYTES_DATA*buffer_n);
-    if(current_bytes_to_encrypt<0) oops_fatal("assertion failed");
-    if(buffer_i<0 || buffer_i>=CRYPTOSTREAM_BUFFER_COUNT*2) oops_fatal("assertion failed");
     
     // Find the pointers to the start of the buffers
     unsigned char* plaintext_buffer_ptr = cs->plaintext_vector[buffer_i].iov_base - 32-2;
@@ -79,7 +68,4 @@ void encrypt_one(int buffer_i, int buffer_n, int bytesread, cryptostream *cs, no
     //   - [32..]   == ciphertext
     try(crypto_secretbox_salsa20poly1305(ciphertext_buffer_ptr, plaintext_buffer_ptr,
                          CRYPTOSTREAM_BUFFER_MAXBYTES, nonce, cs->key)) || oops_fatal("failed to encrypt");
-    
-    // Increment nonce
-//    nonce8_increment(cs->nonce,cs->nonce); // TODO: Using zero-nonce for now
 }

@@ -1,5 +1,5 @@
 //
-//  saltunnel_common.h
+//  saltunnel.h
 //  saltunnel2
 //
 

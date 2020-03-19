@@ -1,5 +1,5 @@
 //
-//  cryptostream_encrypt.c
+//  cryptostream_encrypt_parallel.c
 //  saltunnel2
 //
 

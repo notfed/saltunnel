@@ -1,5 +1,5 @@
 //
-//  hypercounter_h
+//  hypercounter.h
 //  saltunnel
 //
 

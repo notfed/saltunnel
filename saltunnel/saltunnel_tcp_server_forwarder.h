@@ -1,5 +1,5 @@
 //
-//  saltunnel_tcp_server.h
+//  saltunnel_tcp_server_forwarder.h
 //  saltunnel
 //
 

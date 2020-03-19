@@ -50,11 +50,9 @@ void vector_buffer_set_base(struct iovec* iovec_array, int buffer_i, void* base)
 void vector_init(cryptostream *cs) {
     for(int j = 0; j<CRYPTOSTREAM_BUFFER_COUNT*2; j++) {
         vector_reset_plaintext(cs->plaintext_vector, cs->plaintext, j);
-//        memset(cs->plaintext_vector[j].iov_base, '1', CRYPTOSTREAM_BUFFER_MAXBYTES_DATA); // TODO: Remove this later
     }
     for(int j = 0; j<CRYPTOSTREAM_BUFFER_COUNT*2; j++) {
         vector_reset_ciphertext(cs->ciphertext_vector, cs->ciphertext, j);
-//        memset(cs->ciphertext_vector[j].iov_base, '1', CRYPTOSTREAM_BUFFER_MAXBYTES_DATA); // TODO: Remove this later
     }
 }
 

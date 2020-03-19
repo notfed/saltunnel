@@ -1,4 +1,3 @@
-
 //
 //  hashtable_test.h
 //  saltunnel

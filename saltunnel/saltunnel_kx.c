@@ -1,5 +1,5 @@
 //
-//  saltunnel_exchange_key.c
+//  saltunnel_kx.c
 //  saltunnel
 //
 

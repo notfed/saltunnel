@@ -1,5 +1,5 @@
 //
-//  cryptostream_derypt.c // TODO: DOUBLE CHECK NAMES
+//  cryptostream_derypt_parallel.c
 //  saltunnel2
 //
 
