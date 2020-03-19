@@ -18,7 +18,7 @@ static void testvalue(unsigned char* value_out, uint32_t val) {
     memset(value_out+4,0,HASHTABLE_VALUE_BYTES-4);
 }
 
-int hashtable_test() {
+void hashtable_test() {
     int stress = 10000000;
     
     // Arrange
@@ -63,6 +63,4 @@ int hashtable_test() {
     for(int i = 0; i < sizeof(hashtable); i++) {
         if(((char*)table)[i]!=0) oops_fatal("hashtable: wasn't zero after deleting all");
     }
-    
-    return 1;
 }

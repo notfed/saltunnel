@@ -6,6 +6,6 @@
 #ifndef hashtable_test_h
 #define hashtable_test_h
 
-int hashtable_test(void);
+void hashtable_test(void);
 
 #endif /* hashtable_h */
