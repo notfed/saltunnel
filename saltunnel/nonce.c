@@ -4,18 +4,16 @@
 //
 
 #include "nonce.h"
+#include <string.h>
+#include <stdint.h>
 
 void nonce8_clear(nonce8 nonce) {
-    for(int i = 0; i < 8; i++) {
-        nonce[i] = 0;
-    }
+    memset(nonce, 0, 8);
 }
 
-// TODO: Optimize
+// Optimize
 void nonce8_copy(nonce8 nonce_from, nonce8 nonce_to) {
-    for(int i = 0; i < 8; i++) {
-        nonce_to[i] = nonce_from[i];
-    }
+    memcpy(nonce_to, nonce_from, 8);
 }
 
 void nonce8_increment(nonce8 nonce_from, nonce8 nonce_to) {
@@ -36,14 +34,10 @@ void nonce8_increment_by(nonce8 nonce_from, nonce8 nonce_to, int by) {
 }
 
 void nonce24_clear(nonce24 nonce) {
-    for(int i = 0; i < 24; i++) {
-        nonce[i] = 0;
-    }
+    memset(nonce, 0, 24);
 }
 
-// TODO: Optimize
-void nonce24_copy(nonce8 nonce_from, nonce8 nonce_to) {
-    for(int i = 0; i < 24; i++) {
-        nonce_to[i] = nonce_from[i];
-    }
+// Optimize
+void nonce24_copy(nonce24 nonce_from, nonce24 nonce_to) {
+    memcpy(nonce_to, nonce_from, 24);
 }
