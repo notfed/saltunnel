@@ -10,6 +10,7 @@
 #include "oops.h"
 #include "log.h"
 #include "saltunnel_kx.h"
+#include "hypercounter.h"
 #include <string.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -49,8 +50,9 @@ int saltunnel_kx_packet0_trywrite(packet0* my_packet0_plaintext_pinned,
     unsigned char my_nonce[24];
     randombytes(my_nonce, 24);
     
-    
-    // Calculate a client_id
+    // Place this  machine's machine_id and current monotonic_time into the packet
+    if(hypercounter(my_packet0_plaintext_pinned->machine_id, my_packet0_plaintext_pinned->monotonic_time)<0)
+        return -1;
     
     // Put version in buffer
     memcpy(my_packet0_plaintext_pinned->version, version, 8);
