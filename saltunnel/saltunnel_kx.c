@@ -21,14 +21,7 @@
 #include <net/if.h>
 #include <stdio.h>
 #include <string.h>
-
-void calculate_client_id(unsigned char out_client_id[16]) {
-    // client_id = H(mac_address||boot_time)
-}
-
-void calculate_timestamp(unsigned char out_timestamp[8]) {
-    // Get monotonic timestamp
-}
+#include <time.h>
 
 int saltunnel_kx_packet0_trywrite(packet0* my_packet0_plaintext_pinned,
                                   const unsigned char long_term_key[32],
@@ -114,9 +107,14 @@ int saltunnel_kx_packet0_tryread(packet0* their_packet0_plaintext_pinned,
     if(sodium_compare(their_packet0_plaintext_pinned->version, version, 8) != 0)
         return oops_warn("version mismatch");
     
-    // Verify timetamp (TODO)
+    // Verify that their timestamp is less than an hour old
+    uint64_t my_now = time(NULL);
+    uint64_t their_now;
+    uint64_unpack_big((char*)their_packet0_plaintext_pinned->epoch_seconds, &their_now);
+    if(their_now < (my_now-3600))
+        return oops_warn("received old packet0");
     
-    // Verify client-specific incrementing nonce (TODO)
+    // Verify that this hypercounter hasn't already been seen
     
     // Copy their_pk to output
     memcpy(their_pk_out, their_packet0_plaintext_pinned->pk, sizeof(their_packet0_plaintext_pinned->pk));
