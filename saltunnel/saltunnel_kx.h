@@ -21,6 +21,7 @@ typedef struct packet0 {
     unsigned char auth[16];
     unsigned char version[8];
     unsigned char pk[32];
+    unsigned char epoch_seconds[8];
     unsigned char machine_id[16];
     unsigned char monotonic_time[8];
     unsigned char zeros[408];
