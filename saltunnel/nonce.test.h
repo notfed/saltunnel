@@ -1,5 +1,5 @@
 //
-//  noncetest.h
+//  nonce.test.h
 //  saltunnel2
 //
 
@@ -8,5 +8,7 @@
 
 #include "nonce.test.h"
 #include <stdio.h>
+
+void nonce_tests(void);
 
 #endif /* noncetest_h */

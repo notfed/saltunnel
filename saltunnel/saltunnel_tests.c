@@ -16,6 +16,7 @@
 #include "uninterruptable.h"
 #include "log.h"
 #include "hashtable.test.h"
+#include "nonce.test.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -816,6 +817,7 @@ void test11() {
 void test() {
     
     log_info("test suite started");
+    
     run(test1, "test1");
 //    run(test2, "test2");
     run(test3, "test3");
@@ -829,6 +831,8 @@ void test() {
     run(test9,"test9");
     run(test10,"test10");
     run(hashtable_test, "hashtable_test");
+    
+    run(nonce_tests, "nonce_tests");
     
     log_info("all tests passed");
 }
