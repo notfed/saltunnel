@@ -114,7 +114,8 @@ int saltunnel_kx_packet0_tryread(packet0* their_packet0_plaintext_pinned,
     if(their_now < (my_now-3600))
         return oops_warn("received old packet0");
     
-    // Verify that this hypercounter hasn't already been seen
+    // Verify that this hypercounter is fresh
+    
     
     // Copy their_pk to output
     memcpy(their_pk_out, their_packet0_plaintext_pinned->pk, sizeof(their_packet0_plaintext_pinned->pk));
