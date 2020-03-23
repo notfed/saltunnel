@@ -17,10 +17,12 @@ struct hashtable_entry {
     hashtable_entry* chain;
 };
 
-typedef hashtable_entry hashtable[HASHTABLE_NUM_ENTRIES];
+typedef struct hashtable {
+    hashtable_entry e[HASHTABLE_NUM_ENTRIES];
+} hashtable;
 
-int hashtable_insert(hashtable table, unsigned char* key, unsigned char* value);
-unsigned char* hashtable_get(hashtable table, unsigned char* key);
-int hashtable_delete(hashtable table, unsigned char* key);
+int hashtable_insert(hashtable* table, unsigned char* key, unsigned char* value);
+unsigned char* hashtable_get(hashtable* table, unsigned char* key);
+int hashtable_delete(hashtable* table, unsigned char* key);
 
 #endif /* hashtable_h */

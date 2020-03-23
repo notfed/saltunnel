@@ -19,11 +19,11 @@ static unsigned long long hash(unsigned char* str, unsigned int len)
     return hash;
 }
 
-unsigned char* hashtable_get(hashtable table, unsigned char* key) {
+unsigned char* hashtable_get(hashtable* table, unsigned char* key) {
     
     // Start at a slot, iterate its chain
     int slot = hash(key,HASHTABLE_KEY_BYTES)%HASHTABLE_NUM_ENTRIES;
-    for(hashtable_entry* maybe_entry = &table[slot];
+    for(hashtable_entry* maybe_entry = &table->e[slot];
         maybe_entry != NULL;
         maybe_entry = maybe_entry->chain)
     {
@@ -37,11 +37,11 @@ unsigned char* hashtable_get(hashtable table, unsigned char* key) {
 }
 
 const unsigned char zerokey[HASHTABLE_KEY_BYTES] = {0};
-int hashtable_insert(hashtable table, unsigned char* key, unsigned char* value) {
+int hashtable_insert(hashtable* table, unsigned char* key, unsigned char* value) {
     
     // Start at a slot, iterate its chain
     int slot = hash(key,HASHTABLE_KEY_BYTES)%HASHTABLE_NUM_ENTRIES;
-    for(hashtable_entry* maybe_entry = &table[slot];
+    for(hashtable_entry* maybe_entry = &table->e[slot];
         maybe_entry != NULL;
         maybe_entry = maybe_entry->chain)
     {
@@ -73,13 +73,13 @@ int hashtable_insert(hashtable table, unsigned char* key, unsigned char* value) 
     return -1;
 }
 
-int hashtable_delete(hashtable table, unsigned char* key) {
+int hashtable_delete(hashtable* table, unsigned char* key) {
     
     hashtable_entry* prev_entry = 0;
     
     // Start at a slot, iterate its chain
     int slot = hash(key,HASHTABLE_KEY_BYTES)%HASHTABLE_NUM_ENTRIES;
-    for(hashtable_entry* maybe_entry = &table[slot];
+    for(hashtable_entry* maybe_entry = &table->e[slot];
         maybe_entry != NULL;
         maybe_entry = maybe_entry->chain)
     {
