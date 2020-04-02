@@ -106,7 +106,7 @@ int tcpserver_accept(int s) {
     // Accept a new connection
     struct sockaddr_in client_address;
     socklen_t client_address_len = sizeof(client_address);
-    int fd_conn = accept(s, (struct sockaddr *) &client_address_len, &client_address_len);
+    int fd_conn = accept(s, (struct sockaddr *) &client_address, &client_address_len);
     if(fd_conn<0)
         return oops_warn("error accepting connection");
     log_info("tcp_server from_socket connection created, fd %d", fd_conn);
