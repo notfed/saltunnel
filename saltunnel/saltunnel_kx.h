@@ -52,4 +52,4 @@ int saltunnel_kx_calculate_shared_key(unsigned char session_key_out[32],
 void exchange_session_key(int from_fd, int to_fd,
                           unsigned char* long_term_key,
                           unsigned char* session_key_out);
-#endif /* saltunnel_exchange_key_h */
+#endif /* saltunnel_kx_h */

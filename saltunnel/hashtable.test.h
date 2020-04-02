@@ -8,4 +8,4 @@
 
 void hashtable_test(void);
 
-#endif /* hashtable_h */
+#endif /* hashtable_test_h */
