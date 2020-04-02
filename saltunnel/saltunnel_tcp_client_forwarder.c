@@ -10,19 +10,7 @@
 #include "saltunnel_tcp_client_forwarder.h"
 #include "tcpserver.h"
 #include "tcpclient.h"
-#include <sys/types.h>
-#include <sys/param.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <stdlib.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <netdb.h>
-#include <netinet/tcp.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <sys/mman.h>
 
 typedef struct connection_thread_context {
