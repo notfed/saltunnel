@@ -487,10 +487,7 @@ void test8_for(int i) {
     free(from_peer2_local_str);
 }
 void test8() {
-//    
-//    test8_for(1000000);
-//    return;
-//    
+    
     int edges[] = {
         CRYPTOSTREAM_BUFFER_COUNT,
         CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT,
@@ -505,6 +502,7 @@ void test8() {
         (2*CRYPTOSTREAM_SPAN_MAXBYTES_DATA) + CRYPTOSTREAM_BUFFER_MAXBYTES_DATA + 1,
         1000000
     };
+    
     int multipliers[] = { 1, 2, 3, 10 };
     int adders[] = { 0, -2, -1, 1, 2 };
     
@@ -521,7 +519,6 @@ void test8() {
             }
         }
     }
-    
     
 }
 
@@ -605,6 +602,7 @@ typedef struct saltunnel_forwarder_thread_context {
     const char* to_ip;
     const char* to_port;
 } saltunnel_forwarder_thread_context;
+
 static void* saltunnel_forwarder_thread_inner(void* v)
 {
     saltunnel_forwarder_thread_context* c = (saltunnel_forwarder_thread_context*)v;
@@ -618,6 +616,7 @@ static void* saltunnel_forwarder_thread_inner(void* v)
     free(v);
     return 0;
 }
+
 static pthread_t saltunnel_forwarder_thread(int client_or_server,
                          const char* from_ip,
                          const char* from_port,
@@ -635,13 +634,13 @@ static pthread_t saltunnel_forwarder_thread(int client_or_server,
     return thread;
 }
 
-
 typedef struct tcpstub_server_write_context {
     const char* ip;
     const char* port;
     const char *writemsg;
     const char *readmsg;
 } tcpstub_server_write_context;
+
 static void* tcpstub_server_write_inner(void* v)
 {
     tcpstub_server_write_context* c = (tcpstub_server_write_context*)v;
@@ -705,6 +704,7 @@ static void* tcpstub_server_write_inner(void* v)
     free(v);
     return 0;
 }
+
 static pthread_t tcpstub_server_writer_reader(const char* ip,
                                       const char* port,
                                       const char *writemsg,
@@ -719,6 +719,7 @@ static pthread_t tcpstub_server_writer_reader(const char* ip,
     pthread_create(&thread, NULL, tcpstub_server_write_inner, (void*)c)==0 || oops_fatal("pthread_create failed");
     return thread;
 }
+
 static void tcpstub_client_writer_reader(const char* ip, const char* port, const char* writemsg, const char* readmsg)
 {
     char actual_readmsg[512] = {0};

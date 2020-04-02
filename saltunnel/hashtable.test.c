@@ -19,7 +19,7 @@ static void testvalue(unsigned char* value_out, uint32_t val) {
 }
 
 void hashtable_test() {
-    int stress = 10000000;
+    int stress = 1000000;
     
     // Arrange
     hashtable table = {0};

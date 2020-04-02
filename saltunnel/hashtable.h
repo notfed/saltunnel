@@ -6,7 +6,7 @@
 #ifndef hashtable_h
 #define hashtable_h
 
-#define HASHTABLE_NUM_ENTRIES 65536
+#define HASHTABLE_NUM_ENTRIES 4092
 #define HASHTABLE_KEY_BYTES 16
 #define HASHTABLE_VALUE_BYTES 8
 

@@ -9,6 +9,7 @@
 #include "saltunnel_tcp_server_forwarder.h"
 #include "tcpserver.h"
 #include "tcpclient.h"
+#include "hashtable.h"
 #include <stdlib.h>
 #include <sys/mman.h>
 
@@ -146,6 +147,8 @@ int saltunnel_tcp_server_forwarder(unsigned char* long_term_shared_key,
                          const char* from_ip, const char* from_port,
                          const char* to_ip, const char* to_port)
 {
+    hashtable table = {0};
+    
     // Create socket
     tcpserver_options options = {
      .OPT_TCP_NODELAY = 1,
