@@ -55,6 +55,8 @@ int main(int argc, char * argv[])
     
     // Read the key
     int key_fd = open(keyfile, O_RDONLY);
+    if(key_fd<0)
+        oops_fatal("failed to open key");
     if(readn(key_fd, long_term_shared_key,  sizeof(long_term_shared_key))<0)
         oops_fatal("failed to read key");
     close(key_fd);
