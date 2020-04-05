@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "94CE75AB23E5284C00A84ABC"
-               BuildableName = "saltunnel-test"
-               BlueprintName = "saltunnel-test"
+               BlueprintIdentifier = "94ED0382240CAF9B0093920F"
+               BuildableName = "saltunnel-client"
+               BlueprintName = "saltunnel-client"
                ReferencedContainer = "container:saltunnel.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -34,8 +34,6 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      enableAddressSanitizer = "YES"
-      enableASanStackUseAfterReturn = "YES"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
       ignoresPersistentStateOnLaunch = "NO"
@@ -46,12 +44,18 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "94CE75AB23E5284C00A84ABC"
-            BuildableName = "saltunnel-test"
-            BlueprintName = "saltunnel-test"
+            BlueprintIdentifier = "94ED0382240CAF9B0093920F"
+            BuildableName = "saltunnel-client"
+            BlueprintName = "saltunnel-client"
             ReferencedContainer = "container:saltunnel.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "~/saltunnel-key 127.0.0.1:2400 127.0.0.1:2500 "
+            isEnabled = "YES">
+         </CommandLineArgument>
+      </CommandLineArguments>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -63,9 +67,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "94CE75AB23E5284C00A84ABC"
-            BuildableName = "saltunnel-test"
-            BlueprintName = "saltunnel-test"
+            BlueprintIdentifier = "94ED0382240CAF9B0093920F"
+            BuildableName = "saltunnel-client"
+            BlueprintName = "saltunnel-client"
             ReferencedContainer = "container:saltunnel.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

@@ -24,7 +24,7 @@ static int open_readn_close(const char* file_path, unsigned char* out_buf, int l
 }
 
 void error_usage() {
-    fprintf(stderr,"saltunnel-server: %s: usage: saltunnel-server <key-file> <from-host>:<from-port> <to-host>:<to-port>\n");
+    fprintf(stderr,"saltunnel-server: usage: saltunnel-server <key-file> <from-host>:<from-port> <to-host>:<to-port>\n");
     exit(1);
 }
 
