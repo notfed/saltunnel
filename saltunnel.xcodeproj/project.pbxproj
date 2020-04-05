@@ -15,6 +15,8 @@
 		9415877324188B5D00CA793A /* uint32.c in Sources */ = {isa = PBXBuildFile; fileRef = 9415876E24188B5C00CA793A /* uint32.c */; };
 		9415877424188B5D00CA793A /* uint32.c in Sources */ = {isa = PBXBuildFile; fileRef = 9415876E24188B5C00CA793A /* uint32.c */; };
 		941587792419B6A300CA793A /* hashtable.test.c in Sources */ = {isa = PBXBuildFile; fileRef = 941587782419B6A300CA793A /* hashtable.test.c */; };
+		94D2234C243A44C400EED0E8 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 94D2234B243A44C400EED0E8 /* main.c */; };
+		94D2234E243A44CC00EED0E8 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 94D2234D243A44CC00EED0E8 /* main.c */; };
 		94ED038A240CB08A0093920F /* chaos.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971C32401895100DAC1E2 /* chaos.c */; };
 		94ED038B240CB08A0093920F /* chaos.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971AF2401895000DAC1E2 /* chaos.h */; };
 		94ED038C240CB08A0093920F /* config.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971A12401895000DAC1E2 /* config.h */; };
@@ -252,10 +254,10 @@
 		946FCDC8240C90BA00EEAB8B /* saltunnel_client.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = saltunnel_client.c; sourceTree = "<group>"; };
 		946FCDCE240C91BC00EEAB8B /* saltunnel_server.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = saltunnel_server.c; sourceTree = "<group>"; };
 		94CE75AC23E5284C00A84ABC /* saltunnel-test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "saltunnel-test"; sourceTree = BUILT_PRODUCTS_DIR; };
+		94D2234B243A44C400EED0E8 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		94D2234D243A44CC00EED0E8 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		94ED0383240CAF9B0093920F /* saltunnel-client */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "saltunnel-client"; sourceTree = BUILT_PRODUCTS_DIR; };
-		94ED0385240CAF9B0093920F /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		94ED03C6240CB2230093920F /* saltunnel-server */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "saltunnel-server"; sourceTree = BUILT_PRODUCTS_DIR; };
-		94ED03C8240CB2230093920F /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -381,7 +383,7 @@
 		94ED0384240CAF9B0093920F /* saltunnel-client */ = {
 			isa = PBXGroup;
 			children = (
-				94ED0385240CAF9B0093920F /* main.c */,
+				94D2234B243A44C400EED0E8 /* main.c */,
 			);
 			path = "saltunnel-client";
 			sourceTree = "<group>";
@@ -389,7 +391,7 @@
 		94ED03C7240CB2230093920F /* saltunnel-server */ = {
 			isa = PBXGroup;
 			children = (
-				94ED03C8240CB2230093920F /* main.c */,
+				94D2234D243A44CC00EED0E8 /* main.c */,
 			);
 			path = "saltunnel-server";
 			sourceTree = "<group>";
@@ -574,6 +576,7 @@
 				94ED0395240CB08A0093920F /* cryptostream_decrypt_feed.c in Sources */,
 				94ED0396240CB08A0093920F /* cryptostream_decrypt_parallel.c in Sources */,
 				94ED0397240CB08A0093920F /* cryptostream_decrypt.c in Sources */,
+				94D2234C243A44C400EED0E8 /* main.c in Sources */,
 				94ED0398240CB08A0093920F /* cryptostream_encrypt_feed.c in Sources */,
 				94ED0399240CB08A0093920F /* cryptostream_encrypt_parallel.c in Sources */,
 				94ED039A240CB08A0093920F /* cryptostream_encrypt.c in Sources */,
@@ -634,6 +637,7 @@
 				94ED03D7240CB23C0093920F /* cryptostream_encrypt.c in Sources */,
 				94ED03D8240CB23C0093920F /* cryptostream_vector.c in Sources */,
 				94ED03D9240CB23C0093920F /* log.c in Sources */,
+				94D2234E243A44CC00EED0E8 /* main.c in Sources */,
 				94ED03DB240CB23C0093920F /* nonce.c in Sources */,
 				94ED03DC240CB23C0093920F /* oops.c in Sources */,
 				94ED03DD240CB23C0093920F /* saltunnel_server.c in Sources */,
