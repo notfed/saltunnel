@@ -143,11 +143,11 @@ static int maybe_handle_connection(connection_thread_context* ctx) {
     else return 1;
 }
 
-int saltunnel_tcp_server_forwarder(unsigned char* long_term_shared_key,
+int saltunnel_tcp_server_forwarder(hashtable *table,
+                         unsigned char* long_term_shared_key,
                          const char* from_ip, const char* from_port,
                          const char* to_ip, const char* to_port)
 {
-    hashtable table = {0};
     
     // Create socket
     tcpserver_options options = {

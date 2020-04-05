@@ -6,7 +6,7 @@
 #ifndef hashtable_h
 #define hashtable_h
 
-#define HASHTABLE_NUM_ENTRIES 4092
+#define HASHTABLE_NUM_ENTRIES 65536
 #define HASHTABLE_KEY_BYTES 16
 #define HASHTABLE_VALUE_BYTES 8
 
@@ -24,5 +24,8 @@ typedef struct hashtable {
 int hashtable_insert(hashtable* table, unsigned char* key, unsigned char* value);
 unsigned char* hashtable_get(hashtable* table, unsigned char* key);
 int hashtable_delete(hashtable* table, unsigned char* key);
+
+int hashtable_clear(hashtable* table);
+int hashtable_compact(hashtable* table);
 
 #endif /* hashtable_h */

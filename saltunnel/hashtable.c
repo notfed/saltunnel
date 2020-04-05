@@ -119,3 +119,12 @@ int hashtable_delete(hashtable* table, unsigned char* key) {
     return 1;
 }
 
+// clear: remove all entries from hashtable
+int hashtable_clear(hashtable* table) {
+    return 0; // TODO
+}
+
+// compact: if there are >max_entries entries, remove oldest entries
+int hashtable_compact(hashtable* table) {
+    return 0; // TODO
+}
