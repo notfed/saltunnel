@@ -193,6 +193,5 @@ int saltunnel_tcp_server_forwarder(hashtable *table,
     }
     
     // The above loop should never exit
-    oops_fatal("this should never happen");
-    return 0;
+    return -1;
 }

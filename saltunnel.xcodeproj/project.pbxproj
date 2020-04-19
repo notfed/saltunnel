@@ -21,6 +21,10 @@
 		94D22350243A4EB300EED0E8 /* hypercounter.c in Sources */ = {isa = PBXBuildFile; fileRef = 9415876324136BB200CA793A /* hypercounter.c */; };
 		94D22351243A4ECE00EED0E8 /* uint64.c in Sources */ = {isa = PBXBuildFile; fileRef = 9415876624186F2700CA793A /* uint64.c */; };
 		94D22352243A4ECE00EED0E8 /* uint64.h in Sources */ = {isa = PBXBuildFile; fileRef = 9415876724186F2800CA793A /* uint64.h */; };
+		94D22353243A66A500EED0E8 /* hypercounter.h in Sources */ = {isa = PBXBuildFile; fileRef = 9415876224136BB200CA793A /* hypercounter.h */; };
+		94D22354243A66A500EED0E8 /* hypercounter.c in Sources */ = {isa = PBXBuildFile; fileRef = 9415876324136BB200CA793A /* hypercounter.c */; };
+		94D22355243A66B400EED0E8 /* uint64.c in Sources */ = {isa = PBXBuildFile; fileRef = 9415876624186F2700CA793A /* uint64.c */; };
+		94D22356243A66B400EED0E8 /* uint64.h in Sources */ = {isa = PBXBuildFile; fileRef = 9415876724186F2800CA793A /* uint64.h */; };
 		94ED038A240CB08A0093920F /* chaos.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971C32401895100DAC1E2 /* chaos.c */; };
 		94ED038B240CB08A0093920F /* chaos.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971AF2401895000DAC1E2 /* chaos.h */; };
 		94ED038C240CB08A0093920F /* config.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971A12401895000DAC1E2 /* config.h */; };
@@ -47,7 +51,6 @@
 		94ED03A2240CB08A0093920F /* nonce.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971A42401895000DAC1E2 /* nonce.h */; };
 		94ED03A3240CB08A0093920F /* oops.c in Sources */ = {isa = PBXBuildFile; fileRef = 9429719D2401895000DAC1E2 /* oops.c */; };
 		94ED03A4240CB08A0093920F /* oops.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971BC2401895100DAC1E2 /* oops.h */; };
-		94ED03A5240CB08A0093920F /* saltunnel_client_old.c in Sources */ = {isa = PBXBuildFile; fileRef = 946FCDC8240C90BA00EEAB8B /* saltunnel_client_old.c */; };
 		94ED03A7240CB08A0093920F /* saltunnel_kx.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971972401894F00DAC1E2 /* saltunnel_kx.c */; };
 		94ED03A8240CB08A0093920F /* saltunnel_kx.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971A62401895000DAC1E2 /* saltunnel_kx.h */; };
 		94ED03A9240CB08A0093920F /* saltunnel_mx_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971932401894F00DAC1E2 /* saltunnel_mx_parallel.c */; };
@@ -88,7 +91,6 @@
 		94ED03D9240CB23C0093920F /* log.c in Sources */ = {isa = PBXBuildFile; fileRef = 9429719B2401894F00DAC1E2 /* log.c */; };
 		94ED03DB240CB23C0093920F /* nonce.c in Sources */ = {isa = PBXBuildFile; fileRef = 9429719C2401894F00DAC1E2 /* nonce.c */; };
 		94ED03DC240CB23C0093920F /* oops.c in Sources */ = {isa = PBXBuildFile; fileRef = 9429719D2401895000DAC1E2 /* oops.c */; };
-		94ED03DD240CB23C0093920F /* saltunnel_server_old.c in Sources */ = {isa = PBXBuildFile; fileRef = 946FCDCE240C91BC00EEAB8B /* saltunnel_server_old.c */; };
 		94ED03DE240CB23C0093920F /* saltunnel_kx.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971972401894F00DAC1E2 /* saltunnel_kx.c */; };
 		94ED03DF240CB23C0093920F /* saltunnel_mx_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971932401894F00DAC1E2 /* saltunnel_mx_parallel.c */; };
 		94ED03E0240CB23C0093920F /* saltunnel_mx_serial.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971A22401895000DAC1E2 /* saltunnel_mx_serial.c */; };
@@ -255,8 +257,6 @@
 		942971C62401895100DAC1E2 /* saltunnel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = saltunnel.h; sourceTree = "<group>"; };
 		942971C72401895100DAC1E2 /* threadpool.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = threadpool.c; sourceTree = "<group>"; };
 		942971C82401895100DAC1E2 /* threadpool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = threadpool.h; sourceTree = "<group>"; };
-		946FCDC8240C90BA00EEAB8B /* saltunnel_client_old.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = saltunnel_client_old.c; sourceTree = "<group>"; };
-		946FCDCE240C91BC00EEAB8B /* saltunnel_server_old.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = saltunnel_server_old.c; sourceTree = "<group>"; };
 		94CE75AC23E5284C00A84ABC /* saltunnel-test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "saltunnel-test"; sourceTree = BUILT_PRODUCTS_DIR; };
 		94D2234B243A44C400EED0E8 /* saltunnel_client_main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = saltunnel_client_main.c; sourceTree = "<group>"; };
 		94D2234D243A44CC00EED0E8 /* saltunnel_server_main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = saltunnel_server_main.c; sourceTree = "<group>"; };
@@ -349,8 +349,6 @@
 				9415876C2418880C00CA793A /* hashtable.c */,
 				941587782419B6A300CA793A /* hashtable.test.c */,
 				9415877A2419B6BC00CA793A /* hashtable.test.h */,
-				946FCDC8240C90BA00EEAB8B /* saltunnel_client_old.c */,
-				946FCDCE240C91BC00EEAB8B /* saltunnel_server_old.c */,
 				942971972401894F00DAC1E2 /* saltunnel_kx.c */,
 				942971A62401895000DAC1E2 /* saltunnel_kx.h */,
 				942971932401894F00DAC1E2 /* saltunnel_mx_parallel.c */,
@@ -597,7 +595,6 @@
 				94ED03A2240CB08A0093920F /* nonce.h in Sources */,
 				94ED03A3240CB08A0093920F /* oops.c in Sources */,
 				94ED03A4240CB08A0093920F /* oops.h in Sources */,
-				94ED03A5240CB08A0093920F /* saltunnel_client_old.c in Sources */,
 				94ED03A7240CB08A0093920F /* saltunnel_kx.c in Sources */,
 				94ED03A8240CB08A0093920F /* saltunnel_kx.h in Sources */,
 				94ED03A9240CB08A0093920F /* saltunnel_mx_parallel.c in Sources */,
@@ -631,6 +628,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				94D22355243A66B400EED0E8 /* uint64.c in Sources */,
+				94D22356243A66B400EED0E8 /* uint64.h in Sources */,
+				94D22353243A66A500EED0E8 /* hypercounter.h in Sources */,
+				94D22354243A66A500EED0E8 /* hypercounter.c in Sources */,
 				94ED03CD240CB23C0093920F /* chaos.c in Sources */,
 				94ED03CE240CB23C0093920F /* crypto_secretbox_chacha20poly1305.c in Sources */,
 				94ED03CF240CB23C0093920F /* crypto_secretbox_salsa20poly1305.c in Sources */,
@@ -648,7 +649,6 @@
 				94D2234E243A44CC00EED0E8 /* saltunnel_server_main.c in Sources */,
 				94ED03DB240CB23C0093920F /* nonce.c in Sources */,
 				94ED03DC240CB23C0093920F /* oops.c in Sources */,
-				94ED03DD240CB23C0093920F /* saltunnel_server_old.c in Sources */,
 				94ED03DE240CB23C0093920F /* saltunnel_kx.c in Sources */,
 				94ED03DF240CB23C0093920F /* saltunnel_mx_parallel.c in Sources */,
 				94ED03E0240CB23C0093920F /* saltunnel_mx_serial.c in Sources */,

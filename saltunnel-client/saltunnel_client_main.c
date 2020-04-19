@@ -3,24 +3,29 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <sodium.h>
 #include "oops.h"
 #include "uninterruptable.h"
 #include "saltunnel_tcp_client_forwarder.h"
 
-static int oops_usage() {
-    fprintf(stderr, "saltunnel-client: usage: saltunnel-client -k [keyfile] [fromip]:[fromport] [toip]:[toport]\n");
-    return 1;
+static void oops_usage() {
+    fprintf(stderr, "saltunnel-client: usage: saltunnel-client -k <keyfile> <fromip>:<fromport> <toip>:<toport>\n");
+    exit(2);
 }
 
 int main(int argc, char * argv[])
 {
+    // Seed random bytes
+    try(sodium_init())
+    || oops_fatal("sodium init");
+    
     // Must have 1+6 args
     if(argc!=7)
-        return oops_usage();
+        oops_usage();
     
     // Parse keyfile
     if(strcmp(argv[1],"-k")!=0)
-        return oops_usage();
+        oops_usage();
     const char* keyfile = argv[2];
     
     // Parse [fromip]:[fromport]
