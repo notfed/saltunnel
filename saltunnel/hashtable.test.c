@@ -27,7 +27,7 @@ void assert_list_has_n_entries(hashtable* table, int expected_n) {
 }
 
 void hashtable_stress_test() {
-    int stress = HASHTABLE_NUM_ENTRIES_MAX;
+    int stress = HASHTABLE_NUM_ENTRIES_MAX+1;
     
     // Arrange
     hashtable table = {0};
@@ -49,17 +49,23 @@ void hashtable_stress_test() {
     }
     
     // Assert (Post-Insert)
-    assert_list_has_n_entries(&table, stress);
+    assert_list_has_n_entries(&table, HASHTABLE_NUM_ENTRIES_MAX);
     for(int i = 1; i <= stress; i++) {
         gen_testkey(key, i); gen_testvalue(value,i*3);
         unsigned char* post_insert_value = hashtable_get(&table, key);
-        memcmp(post_insert_value,value,HASHTABLE_VALUE_BYTES)==0 || oops_fatal("hashtable: insert+get failed");
+        if(i==1)
+            post_insert_value == 0 || oops_fatal("hashtable: insert+get failed");
+        else
+            memcmp(post_insert_value,value,HASHTABLE_VALUE_BYTES)==0 || oops_fatal("hashtable: insert+get failed");
     }
     
     // Delete
     for(int i = 1; i <= stress; i++) {
         gen_testkey(key, i); gen_testvalue(value,i*3);
-        hashtable_delete(&table, key)==1 || oops_fatal("hashtable: failed to delete");
+        if(i==1)
+            hashtable_delete(&table, key)==0 || oops_fatal("hashtable: failed to delete");
+        else
+            hashtable_delete(&table, key)==1 || oops_fatal("hashtable: failed to delete");
     }
     
     // Delete again (it should not fail when re-deleting)

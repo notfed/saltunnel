@@ -74,7 +74,10 @@ int hashtable_insert(hashtable* table, unsigned char* key, unsigned char* value)
             else                  { table->list_tail->list_next = n; table->list_tail = n; }
             
             // Delete head of list
-            // TODO
+            table->list_size++;
+            if(table->list_size>HASHTABLE_NUM_ENTRIES_MAX) {
+                if(hashtable_delete(table, table->list_head->key)<=0) return -1;
+            }
             
             return 1;
         }
@@ -136,6 +139,9 @@ int hashtable_delete(hashtable* table, unsigned char* key) {
             
             // Deallocate
             free(e);
+            
+            // Update list size
+            table->list_size--;
             
             // We successfully deleted the entry
             return 1;

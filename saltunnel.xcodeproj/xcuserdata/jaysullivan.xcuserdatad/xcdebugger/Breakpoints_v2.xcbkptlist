@@ -30,8 +30,8 @@
             filePath = "saltunnel/hashtable.test.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "56"
-            endingLineNumber = "56"
+            startingLineNumber = "53"
+            endingLineNumber = "53"
             landmarkName = "hashtable_stress_test()"
             landmarkType = "9">
          </BreakpointContent>
@@ -65,6 +65,22 @@
             startingLineNumber = "46"
             endingLineNumber = "46"
             landmarkName = "hashtable_stress_test()"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "BF373361-161F-47B2-9EA3-923FA5AE8B64"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "saltunnel/hashtable.c"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "79"
+            endingLineNumber = "79"
+            landmarkName = "hashtable_insert(table, key, value)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>

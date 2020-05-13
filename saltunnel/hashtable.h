@@ -7,7 +7,7 @@
 #define hashtable_h
 
 #define HASHTABLE_NUM_BUCKETS 65536
-#define HASHTABLE_NUM_ENTRIES_MAX 10000 /* 262144 */
+#define HASHTABLE_NUM_ENTRIES_MAX 262144
 #define HASHTABLE_KEY_BYTES 16
 #define HASHTABLE_VALUE_BYTES 8
 
@@ -22,6 +22,7 @@ struct hashtable_entry {
 };
 
 typedef struct hashtable {
+    unsigned int list_size;
     hashtable_entry* list_head;
     hashtable_entry* list_tail;
     hashtable_entry* e[HASHTABLE_NUM_BUCKETS];
