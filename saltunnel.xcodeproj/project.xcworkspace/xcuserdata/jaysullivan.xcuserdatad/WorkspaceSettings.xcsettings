@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>BuildLocationStyle</key>
-	<string>CustomLocation</string>
+	<string>UseAppPreferences</string>
 	<key>CustomBuildIntermediatesPath</key>
 	<string>Build/Intermediates.noindex</string>
 	<key>CustomBuildLocationType</key>

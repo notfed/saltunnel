@@ -6,9 +6,6 @@
          contextName = "encrypt_thread_action:cryptostream_encrypt.c">
       </ContextState>
       <ContextState
-         contextName = "threadpool_init:threadpool.c">
-      </ContextState>
-      <ContextState
          contextName = "hashtable_insert:hashtable.c">
          <PersistentStrings>
             <PersistentString
@@ -17,16 +14,38 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
+         contextName = "threadpool_loop:threadpool.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "threadpool_init:threadpool.c">
+      </ContextState>
+      <ContextState
          contextName = "encrypt_one:cryptostream_encrypt.c">
       </ContextState>
       <ContextState
          contextName = "threadpool_for:threadpool.c">
       </ContextState>
       <ContextState
-         contextName = "threadpool_loop:threadpool.c">
+         contextName = "hashtable_stress_test:hashtable.test.c">
          <PersistentStrings>
             <PersistentString
-               value = "">
+               value = "table-&gt;e[42214]">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "hashtable_get:hashtable.c">
+      </ContextState>
+      <ContextState
+         contextName = "hashtable_delete:hashtable.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "table-&gt;e[42214]">
             </PersistentString>
          </PersistentStrings>
       </ContextState>

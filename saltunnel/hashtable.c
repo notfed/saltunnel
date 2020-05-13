@@ -21,15 +21,17 @@ static unsigned long long hash(unsigned char* str, unsigned int len)
 
 unsigned char* hashtable_get(hashtable* table, unsigned char* key) {
     
-    // Start at a slot, iterate its chain
-    int slot = hash(key,HASHTABLE_KEY_BYTES)%HASHTABLE_NUM_ENTRIES;
-    for(hashtable_entry* maybe_entry = &table->e[slot];
-        maybe_entry != NULL;
-        maybe_entry = maybe_entry->chain)
+    // Hash the key to get a bucket index
+    int bucket = hash(key,HASHTABLE_KEY_BYTES)%HASHTABLE_NUM_BUCKETS;
+    
+    // Iterate this bucket's chain
+    for(hashtable_entry* e = table->e[bucket];
+        e != NULL;
+        e = e->chain_next)
     {
         // If we found the key, return the value
-        if(memcmp(maybe_entry->key,key,HASHTABLE_KEY_BYTES)==0)
-            return maybe_entry->value;
+        if(memcmp(e->key,key,HASHTABLE_KEY_BYTES)==0)
+            return e->value;
     }
     
     // We didn't find the key
@@ -39,84 +41,109 @@ unsigned char* hashtable_get(hashtable* table, unsigned char* key) {
 const unsigned char zerokey[HASHTABLE_KEY_BYTES] = {0};
 int hashtable_insert(hashtable* table, unsigned char* key, unsigned char* value) {
     
-    // Start at a slot, iterate its chain
-    int slot = hash(key,HASHTABLE_KEY_BYTES)%HASHTABLE_NUM_ENTRIES;
-    for(hashtable_entry* maybe_entry = &table->e[slot];
-        maybe_entry != NULL;
-        maybe_entry = maybe_entry->chain)
+    // Hash the key to get a bucket index
+    int bucket = hash(key,HASHTABLE_KEY_BYTES)%HASHTABLE_NUM_BUCKETS;
+    
+    // Iterate this bucket's chain
+    hashtable_entry** entry_prev_pp = NULL;
+    for(hashtable_entry** ep = &table->e[bucket]; ;
+        ep = &((*ep)->chain_next))
     {
-        // If we found the key, update the value
-        if(memcmp(maybe_entry->key,key,HASHTABLE_KEY_BYTES)==0) {
-            memcpy(maybe_entry->value,value,HASHTABLE_KEY_BYTES);
-            return 1;
-        }
+        hashtable_entry* e = *ep;
         
-        // If we didn't find the key, and primary slot is free, insert the entry
-        if(memcmp(maybe_entry->key,zerokey,HASHTABLE_KEY_BYTES)==0) {
-            memcpy(maybe_entry->key,key,HASHTABLE_KEY_BYTES);
-            memcpy(maybe_entry->value,value,HASHTABLE_VALUE_BYTES);
-            memset(&maybe_entry->chain, 0, sizeof(void*));
-            return 1;
-        }
-        
-        // If we didn't find the key, and primary slot is taken, insert a new entry into the chain
-        if(maybe_entry->chain==0) {
+        // If we reached the end of the bucket chain without finding the key, insert a new entry
+        if(e==NULL) {
+            
+            // Create new entry
             hashtable_entry* n = malloc(sizeof(hashtable_entry));
             if(n==NULL) return -1;
             memcpy(n->key,key,HASHTABLE_KEY_BYTES);
             memcpy(n->value,value,HASHTABLE_VALUE_BYTES);
-            memset(&n->chain, 0, sizeof(void*));
-            maybe_entry->chain = n;
+            
+            // Append to chain
+            *ep = n;
+            n->chain_prev = entry_prev_pp ? *entry_prev_pp : NULL;
+            n->chain_next = NULL;
+            
+            // Append to list
+            n->list_prev = table->list_tail;
+            n->list_next = NULL;
+            
+            // Append to head/tail
+            if(!table->list_head) { table->list_head = n;            table->list_tail = n; }
+            else                  { table->list_tail->list_next = n; table->list_tail = n; }
+            
+            // Delete head of list
+            // TODO
+            
             return 1;
         }
+        
+        // If an entry with this key already existed in this bucket, update the entry's value
+        if(memcmp(e->key,key,HASHTABLE_KEY_BYTES)==0) {
+            
+            // Update entry
+            memcpy(e->value,value,HASHTABLE_VALUE_BYTES);
+            
+            // Remove from list
+            if(e->list_prev) e->list_prev->list_next = e->list_next;
+            else                    table->list_head = e->list_next;
+            if(e->list_next) e->list_next->list_prev = e->list_prev;
+            else                    table->list_tail = e->list_prev;
+            
+            // Append to list
+            e->list_prev = table->list_tail;
+            e->list_next = NULL;
+            
+            // Append to head/tail
+            if(!table->list_head) { table->list_head = e;            table->list_tail = e; }
+            else                  { table->list_tail->list_next = e; table->list_tail = e; }
+            
+            return 1;
+        }
+        
+        entry_prev_pp = ep;
     }
+    
+    // Should be impossible to get here
     return -1;
 }
 
 int hashtable_delete(hashtable* table, unsigned char* key) {
     
-    hashtable_entry* prev_entry = 0;
+    // Hash the key to get a bucket index
+    int bucket = hash(key,HASHTABLE_KEY_BYTES)%HASHTABLE_NUM_BUCKETS;
     
-    // Start at a slot, iterate its chain
-    int slot = hash(key,HASHTABLE_KEY_BYTES)%HASHTABLE_NUM_ENTRIES;
-    for(hashtable_entry* maybe_entry = &table->e[slot];
-        maybe_entry != NULL;
-        maybe_entry = maybe_entry->chain)
+    // Iterate this bucket's chain (w/ while retaining reference to the pointers)
+    for(hashtable_entry** ep = &table->e[bucket];
+        *ep != NULL;
+        ep = &((*ep)->chain_next))
     {
-        // If we found the key...
-        if(memcmp(maybe_entry->key,key,HASHTABLE_KEY_BYTES)==0) {
-
-            hashtable_entry* next_entry = maybe_entry->chain;
+        hashtable_entry* e = *ep;
             
-            // If this is a non-primary entry, re-point prev to next and deallocate cur
-            if(prev_entry) {
-                prev_entry->chain = next_entry;
-                memset(maybe_entry, 0, sizeof(hashtable_entry));
-                free(maybe_entry);
-                return 1;
-            }
-            // If this is the primary entry, and there's a next entry, copy next to cur and deallocate next
-            else if(next_entry) {
-                memcpy(maybe_entry, next_entry, sizeof(hashtable_entry));
-                free(next_entry);
-                return 1;
-            }
-            // If this is the primary entry, and there's no next entry, simply clear it out
-            else {
-                memset(maybe_entry, 0, sizeof(hashtable_entry));
-                return 1;
-            }
+        // If we found the key...
+        if(memcmp(e->key,key,HASHTABLE_KEY_BYTES)==0) {
+            
+            // Remove from list
+            if(e->list_prev) e->list_prev->list_next = e->list_next;
+            else                    table->list_head = e->list_next;
+            if(e->list_next) e->list_next->list_prev = e->list_prev;
+            else                    table->list_tail = e->list_prev;
+            
+            // Remove from chain
+            if(e->chain_next) e->chain_next->chain_prev = e->chain_prev;
+            *ep = e->chain_next; // if(e->chain_prev) e->chain_prev->chain_next = e->chain_next;
+            
+            // Deallocate
+            free(e);
+            
+            // We successfully deleted the entry
+            return 1;
         }
-        
-        // If we didn't find the key, can't delete it
-        if(maybe_entry->chain==0) {
-            return 0;
-        }
-        
-        prev_entry = maybe_entry;
     }
     
-    return 1;
+    // If we didn't have any entries with this key; no need to delete anything
+    return 0;
 }
 
 // clear: remove all entries from hashtable

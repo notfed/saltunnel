@@ -820,19 +820,19 @@ void test11() {
 void test() {
     
     log_info("test suite started");
-    
-    run(test1, "test1");
-//    run(test2, "test2");
-    run(test3, "test3");
-//    run(test4, "test4");
-    run(test5, "test5");
-    run(test6, "test6");
-    for(int i = 0; i < 100; i++)
-        run(test11, "test11");
-    run(test7, "test7");
-    run(test8, "test8");  // <<
-    run(test9,"test9");
-    run(test10,"test10");
+//
+//    run(test1, "test1");
+////    run(test2, "test2");
+//    run(test3, "test3");
+////    run(test4, "test4");
+//    run(test5, "test5");
+//    run(test6, "test6");
+//    for(int i = 0; i < 100; i++)
+//        run(test11, "test11");
+//    run(test7, "test7");
+//    run(test8, "test8");  // <<
+//    run(test9,"test9");
+//    run(test10,"test10");
     run(hashtable_test, "hashtable_test");
     
     run(nonce_tests, "nonce_tests");
