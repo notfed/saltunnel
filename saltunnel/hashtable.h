@@ -2,6 +2,8 @@
 //  hashtable.h
 //  saltunnel
 //
+//  This hash table implementation ...
+//
 
 #ifndef hashtable_h
 #define hashtable_h
@@ -31,9 +33,5 @@ typedef struct hashtable {
 int hashtable_insert(hashtable* table, unsigned char* key, unsigned char* value);
 unsigned char* hashtable_get(hashtable* table, unsigned char* key);
 int hashtable_delete(hashtable* table, unsigned char* key);
-
-int hashtable_clear(hashtable* table);
-int hashtable_compact(hashtable* table);
-
 
 #endif /* hashtable_h */

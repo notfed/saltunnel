@@ -151,13 +151,3 @@ int hashtable_delete(hashtable* table, unsigned char* key) {
     // If we didn't have any entries with this key; no need to delete anything
     return 0;
 }
-
-// clear: remove all entries from hashtable
-int hashtable_clear(hashtable* table) {
-    return 0; // TODO
-}
-
-// compact: if there are >max_entries entries, remove oldest entries
-int hashtable_compact(hashtable* table) {
-    return 0; // TODO
-}
