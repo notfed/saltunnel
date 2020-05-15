@@ -153,6 +153,8 @@ int cache_delete(cache* table, unsigned char* key) {
 }
 
 int cache_clear(cache* table) {
-    // TBD
-    return -1;
+    while(table->list_head) {
+        if(cache_delete(table, table->list_head->key)<0) return -1;
+    }
+    return 1;
 }
