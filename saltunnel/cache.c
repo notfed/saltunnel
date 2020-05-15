@@ -1,9 +1,9 @@
 //
-//  hashtable.c
+//  cache.c
 //  saltunnel
 //
 
-#include "hashtable.h"
+#include "cache.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -19,18 +19,18 @@ static unsigned long long hash(unsigned char* str, unsigned int len)
     return hash;
 }
 
-unsigned char* hashtable_get(hashtable* table, unsigned char* key) {
+unsigned char* cache_get(cache* table, unsigned char* key) {
     
     // Hash the key to get a bucket index
-    int bucket = hash(key,HASHTABLE_KEY_BYTES)%HASHTABLE_NUM_BUCKETS;
+    int bucket = hash(key,CACHE_KEY_BYTES)%CACHE_NUM_BUCKETS;
     
     // Iterate this bucket's chain
-    for(hashtable_entry* e = table->e[bucket];
+    for(cache_entry* e = table->e[bucket];
         e != NULL;
         e = e->chain_next)
     {
         // If we found the key, return the value
-        if(memcmp(e->key,key,HASHTABLE_KEY_BYTES)==0)
+        if(memcmp(e->key,key,CACHE_KEY_BYTES)==0)
             return e->value;
     }
     
@@ -38,27 +38,27 @@ unsigned char* hashtable_get(hashtable* table, unsigned char* key) {
     return NULL;
 }
 
-const unsigned char zerokey[HASHTABLE_KEY_BYTES] = {0};
-int hashtable_insert(hashtable* table, unsigned char* key, unsigned char* value) {
+const unsigned char zerokey[CACHE_KEY_BYTES] = {0};
+int cache_insert(cache* table, unsigned char* key, unsigned char* value) {
     
     // Hash the key to get a bucket index
-    int bucket = hash(key,HASHTABLE_KEY_BYTES)%HASHTABLE_NUM_BUCKETS;
+    int bucket = hash(key,CACHE_KEY_BYTES)%CACHE_NUM_BUCKETS;
     
     // Iterate this bucket's chain
-    hashtable_entry** entry_prev_pp = NULL;
-    for(hashtable_entry** ep = &table->e[bucket]; ;
+    cache_entry** entry_prev_pp = NULL;
+    for(cache_entry** ep = &table->e[bucket]; ;
         ep = &((*ep)->chain_next))
     {
-        hashtable_entry* e = *ep;
+        cache_entry* e = *ep;
         
         // If we reached the end of the bucket chain without finding the key, insert a new entry
         if(e==NULL) {
             
             // Create new entry
-            hashtable_entry* n = malloc(sizeof(hashtable_entry));
+            cache_entry* n = malloc(sizeof(cache_entry));
             if(n==NULL) return -1;
-            memcpy(n->key,key,HASHTABLE_KEY_BYTES);
-            memcpy(n->value,value,HASHTABLE_VALUE_BYTES);
+            memcpy(n->key,key,CACHE_KEY_BYTES);
+            memcpy(n->value,value,CACHE_VALUE_BYTES);
             
             // Append to chain
             *ep = n;
@@ -75,18 +75,18 @@ int hashtable_insert(hashtable* table, unsigned char* key, unsigned char* value)
             
             // Delete head of list
             table->list_size++;
-            if(table->list_size>HASHTABLE_NUM_ENTRIES_MAX) {
-                if(hashtable_delete(table, table->list_head->key)<=0) return -1;
+            if(table->list_size>CACHE_NUM_ENTRIES_MAX) {
+                if(cache_delete(table, table->list_head->key)<=0) return -1;
             }
             
             return 1;
         }
         
         // If an entry with this key already existed in this bucket, update the entry's value
-        if(memcmp(e->key,key,HASHTABLE_KEY_BYTES)==0) {
+        if(memcmp(e->key,key,CACHE_KEY_BYTES)==0) {
             
             // Update entry
-            memcpy(e->value,value,HASHTABLE_VALUE_BYTES);
+            memcpy(e->value,value,CACHE_VALUE_BYTES);
             
             // Remove from list
             if(e->list_prev) e->list_prev->list_next = e->list_next;
@@ -112,20 +112,20 @@ int hashtable_insert(hashtable* table, unsigned char* key, unsigned char* value)
     return -1;
 }
 
-int hashtable_delete(hashtable* table, unsigned char* key) {
+int cache_delete(cache* table, unsigned char* key) {
     
     // Hash the key to get a bucket index
-    int bucket = hash(key,HASHTABLE_KEY_BYTES)%HASHTABLE_NUM_BUCKETS;
+    int bucket = hash(key,CACHE_KEY_BYTES)%CACHE_NUM_BUCKETS;
     
     // Iterate this bucket's chain (w/ while retaining reference to the pointers)
-    for(hashtable_entry** ep = &table->e[bucket];
+    for(cache_entry** ep = &table->e[bucket];
         *ep != NULL;
         ep = &((*ep)->chain_next))
     {
-        hashtable_entry* e = *ep;
+        cache_entry* e = *ep;
             
         // If we found the key...
-        if(memcmp(e->key,key,HASHTABLE_KEY_BYTES)==0) {
+        if(memcmp(e->key,key,CACHE_KEY_BYTES)==0) {
             
             // Remove from list
             if(e->list_prev) e->list_prev->list_next = e->list_next;
@@ -150,4 +150,9 @@ int hashtable_delete(hashtable* table, unsigned char* key) {
     
     // If we didn't have any entries with this key; no need to delete anything
     return 0;
+}
+
+int cache_clear(cache* table) {
+    // TBD
+    return -1;
 }

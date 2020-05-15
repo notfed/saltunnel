@@ -9,7 +9,7 @@
 #include "saltunnel_tcp_server_forwarder.h"
 #include "tcpserver.h"
 #include "tcpclient.h"
-#include "hashtable.h"
+#include "cache.h"
 #include <stdlib.h>
 #include <sys/mman.h>
 
@@ -143,7 +143,7 @@ static int maybe_handle_connection(connection_thread_context* ctx) {
     else return 1;
 }
 
-int saltunnel_tcp_server_forwarder(hashtable *table,
+int saltunnel_tcp_server_forwarder(cache *table,
                          unsigned char* long_term_shared_key,
                          const char* from_ip, const char* from_port,
                          const char* to_ip, const char* to_port)

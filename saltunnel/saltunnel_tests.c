@@ -15,7 +15,7 @@
 #include "stopwatch.h"
 #include "uninterruptable.h"
 #include "log.h"
-#include "hashtable.test.h"
+#include "cache.test.h"
 #include "nonce.test.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -603,7 +603,7 @@ typedef struct saltunnel_forwarder_thread_context {
     const char* to_port;
 } saltunnel_forwarder_thread_context;
 
-static hashtable table = {0};
+static cache table = {0};
 static void* saltunnel_forwarder_thread_inner(void* v)
 {
     saltunnel_forwarder_thread_context* c = (saltunnel_forwarder_thread_context*)v;
@@ -612,7 +612,7 @@ static void* saltunnel_forwarder_thread_inner(void* v)
         saltunnel_tcp_client_forwarder(testkey, c->from_ip, c->from_port, c->to_ip, c->to_port);
     } else {
         log_set_thread_name("sfwd");
-        try(hashtable_clear(&table)) || oops_fatal("error");
+        try(cache_clear(&table)) || oops_fatal("error");
         saltunnel_tcp_server_forwarder(&table, testkey, c->from_ip, c->from_port, c->to_ip, c->to_port);
     }
     free(v);
@@ -833,7 +833,7 @@ void test() {
 //    run(test8, "test8");  // <<
 //    run(test9,"test9");
 //    run(test10,"test10");
-    run(hashtable_test, "hashtable_test");
+    run(cache_test, "cache_test");
     
     run(nonce_tests, "nonce_tests");
     

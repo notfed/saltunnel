@@ -3,13 +3,13 @@
 //  saltunnel
 //
 
-#include "hashtable.h"
+#include "cache.h"
 
 #ifndef saltunnel_tcp_server_h
 #define saltunnel_tcp_server_h
 
 int saltunnel_tcp_server_forwarder(
-                         hashtable *table,
+                         cache *table,
                          unsigned char* long_term_shared_key,
                          const char* from_ip,
                          const char* from_port,
