@@ -4,17 +4,14 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sodium.h>
-#include "oops.h"
-#include "uninterruptable.h"
-#include "saltunnel_tcp_server_forwarder.h"
-#include "hashtable.h"
+#include "c/oops.h"
+#include "c/saltunnel_tcp_client_forwarder.h"
+#include "c/rwn.h"
 
 static void oops_usage() {
-    fprintf(stderr, "saltunnel-server: usage: saltunnel-server -k <keyfile> <fromip>:<fromport> <toip>:<toport>\n");
+    fprintf(stderr, "saltunnel-client: usage: saltunnel-client -k <keyfile> <fromip>:<fromport> <toip>:<toport>\n");
     exit(2);
 }
-
-static hashtable table = {0};
 
 int main(int argc, char * argv[])
 {
@@ -52,14 +49,15 @@ int main(int argc, char * argv[])
     int key_fd = open(keyfile, O_RDONLY);
     if(key_fd<0)
         oops_fatal("failed to open key");
-    if(readn(key_fd, (char*)key,  sizeof(key))<0)
+    if(readn(key_fd, (char*)key, sizeof(key))<0)
         oops_fatal("failed to read key");
     close(key_fd);
-
-    // Run the client forwarder
-    saltunnel_tcp_server_forwarder(&table, key, from_host, from_port, to_host, to_port);
     
-    // The server forwarder never return
-    oops_fatal("fatal error");
-    return 1;
+    // Run the client forwarder
+    if(saltunnel_tcp_client_forwarder(key, from_host, from_port, to_host, to_port)<0)
+        oops_fatal("fatal error");
+    
+    // Exit successfully
+    return 0;
 }
+
