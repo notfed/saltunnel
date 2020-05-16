@@ -16,6 +16,7 @@
 #include "stopwatch.h"
 #include "rwn.h"
 #include "log.h"
+#include "log.test.h"
 #include "cache.test.h"
 #include "nonce.test.h"
 #include <stdio.h>
@@ -151,48 +152,7 @@ static void create_test_pipe(int fds[2]) {
 //}
 
 
-void test5() {
-    {
-        char log_name[256];
-        char* log_filename_from_macro = "test.c";
-        int len = sizeof("test.c");
-        char log_name_filled = 0;
-        
-        log_filename_idempotent_fill(log_name, log_filename_from_macro, len, &log_name_filled);
-        
-        strcmp(log_name, "test") == 0 || oops_fatal("log test, assertion 1 failed");
-    }
-    {
-        char log_name[256];
-        char* log_filename_from_macro = "/a/b/c/test.c";
-        int len = sizeof("/a/b/c/test.c");
-        char log_name_filled = 0;
-        
-        log_filename_idempotent_fill(log_name, log_filename_from_macro, len, &log_name_filled);
-        
-        strcmp(log_name, "test") == 0 || oops_fatal("log test, assertion 2 failed");
-    }
-    {
-        char log_name[256];
-        char* log_filename_from_macro = "C:\\Program Files (x86)\\log\\ger\\test.c";
-        int len = sizeof("C:\\Program Files (x86)\\log\\ger\\test.c");
-        char log_name_filled = 0;
-        
-        log_filename_idempotent_fill(log_name, log_filename_from_macro, len, &log_name_filled);
-        
-        strcmp(log_name, "test") == 0 || oops_fatal("log test, assertion 2 failed");
-    }
-    {
-        char log_name[256];
-        char* log_filename_from_macro = "test";
-        int len = sizeof("test");
-        char log_name_filled = 0;
-        
-        log_filename_idempotent_fill(log_name, log_filename_from_macro, len, &log_name_filled);
-        
-        strcmp(log_name, "test") == 0 || oops_fatal("log test, assertion 2 failed");
-    }
-}
+
 
 typedef struct saltunnel_thread_context {
     const char* thread_name;
@@ -763,7 +723,7 @@ void test() {
 //    run(test2, "test2");
     run(test_can_encrypt_and_decrypt, "test3");
 //    run(test4, "test4");
-    run(test5, "test5");
+    run(log_test, "test5");
     run(test6, "test6");
     for(int i = 0; i < 100; i++)
         run(test11, "test11");
