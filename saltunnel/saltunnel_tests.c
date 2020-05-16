@@ -5,6 +5,7 @@
 #define _GNU_SOURCE
 #include "oops.h"
 #include "rwn.h"
+#include "rwn.test.h"
 #include "saltunnel.h"
 #include "saltunnel_tcp_server_forwarder.h"
 #include "saltunnel_tcp_client_forwarder.h"
@@ -41,28 +42,6 @@ static unsigned char testkey[32] = {
 ,0x06,0xc4,0xee,0x08,0x44,0xf6,0x83,0x89
 } ;
 
-// test1: Can writen/readn
-void can_readn_writen() {
-    // Create two pipes
-    int pipe_local[2]; try(pipe(pipe_local)) || oops_fatal("failed to create pipe");
-    int pipe_net[2];   try(pipe(pipe_net)) || oops_fatal("failed to create pipe");
-         
-    // Write "expected value" to both pipes
-    const char local_teststr_expected[] = "send_nt_pipe";
-    const char net_teststr_expected[] = "send_lc_pipe";
-    writen(pipe_local[1], local_teststr_expected, 12);
-    writen(pipe_net[1], net_teststr_expected, 12);
-    
-    // Read "actual value" from both pipes
-    char local_teststr_actual[12+1] = {0};
-    char net_teststr_actual[12+1]   = {0};
-    readn(pipe_local[0], local_teststr_actual, 12);
-    readn(pipe_net[0], net_teststr_actual, 12);
-    
-    // Assert "expected value" equals "actual value"
-    strcmp(local_teststr_expected, local_teststr_actual) == 0 || oops_fatal("local teststr did not match");
-    strcmp(net_teststr_expected, net_teststr_actual) == 0 || oops_fatal("net teststr did not match");
-}
 
 // test3: Can encrypt and decrypt
 void test3() {
@@ -781,7 +760,7 @@ void test() {
     
     log_info("test suite started");
 
-    run(can_readn_writen, "test1");
+    run(rwn_test, "test1");
 //    run(test2, "test2");
     run(test3, "test3");
 //    run(test4, "test4");
