@@ -8,9 +8,7 @@
 #include "rwn.h"
 #include "rwn.test.h"
 #include "saltunnel.h"
-#include "saltunnel_tcp_server_forwarder.h"
-#include "saltunnel_tcp_client_forwarder.h"
-#include "saltunnel_tcp_forwarder.test.h"
+#include "saltunnel.test.h"
 #include "sodium.h"
 #include "nonce.h"
 #include "tcpclient.h"
@@ -50,44 +48,6 @@ static unsigned char testkey[32] = {
 ,0x06,0xc4,0xee,0x08,0x44,0xf6,0x83,0x89
 } ;
 
-//----------------------
-// Not-My-Code Tests
-//----------------------
-
-static void test_can_encrypt_and_decrypt() {
-    
-    unsigned char nonce[24] = {0};
-    const unsigned char expectedbuf[48] = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0abcd1234abcd1234"; // 32 zeros
-    unsigned char cipherbuf[48] = {0};
-    unsigned char actualbuf[48] = {0};
-    
-    // crypto_secretbox:
-    // - signature: crypto_secretbox(c,m,mlen,n,k);
-    // - input structure:
-    //   - [0..32] == zero
-    //   - [32..]  == plaintext
-    // - output structure:
-    //   - [0..16]  == zero
-    //   - [16..32] == auth
-    //   - [32..]   == ciphertext
-    try(crypto_secretbox(cipherbuf,expectedbuf,48,nonce,testkey)) || oops_fatal("failed to encrypt");
-    
-    //
-    // crypto_secretbox_open:
-    // - signature: crypto_secretbox_open(m,c,clen,n,k);
-    // - input structure:
-    //   - [0..16]  == zero
-    //   - [16..32] == auth
-    //   - [32..]   == ciphertext
-    // - output structure:
-    //   - [0..32] == zero
-    //   - [32..]  == plaintext
-    try(crypto_secretbox_open(actualbuf,cipherbuf,48,nonce,testkey)) || oops_fatal("failed to decrypt");
-    
-    memcmp(expectedbuf,actualbuf,sizeof(expectedbuf)) == 0 || oops_fatal("expected did not match actual");
-    
-}
-
 //----------------------------------------
 // Helper-functions
 //----------------------------------------
@@ -104,7 +64,7 @@ static int calculate_filled_buffers(int start, int end, int buffersize) {
     return end/buffersize - (start-1+buffersize)/buffersize;
 }
 
-static void calculate_filled_buffers_tests() {
+void calculate_filled_buffers_tests() {
     if(calculate_filled_buffers(5,15,10)!=0) oops_fatal("failed test9.1");
     if(calculate_filled_buffers(5,25,10)!=1) oops_fatal("failed test9.2");
     if(calculate_filled_buffers(5,35,10)!=2) oops_fatal("failed test9.3");
@@ -316,7 +276,7 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
 // Tests which call bidirectional_test in different ways
 //--------------------------------------------------------
 
-static void single_packet_bidirectional_test() {
+void single_packet_bidirectional_test() {
     
     const char from_peer1_local_str[] = "from_peer1_local";
     const char from_peer2_local_str[] = "from_peer2_local";
@@ -325,7 +285,7 @@ static void single_packet_bidirectional_test() {
                        from_peer2_local_str, strlen(from_peer2_local_str)+1);
 }
 
-static void two_packet_bidirectional_test() {
+void two_packet_bidirectional_test() {
     
     char from_peer1_local_str[700];
     char from_peer2_local_str[700];
@@ -393,33 +353,4 @@ void edge_case_bidirectional_tests() {
         }
     }
     
-}
-
-
-static void run(void (*the_test)(void), const char *test_name) {
-    log_debug("%s: started...", test_name);
-    the_test();
-    log_debug("%s: succeeded.", test_name);
-}
-
-void test() {
-    
-    log_info("test suite started");
-
-    run(rwn_test, "test1");
-//    run(test2, "test2");
-    run(test_can_encrypt_and_decrypt, "test3");
-    run(log_test, "test5");
-    run(single_packet_bidirectional_test, "single_packet_bidirectional_test");
-    for(int i = 0; i < 100; i++)
-        run(saltunnel_tcp_forwarder_tests, "saltunnel_tcp_forwarder_tests");
-    run(two_packet_bidirectional_test, "two_packet_bidirectional_test");
-    run(edge_case_bidirectional_tests, "edge_case_bidirectional_tests");  // <<
-    run(calculate_filled_buffers_tests,"calculate_filled_buffers_tests");
-    run(cryptostream_vector_tests,"cryptostrean_vector_tests");
-    run(cache_test, "cache_test");
-    
-    run(nonce_tests, "nonce_tests");
-    
-    log_info("all tests passed");
 }

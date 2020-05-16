@@ -9,7 +9,7 @@
 #include "oops.h"
 #include "threadpool.h"
 #include "sodium.h"
-#include "saltunnel_tests.h"
+#include "test.h"
 
 int main(int argc, const char * argv[]) {
     
