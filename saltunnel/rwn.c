@@ -9,21 +9,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-ssize_t writen(int fd,const char *buf,unsigned int len)
-{
-    unsigned int left = len;
-    ssize_t w;
-    while (left) {
-        w = write(fd,buf,left);
-        if (w == -1) {
-            return (ssize_t)(-1); /* note that some data may have been written */
-        }
-        buf += w;
-        left -= w;
-    }
-    return (ssize_t)(len);
-}
-
 ssize_t readn(int fd, char *buf, size_t len)
 {
   char* buf2 = buf;
@@ -38,4 +23,19 @@ ssize_t readn(int fd, char *buf, size_t len)
     len -= r;
   }
   return bytesread;
+}
+
+ssize_t writen(int fd,const char *buf,unsigned int len)
+{
+    unsigned int left = len;
+    ssize_t w;
+    while (left) {
+        w = write(fd,buf,left);
+        if (w == -1) {
+            return (ssize_t)(-1); /* note that some data may have been written */
+        }
+        buf += w;
+        left -= w;
+    }
+    return (ssize_t)(len);
 }

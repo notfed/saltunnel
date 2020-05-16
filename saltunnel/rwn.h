@@ -9,7 +9,7 @@
 #include <sys/uio.h>
 #include <stdlib.h>
 
-ssize_t writen(int fd,const char *buf,unsigned int len);
 ssize_t readn(int fd, char *buf, size_t len);
+ssize_t writen(int fd,const char *buf,unsigned int len);
 
 #endif /* rwn_h */
