@@ -10,7 +10,6 @@
 #include "nonce.h"
 #include "log.h"
 #include "uint16.h"
-#include "chaos.h"
 #include "math.h"
 #include "crypto_secretbox_salsa20poly1305.h"
 #include "threadpool.h"

@@ -1,5 +1,14 @@
 #!/bin/bash
 export C_INCLUDE_PATH=/usr/local/include
 export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/lib
+cd test
+ls -1 *.c | xargs clang -c -O3 -I ../c $@
+cd ..
+cd c
 ls -1 *.c | xargs clang -c -O3 $@
-clang *.o -O3 /usr/local/lib/libsodium.a -lpthread -o tst
+cd ..
+ls -1 *.c | xargs clang -c -O3 $@
+clang c/*.o saltunnel_client_main.o -O3 /usr/local/lib/libsodium.a -lpthread -o saltunnel-client
+clang c/*.o saltunnel_server_main.o -O3 /usr/local/lib/libsodium.a -lpthread -o saltunnel-server
+clang c/*.o test/*.o -O3 /usr/local/lib/libsodium.a -lpthread -o saltunnel-test
+rm *.o
