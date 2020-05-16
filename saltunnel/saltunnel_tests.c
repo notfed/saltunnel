@@ -191,10 +191,7 @@ static void* write_thread_inner(void* v)
 {
     write_thread_context* c = (write_thread_context*)v;
     log_set_thread_name(c->thread_name);
-    int w;
-//    if(c->len!=65537) oops_fatal("WHAT c->len!=65537"); // TODO: Temporary
-//    if(c->buf[65536]!='q') oops_fatal("WHAT c->buf[65536]!=q"); // TODO: Temporary
-    w = (int)write(c->fd, c->buf, c->len);
+    int w = (int)write(c->fd, c->buf, c->len);
     if(w != c->len) oops_fatal("write");
     try(close(c->fd)) || oops_fatal("close");
     log_debug("write_thread wrote %d bytes to fd %d (and closed it)",(int)w,c->fd);
