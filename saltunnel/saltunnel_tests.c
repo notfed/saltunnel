@@ -4,7 +4,7 @@
 //
 #define _GNU_SOURCE
 #include "oops.h"
-#include "uninterruptable.h"
+#include "rwn.h"
 #include "saltunnel.h"
 #include "saltunnel_tcp_server_forwarder.h"
 #include "saltunnel_tcp_client_forwarder.h"
@@ -13,7 +13,7 @@
 #include "tcpclient.h"
 #include "tcpserver.h"
 #include "stopwatch.h"
-#include "uninterruptable.h"
+#include "rwn.h"
 #include "log.h"
 #include "cache.test.h"
 #include "nonce.test.h"
@@ -41,68 +41,28 @@ static unsigned char testkey[32] = {
 ,0x06,0xc4,0xee,0x08,0x44,0xf6,0x83,0x89
 } ;
 
-// test1: Can uninterruptably write/read to/from pipes
-void test1() {
+// test1: Can writen/readn
+void can_readn_writen() {
     // Create two pipes
     int pipe_local[2]; try(pipe(pipe_local)) || oops_fatal("failed to create pipe");
     int pipe_net[2];   try(pipe(pipe_net)) || oops_fatal("failed to create pipe");
-        
+         
     // Write "expected value" to both pipes
     const char local_teststr_expected[] = "send_nt_pipe";
     const char net_teststr_expected[] = "send_lc_pipe";
-    uninterruptable_writen(write, pipe_local[1], local_teststr_expected, 12);
-    uninterruptable_writen(write, pipe_net[1], net_teststr_expected, 12);
+    writen(pipe_local[1], local_teststr_expected, 12);
+    writen(pipe_net[1], net_teststr_expected, 12);
     
     // Read "actual value" from both pipes
     char local_teststr_actual[12+1] = {0};
     char net_teststr_actual[12+1]   = {0};
-    uninterruptable_read(read, pipe_local[0], local_teststr_actual, 12);
-    uninterruptable_read(read, pipe_net[0], net_teststr_actual, 12);
+    readn(pipe_local[0], local_teststr_actual, 12);
+    readn(pipe_net[0], net_teststr_actual, 12);
     
     // Assert "expected value" equals "actual value"
     strcmp(local_teststr_expected, local_teststr_actual) == 0 || oops_fatal("local teststr did not match");
     strcmp(net_teststr_expected, net_teststr_actual) == 0 || oops_fatal("net teststr did not match");
 }
-
-//
-//// test2: saltunnel works with nullcryptostream
-//void test2() {
-//
-//    // Create four "fake files" (i.e., pipes)
-//    int pipe_local_read[2];  try(pipe(pipe_local_read))  || oops_fatal("failed to create pipe");
-//    int pipe_local_write[2]; try(pipe(pipe_local_write)) || oops_fatal("failed to create pipe");
-//    int pipe_net_read[2];    try(pipe(pipe_net_read))    || oops_fatal("failed to create pipe");
-//    int pipe_net_write[2];   try(pipe(pipe_net_write))   || oops_fatal("failed to create pipe");
-//
-//    // Start with "expected value" available in both "readable" pipes
-//    const char local_teststr_expected[] = "send_nt_pipe";
-//    const char net_teststr_expected[] = "send_lc_pipe";
-//    uninterruptable_write(write, pipe_local_read[1], local_teststr_expected, 12); close(pipe_local_read[1]);
-//    uninterruptable_write(write, pipe_net_read[1],   net_teststr_expected,   12); close(pipe_net_read[1]);
-//
-//    // Run saltunnel
-//    cryptostream ingress = {
-//        .op = cryptostream_identity_feed,
-//        .from_fd = pipe_net_read[0],
-//        .to_fd = pipe_local_write[1]
-//    };
-//    cryptostream egress = {
-//        .op = cryptostream_identity_feed,
-//        .from_fd = pipe_local_read[0],
-//        .to_fd = pipe_net_write[1]
-//    };
-//    saltunnel(&ingress, &egress);
-//
-//    // Read "actual value" from both "write" pipes
-//    char local_teststr_actual[12+1] = {0};
-//    char net_teststr_actual[12+1] = {0};
-//    uninterruptable_read(read, pipe_local_write[0], local_teststr_actual, 12);
-//    uninterruptable_read(read, pipe_net_write[0], net_teststr_actual, 12);
-//
-//    // Assert "expected value" equals "actual value"
-//    strcmp(local_teststr_expected, net_teststr_actual) == 0 || oops_fatal("local teststr did not match");
-//    strcmp(net_teststr_expected, local_teststr_actual) == 0 || oops_fatal("net teststr did not match");
-//}
 
 // test3: Can encrypt and decrypt
 void test3() {
@@ -163,11 +123,11 @@ void create_test_pipe(int fds[2]) {
 //    // Start with "expected value" available for reading from net pipe
 ////    const char net_teststr_expected[] = "from_net_pipe";
 //    if(sizeof(test_encpacket)!=512) oops_fatal("assertion failed");
-//    uninterruptable_writen(write, pipe_net_read[1],   test_encpacket,   512); close(pipe_net_read[1]);
+//    writen(write, pipe_net_read[1],   test_encpacket,   512); close(pipe_net_read[1]);
 //
 //    // Start with "expected value" available for reading from local pipe
 //    const char local_teststr_expected[] = "from_lcl_pipe";
-//    uninterruptable_writen(write, pipe_local_read[1], local_teststr_expected, 14); close(pipe_local_read[1]);
+//    writen(write, pipe_local_read[1], local_teststr_expected, 14); close(pipe_local_read[1]);
 //
 //    // Run saltunnel
 //    cryptostream ingress = {
@@ -187,8 +147,8 @@ void create_test_pipe(int fds[2]) {
 //    // Read "actual value" from both "write" pipes
 //    char local_teststr_actual[14] = {0};
 //    char net_teststr_actual[512] = {0};
-//    uninterruptable_read(read, pipe_local_write[0], local_teststr_actual, 14);
-//    uninterruptable_read(read, pipe_net_write[0], net_teststr_actual, 512) == 512 || oops_fatal("didn't write 512 bytes to net");
+//    read(pipe_local_write[0], local_teststr_actual, 14);
+//    read(pipe_net_write[0], net_teststr_actual, 512) == 512 || oops_fatal("didn't write 512 bytes to net");
 //
 //    // Assert "expected value" equals "actual value"
 //    strcmp(local_teststr_actual, "from_net_pipe") == 0 || oops_fatal("local teststr did not match");
@@ -386,12 +346,12 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     // Read "actual value" from peer1's local pipe
     log_debug("reading %d bytes from %d", from_peer2_local_str_len, peer1_pipe_local_output[0]);
     char* from_peer1_local_str_actual = calloc(from_peer2_local_str_len+1,sizeof(char));
-    try(uninterruptable_readn(peer1_pipe_local_output[0], from_peer1_local_str_actual, from_peer2_local_str_len)) || oops_fatal("read");
+    try(readn(peer1_pipe_local_output[0], from_peer1_local_str_actual, from_peer2_local_str_len)) || oops_fatal("read");
     
     // Read "actual value" from peer2's local pipe
     log_debug("reading %d bytes from %d", from_peer1_local_str_len, peer2_pipe_local_output[0]);
     char* from_peer2_local_str_actual = calloc(from_peer1_local_str_len+1,sizeof(char));
-    try(uninterruptable_readn(peer2_pipe_local_output[0], from_peer2_local_str_actual, from_peer1_local_str_len)) || oops_fatal("read");
+    try(readn(peer2_pipe_local_output[0], from_peer2_local_str_actual, from_peer1_local_str_len)) || oops_fatal("read");
     
     // Clean up threads
     try(pthread_join(write_thread_1, NULL)) || oops_fatal("pthread_join");
@@ -820,19 +780,19 @@ void test11() {
 void test() {
     
     log_info("test suite started");
-//
-//    run(test1, "test1");
-////    run(test2, "test2");
-//    run(test3, "test3");
-////    run(test4, "test4");
-//    run(test5, "test5");
-//    run(test6, "test6");
-//    for(int i = 0; i < 100; i++)
-//        run(test11, "test11");
-//    run(test7, "test7");
-//    run(test8, "test8");  // <<
-//    run(test9,"test9");
-//    run(test10,"test10");
+
+    run(can_readn_writen, "test1");
+//    run(test2, "test2");
+    run(test3, "test3");
+//    run(test4, "test4");
+    run(test5, "test5");
+    run(test6, "test6");
+    for(int i = 0; i < 100; i++)
+        run(test11, "test11");
+    run(test7, "test7");
+    run(test8, "test8");  // <<
+    run(test9,"test9");
+    run(test10,"test10");
     run(cache_test, "cache_test");
     
     run(nonce_tests, "nonce_tests");

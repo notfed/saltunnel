@@ -26,7 +26,7 @@ void assert_list_has_n_entries(cache* table, int expected_n) {
     actual_n==expected_n || oops_fatal("cache: wrong number of members in list");
 }
 
-void cache_stress_test() {
+void cache_list_test() {
     int stress = CACHE_NUM_ENTRIES_MAX+1;
     
     // Arrange
@@ -87,7 +87,7 @@ void cache_stress_test() {
     }
 }
 
-void cache_cache_test() {
+void cache_delete_test() {
     int num_entries_to_insert = 262144 + 127;
     int num_entries_to_delete = 262144;
     int num_entries_to_retain = 127;
@@ -143,6 +143,6 @@ void cache_cache_test() {
 
 
 void cache_test() {
-    cache_stress_test();
+    cache_list_test();
 //    cache_cache_test();
 }

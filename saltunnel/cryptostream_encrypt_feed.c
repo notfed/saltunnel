@@ -4,7 +4,7 @@
 //
 
 #include "cryptostream.h"
-#include "uninterruptable.h"
+#include "rwn.h"
 #include "oops.h"
 #include "sodium.h"
 #include "nonce.h"

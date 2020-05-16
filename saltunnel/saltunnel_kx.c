@@ -4,7 +4,7 @@
 //
 
 #include "saltunnel.h"
-#include "uninterruptable.h"
+#include "rwn.h"
 #include "sodium.h"
 #include "crypto_secretbox_salsa20poly1305.h"
 #include "oops.h"
@@ -65,7 +65,7 @@ int saltunnel_kx_packet0_trywrite(packet0* my_packet0_plaintext_pinned,
     memcpy(my_packet0_ciphertext.nonce, my_nonce, 24);
     
     // Send encrypted buffer
-    if(uninterruptable_writen(write, to_fd, (char*)&my_packet0_ciphertext, 512)<0)
+    if(writen(to_fd, (char*)&my_packet0_ciphertext, 512)<0)
     { return oops_warn("write failed"); }
     
     // Erase keys
@@ -138,6 +138,7 @@ int saltunnel_kx_calculate_shared_key(unsigned char session_key_out[32],
 }
     
 
+// TODO: Ummm...
 //
 //void exchange_session_key(int from_fd, int to_fd,
 //                          unsigned char* long_term_key,
@@ -177,7 +178,7 @@ int saltunnel_kx_calculate_shared_key(unsigned char session_key_out[32],
 //    memcpy(my_buffer_ciphertext.nonce, my_nonce, 24);
 //    
 //    // Send encrypted buffer
-//    try(uninterruptable_writen(write, to_fd, (char*)&my_buffer_ciphertext, 512))
+//    try(writen(to_fd, (char*)&my_buffer_ciphertext, 512))
 //    || oops_fatal("write failed");
 //    
 //    //-----------------------
@@ -185,7 +186,7 @@ int saltunnel_kx_calculate_shared_key(unsigned char session_key_out[32],
 //    //-----------------------
 //    
 //    // Receive encrypted buffer
-//    try(uninterruptable_readn(from_fd, (char*)&their_buffer_ciphertext, 512))
+//    try(readn(from_fd, (char*)&their_buffer_ciphertext, 512))
 //    || oops_fatal("read failed");
 //    
 //    // Get nonce
@@ -227,7 +228,7 @@ int saltunnel_kx_calculate_shared_key(unsigned char session_key_out[32],
 //    || oops_fatal("encryption failed");
 //    
 //    // Send encrypted buffer
-//    try(uninterruptable_writen(write, to_fd, (char*)&my_buffer1_ciphertext.auth, 512))
+//    try(writen(write, to_fd, (char*)&my_buffer1_ciphertext.auth, 512))
 //    || oops_fatal("write failed");
 //    
 //    //-----------------------
@@ -238,7 +239,7 @@ int saltunnel_kx_calculate_shared_key(unsigned char session_key_out[32],
 //    packet1 their_buffer1_plaintext = {0};
 //    
 //    // Receive encrypted buffer
-//    try(uninterruptable_readn(from_fd, (char*)&their_buffer1_ciphertext.auth, 512))
+//    try(readn(from_fd, (char*)&their_buffer1_ciphertext.auth, 512))
 //    || oops_fatal("read failed");
 //    
 //    
