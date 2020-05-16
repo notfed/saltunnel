@@ -1,10 +1,10 @@
-C_FILES=c/cache.c c/crypto_secretbox_chacha20poly1305.c c/crypto_secretbox_salsa2012poly1305.c c/crypto_secretbox_salsa208poly1305.c c/crypto_secretbox_salsa20poly1305.c c/cryptostream_decrypt.c c/cryptostream_decrypt_feed.c c/cryptostream_decrypt_parallel.c c/cryptostream_encrypt.c c/cryptostream_encrypt_feed.c c/cryptostream_encrypt_parallel.c c/cryptostream_vector.c c/hypercounter.c c/log.c c/nonce.c c/oops.c c/rwn.c c/saltunnel.c c/saltunnel_kx.c c/saltunnel_mx_parallel.c c/saltunnel_mx_serial.c c/saltunnel_tcp_client_forwarder.c c/saltunnel_tcp_server_forwarder.c c/stopwatch.c c/tcpclient.c c/tcpserver.c c/threadpool.c c/threadpool_barrier.c c/uint16.c c/uint32.c c/uint64.c
+C_FILES=src/cache.c src/crypto_secretbox_chacha20poly1305.c src/crypto_secretbox_salsa2012poly1305.c src/crypto_secretbox_salsa208poly1305.c src/crypto_secretbox_salsa20poly1305.c src/cryptostream_decrypt.c src/cryptostream_decrypt_feed.c src/cryptostream_decrypt_parallel.c src/cryptostream_encrypt.c src/cryptostream_encrypt_feed.c src/cryptostream_encrypt_parallel.c src/cryptostream_vector.c src/hypercounter.c src/log.c src/nonce.c src/oops.c src/rwn.c src/saltunnel.c src/saltunnel_kx.c src/saltunnel_mx_parallel.c src/saltunnel_mx_serial.c src/saltunnel_tcp_client_forwarder.c src/saltunnel_tcp_server_forwarder.c src/stopwatch.c src/tcpclient.c src/tcpserver.c src/threadpool.c src/threadpool_barrier.c src/uint16.c src/uint32.c src/uint64.c
 TEST_FILES=test/cache.test.c test/chaos.c test/cryptostream_vector.test.c test/log.test.c test/nonce.test.c test/rwn.test.c test/saltunnel.test.c test/saltunnel_tcp_forwarder.test.c test/saltunnel_test_main.c test/test.c
 bin_PROGRAMS = saltunnel-client saltunnel-server saltunnel-test
 saltunnel_client_SOURCES = ${C_FILES} saltunnel_client_main.c
 saltunnel_server_SOURCES = ${C_FILES} saltunnel_server_main.c
 saltunnel_test_SOURCES = ${C_FILES} ${TEST_FILES}
-saltunnel_test_CFLAGS = -I c/
+saltunnel_test_CFLAGS = -I src/
 saltunnel_client_LDFLAGS = /usr/local/lib/libsodium.a -lpthread
 saltunnel_server_LDFLAGS = /usr/local/lib/libsodium.a -lpthread
 saltunnel_test_LDFLAGS = /usr/local/lib/libsodium.a -lpthread

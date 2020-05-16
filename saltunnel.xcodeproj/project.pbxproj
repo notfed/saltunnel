@@ -328,7 +328,7 @@
 			path = test;
 			sourceTree = "<group>";
 		};
-		9490E23D246FA8800012A652 /* c */ = {
+		9490E23D246FA8800012A652 /* src */ = {
 			isa = PBXGroup;
 			children = (
 				942971A12401895000DAC1E2 /* config.h */,
@@ -389,7 +389,7 @@
 				942971BE2401895100DAC1E2 /* rwn.c */,
 				942971B52401895000DAC1E2 /* rwn.h */,
 			);
-			path = c;
+			path = src;
 			sourceTree = "<group>";
 		};
 		94CE75A323E5284C00A84ABC = {
@@ -413,7 +413,7 @@
 		94CE75AE23E5284C00A84ABC /* saltunnel */ = {
 			isa = PBXGroup;
 			children = (
-				9490E23D246FA8800012A652 /* c */,
+				9490E23D246FA8800012A652 /* src */,
 				9490E23C246FA86D0012A652 /* test */,
 				94D2234B243A44C400EED0E8 /* saltunnel_client_main.c */,
 				94D2234D243A44CC00EED0E8 /* saltunnel_server_main.c */,

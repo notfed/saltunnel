@@ -4,9 +4,9 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sodium.h>
-#include "c/oops.h"
-#include "c/saltunnel_tcp_client_forwarder.h"
-#include "c/rwn.h"
+#include "src/oops.h"
+#include "src/saltunnel_tcp_client_forwarder.h"
+#include "src/rwn.h"
 
 static void oops_usage() {
     fprintf(stderr, "saltunnel-client: usage: saltunnel-client -k <keyfile> <fromip>:<fromport> <toip>:<toport>\n");
