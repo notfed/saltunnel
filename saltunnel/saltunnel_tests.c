@@ -43,8 +43,7 @@ static unsigned char testkey[32] = {
 } ;
 
 
-// test3: Can encrypt and decrypt
-void test3() {
+static void test_can_encrypt_and_decrypt() {
     
     // Arrange
     unsigned char nonce[24] = {0};
@@ -82,7 +81,7 @@ void test3() {
     
 }
 
-void create_test_pipe(int fds[2]) {
+static void create_test_pipe(int fds[2]) {
     try(pipe(fds)) || oops_fatal("failed to create pipe");
     #ifdef F_SETPIPE_SZ
     try(fcntl(fds[0], F_SETPIPE_SZ, 1048576)) || oops_fatal("failed to configure pipe");
@@ -762,7 +761,7 @@ void test() {
 
     run(rwn_test, "test1");
 //    run(test2, "test2");
-    run(test3, "test3");
+    run(test_can_encrypt_and_decrypt, "test3");
 //    run(test4, "test4");
     run(test5, "test5");
     run(test6, "test6");
