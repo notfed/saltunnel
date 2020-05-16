@@ -3,6 +3,7 @@
 //  saltunnel2
 //
 #define _GNU_SOURCE
+#include "cryptostream_vector.test.h"
 #include "oops.h"
 #include "rwn.h"
 #include "rwn.test.h"
@@ -395,48 +396,6 @@ void edge_case_bidirectional_tests() {
 }
 
 
-
-// Bidirectional saltunnel test; multi-packet
-void test10() {
-    unsigned char data[30];
-    
-    struct iovec vector[] = {
-        { .iov_base = &data[0], .iov_len = 10 },
-        { .iov_base = &data[10], .iov_len = 10 },
-        { .iov_base = &data[20], .iov_len = 10 }
-    };
-    
-    if(vector[0].iov_base != &data[0]) oops_fatal("assertion 10.0.1 failed");
-    if(vector[0].iov_len != 10)        oops_fatal("assertion 10.0.2 failed");
-    
-    if(vector_skip(vector, 0, 3, 0) != 0) oops_fatal("assertion 10.0.3 failed; vector_skip(vector, 3, 0)");
-    
-    if(vector_skip(vector, 0, 3, 1) != 0) oops_fatal("assertion 10.2.1 failed; vector_skip(vector, 3, 1)");
-    if(vector[0].iov_base != &data[1]) oops_fatal("assertion 10.2.2 failed");
-    if(vector[0].iov_len  != 9)        oops_fatal("assertion 10.2.3 failed");
-    
-    if(vector_skip(vector, 0, 3, 8) != 0) oops_fatal("assertion 10.3.1 failed; vector_skip(vector, 3, 8)");
-    if(vector[0].iov_base != &data[9]) oops_fatal("assertion 10.3.2 failed");
-    if(vector[0].iov_len  != 1)        oops_fatal("assertion 10.3.3 failed");
-    
-    if(vector_skip(vector, 0, 3, 1) != 1)  oops_fatal("assertion 10.4.1 failed; vector_skip(vector, 3, 1)");
-    if(vector[0].iov_base != &data[10]) oops_fatal("assertion 10.4.2 failed");
-    if(vector[0].iov_len  != 0)        oops_fatal("assertion 10.4.3 failed");
-    
-    int buffers_skipped = 0;
-    for(int i = 0; i < 20; i+=1)
-        buffers_skipped = (int)vector_skip(vector, 0, 3, 1);
-    if(buffers_skipped != 1) oops_fatal("assertion 10.5.1 failed; vector_skip(vector, 3, 20)");
-    
-    if(vector[0].iov_base != &data[10]) oops_fatal("assertion 10.5.2 failed");
-    if(vector[0].iov_len  != 0)         oops_fatal("assertion 10.5.3 failed");
-    if(vector[1].iov_base != &data[20]) oops_fatal("assertion 10.5.4 failed");
-    if(vector[1].iov_len  != 0)         oops_fatal("assertion 10.5.5 failed");
-    if(vector[2].iov_base != &data[30]) oops_fatal("assertion 10.5.6 failed");
-    if(vector[2].iov_len  != 0)         oops_fatal("assertion 10.5.7 failed");
-}
-
-
 static void run(void (*the_test)(void), const char *test_name) {
     log_debug("%s: started...", test_name);
     the_test();
@@ -451,13 +410,13 @@ void test() {
 //    run(test2, "test2");
     run(test_can_encrypt_and_decrypt, "test3");
     run(log_test, "test5");
-    run(single_packet_bidirectional_test, "test6");
+    run(single_packet_bidirectional_test, "single_packet_bidirectional_test");
     for(int i = 0; i < 100; i++)
-        run(saltunnel_tcp_forwarder_tests, "test11");
-    run(two_packet_bidirectional_test, "test7");
-    run(edge_case_bidirectional_tests, "test8");  // <<
-    run(calculate_filled_buffers_tests,"test9");
-    run(test10,"test10");
+        run(saltunnel_tcp_forwarder_tests, "saltunnel_tcp_forwarder_tests");
+    run(two_packet_bidirectional_test, "two_packet_bidirectional_test");
+    run(edge_case_bidirectional_tests, "edge_case_bidirectional_tests");  // <<
+    run(calculate_filled_buffers_tests,"calculate_filled_buffers_tests");
+    run(cryptostream_vector_tests,"cryptostrean_vector_tests");
     run(cache_test, "cache_test");
     
     run(nonce_tests, "nonce_tests");
