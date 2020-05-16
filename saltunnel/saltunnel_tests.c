@@ -219,7 +219,6 @@ static int first_difference(const char* str1, const char* str2, unsigned int n) 
     return -1;
 }
 
-// Bidirectional saltunnel test
 static void bidirectional_test(const char* from_peer1_local_str, unsigned int from_peer1_local_str_len,
                                const char* from_peer2_local_str, unsigned int from_peer2_local_str_len) {
     
@@ -334,8 +333,7 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     log_info("bidirectional test (%d,%d) passed",from_peer1_local_str_len,from_peer2_local_str_len);
 }
 
-// Bidirectional saltunnel test
-void test6() {
+static void single_packet_bidirectional_test() {
     
     const char from_peer1_local_str[] = "from_peer1_local";
     const char from_peer2_local_str[] = "from_peer2_local";
@@ -344,8 +342,7 @@ void test6() {
                        from_peer2_local_str, strlen(from_peer2_local_str)+1);
 }
 
-// Bidirectional saltunnel test; multi-packet
-void test7() {
+static void two_packet_bidirectional_test() {
     
     char from_peer1_local_str[700];
     char from_peer2_local_str[700];
@@ -354,14 +351,11 @@ void test7() {
         from_peer2_local_str[i] = i+1;
     }
 
-        bidirectional_test(from_peer1_local_str, 1,
-                           from_peer2_local_str, sizeof(from_peer2_local_str));
-//    bidirectional_test(from_peer1_local_str, sizeof(from_peer1_local_str),
-//                       from_peer2_local_str, sizeof(from_peer2_local_str));
+    bidirectional_test(from_peer1_local_str, 1,
+                       from_peer2_local_str, sizeof(from_peer2_local_str));
 }
 
-// Bidirectional saltunnel test; multi-packet, various sizes
-void test8_for(int i) {
+static void variable_size_bidirectional_test(int i) {
     log_debug("---- testing with %d bytes ----", i);
     
     int peer1n = i;
@@ -381,7 +375,8 @@ void test8_for(int i) {
     free(from_peer1_local_str);
     free(from_peer2_local_str);
 }
-void test8() {
+
+void edge_case_bidirectional_tests() {
     
     int edges[] = {
         CRYPTOSTREAM_BUFFER_COUNT,
@@ -410,13 +405,12 @@ void test8() {
             for(int a = 0; a<adders_len; a++) {
                 int i = edges[e] * multipliers[m] + adders[a];
                 log_info("bidirectional_test (%d = %d * %d + %d) started", i, edges[e], multipliers[m], adders[a]);
-                if(i>0) test8_for(i);
+                if(i>0) variable_size_bidirectional_test(i);
             }
         }
     }
     
 }
-
 
 static void run(void (*the_test)(void), const char *test_name) {
     log_debug("%s: started...", test_name);
@@ -428,7 +422,7 @@ static int calculate_filled_buffers(int start, int end, int buffersize) {
     return end/buffersize - (start-1+buffersize)/buffersize;
 }
 
-void test9() {
+static void calculate_filled_buffers_tests() {
     if(calculate_filled_buffers(5,15,10)!=0) oops_fatal("failed test9.1");
     if(calculate_filled_buffers(5,25,10)!=1) oops_fatal("failed test9.2");
     if(calculate_filled_buffers(5,35,10)!=2) oops_fatal("failed test9.3");
@@ -476,7 +470,6 @@ void test10() {
     int buffers_skipped = 0;
     for(int i = 0; i < 20; i+=1)
         buffers_skipped = (int)vector_skip(vector, 0, 3, 1);
-//      if(vector_skip(vector, 3, 20) != 2) oops_fatal("assertion 10.5.1 failed; vector_skip(vector, 3, 20)");
     if(buffers_skipped != 1) oops_fatal("assertion 10.5.1 failed; vector_skip(vector, 3, 20)");
     
     if(vector[0].iov_base != &data[10]) oops_fatal("assertion 10.5.2 failed");
@@ -721,12 +714,12 @@ void test() {
     run(test_can_encrypt_and_decrypt, "test3");
 //    run(test4, "test4");
     run(log_test, "test5");
-    run(test6, "test6");
+    run(single_packet_bidirectional_test, "test6");
     for(int i = 0; i < 100; i++)
         run(test11, "test11");
-    run(test7, "test7");
-    run(test8, "test8");  // <<
-    run(test9,"test9");
+    run(two_packet_bidirectional_test, "test7");
+    run(edge_case_bidirectional_tests, "test8");  // <<
+    run(calculate_filled_buffers_tests,"test9");
     run(test10,"test10");
     run(cache_test, "cache_test");
     
