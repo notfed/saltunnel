@@ -79,21 +79,34 @@ static int get_monotonic_time_since_boot(uint64_t* monotonic_time_out) {
 }
 
 #if defined(__APPLE__)
-// Get MAC address of any network device (Used if machine-id not available) (OS X)
-static int get_mac_address(unsigned char mac_addr[6])
-{
-    const char* if_name = "en0";
+// Get MAC address of (any) network interface (Used if machine-id not available) (OS X)
+int get_mac_address(unsigned char mac_addr[6]) {
     struct ifaddrs* iflist;
-    int found = 0;
+    const unsigned char mac_addr_zero[6] = {0};
+    unsigned char mac_addr_tmp[6];
+    int found = -1;
+
+    // Loop through each network interface
     if (getifaddrs(&iflist) == 0) {
         for (struct ifaddrs* cur = iflist; cur; cur = cur->ifa_next) {
-            if ((cur->ifa_addr->sa_family == AF_LINK) &&
-                    (strcmp(cur->ifa_name, if_name) == 0) &&
-                    cur->ifa_addr) {
+            printf("? %s\n", cur->ifa_name);
+
+            // Filter for ipv4 devices
+            if (cur->ifa_addr && cur->ifa_addr->sa_family == AF_LINK) {
                 struct sockaddr_dl* sdl = (struct sockaddr_dl*)cur->ifa_addr;
-                memcpy(mac_addr, LLADDR(sdl), sdl->sdl_alen);
-                found = 1;
-                break;
+
+                // Filter for 6-byte MAC addresses
+                if(sdl->sdl_alen==6) {
+                    memcpy(mac_addr_tmp, LLADDR(sdl), 6);
+
+                    // Filter for non-zero MAC addresses
+                    if(memcmp(mac_addr_zero, mac_addr_tmp, 6)!=0) {
+                        printf("! %s\n", cur->ifa_name);
+                        memcpy(mac_addr, mac_addr_tmp, 6);
+                        found = 1;
+                        break;
+                    }
+                }
             }
         }
 
@@ -102,7 +115,7 @@ static int get_mac_address(unsigned char mac_addr[6])
     return found;
 }
 #else
-// Get MAC address of any network device (Used if machine-id not available) (Linux)
+// Get MAC address of (any) network interface (Used if machine-id not available) (Linux)
 int get_mac_address(unsigned char mac_address[6]) {
     struct ifreq ifr;
     struct ifconf ifc;
