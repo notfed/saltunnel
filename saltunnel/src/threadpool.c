@@ -26,11 +26,10 @@ static void* threadpool_loop(void* ctx_void) {
     
     if(!tp->tp_init_complete)
         oops_fatal("threadpool not initialized");
-        int thread_i = ctx->thread_i;
+    
+    int thread_i = ctx->thread_i;
 
-//    stopwatch sw={0}; unsigned long c=0;
     for(;;) {
-//        stopwatch_start(&sw);
         log_debug("threadpool_loop: about to wait for 'start' signal");
         
         // Wait for start signal
@@ -52,7 +51,6 @@ static void* threadpool_loop(void* ctx_void) {
         log_debug("threadpool_loop: 'finish' barrier completed");
         
         // TODO: Break when shutdown is requested
-//        log_info("threadpool_loop took %dus (#%d)", (int)stopwatch_elapsed(&sw), c++);
     }
     
     return 0;
@@ -134,7 +132,6 @@ void threadpool_for(int threadpool_index, threadpool_task* tasks) {
     log_debug("threadpool_for: 'finish' barrier completed");
     
     // Release big lock
-    tp->tasks = 0; // TODO: Debug
     pthread_mutex_unlock(&tp->parallel_for_mutex)==0 || oops_fatal("pthread_mutex_unlock");
 }
 
@@ -162,7 +159,7 @@ void threadpool_shutdown_all() {
         threadpool_shutdown(&tps[0]);
         threadpool_shutdown(&tps[1]);
     } else {
-        oops_fatal("assertion failed");
+        oops_fatal("THREADPOOL_POOLS must be set to either 1 or 2");
     }
 }
 

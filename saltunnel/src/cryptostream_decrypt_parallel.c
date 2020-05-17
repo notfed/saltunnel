@@ -47,15 +47,9 @@ void decrypt_all_parallel(int buffer_decrypt_count, int buffer_decrypt_start, cr
         // Initialize Task
         tasks[thread_i].action = decrypt_thread_action;
         tasks[thread_i].param = p;
-        // TODO: Debug
-        if(buffer_decrypt_count%THREADPOOL_THREAD_COUNT!=0) oops_fatal("assertion failed");
     }
     nonce8_copy(nonce_current, cs->nonce);
     
     // Run tasks in parallel
     threadpool_for(1, tasks);
-    
-//    log_info("decrypt_all_parallel: successfully decrypted entire span");
-    memset(params, 0, sizeof(params)); // TODO: Debug
-    memset(tasks, 0, sizeof(tasks)); // TODO: Debug
 }

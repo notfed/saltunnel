@@ -49,8 +49,6 @@ void encrypt_all_parallel(int buffer_encrypt_count, int buffer_encrypt_start_i, 
         // Initialize Task
         tasks[thread_i].action = encrypt_thread_action;
         tasks[thread_i].param = p;
-        // TODO: Debug
-        if(buffer_encrypt_count%THREADPOOL_THREAD_COUNT!=0) oops_fatal("assertion failed");
     }
     nonce8_copy(nonce_current, cs->nonce);
     
@@ -58,6 +56,4 @@ void encrypt_all_parallel(int buffer_encrypt_count, int buffer_encrypt_start_i, 
     threadpool_for(0, tasks);
     
     log_debug("encrypt_all_parallel: successfully encrypted entire span");
-    memset(params, 0, sizeof(params)); // TODO: Debug
-    memset(tasks, 0, sizeof(tasks)); // TODO: Debug
 }

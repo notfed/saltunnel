@@ -71,7 +71,7 @@ int tcpserver_new(const char* ip, const char* port, tcpserver_options options)
             return oops_warn("error enabling TCP_DEFER_ACCEPT");
     }
     
-    // Enable SO_REUSEADDR (TODO: Do graceful shutdown via signal handler, etc.)
+    // Enable SO_REUSEADDR
     if(options.OPT_SO_REUSEADDR) {
         int reuse_addr_opt = 1;
         if(setsockopt(s,SOL_SOCKET,SO_REUSEADDR,&reuse_addr_opt,sizeof(int))<0)

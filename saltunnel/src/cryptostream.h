@@ -64,7 +64,7 @@ typedef struct cryptostream {
     int vector_init_complete;
     
     unsigned char plaintext[CRYPTOSTREAM_SPAN_MAXBYTES];
-    struct iovec plaintext_vector[CRYPTOSTREAM_BUFFER_COUNT*2]; // TODO: Rename to 'data_vector' to prevent confusion?
+    struct iovec plaintext_vector[CRYPTOSTREAM_BUFFER_COUNT*2]; // NOTE: Only points to data (i.e., excl. the 2-byte length of plaintext)
     int vector_start;
     int vector_len;
     

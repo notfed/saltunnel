@@ -119,7 +119,7 @@ static void* tcpstub_server_write_inner(void* v)
     // ---- Write a message ----
     int wlen = (int)strlen(writemsg);
     log_info("(TCPSTUB SERVER) WRITING %d BYTES.",wlen);
-    int wrc = (int)write(fd_conn, writemsg, wlen); // TODO: Change to readn.  Just testing.
+    int wrc = (int)writen(fd_conn, writemsg, wlen);
     if(wrc<0) oops_fatal("failed to read");
     if(wrc != wlen) { log_info("partial write (%d/%d)", wrc, wlen); oops_fatal("..."); }
     log_info("(TCPSTUB SERVER) WROTE %d BYTES TO CONNECTION", wlen);
@@ -128,7 +128,7 @@ static void* tcpstub_server_write_inner(void* v)
     char actual_readmsg[512] = {0};
     int rlen = (int)strlen(readmsg);
     log_info("(TCPSTUB SERVER) READING %d BYTES.",rlen);
-    int rrc = (int)read(fd_conn, actual_readmsg, rlen); // TODO: Change to readn.  Just testing.
+    int rrc = (int)readn(fd_conn, actual_readmsg, rlen);
     if(rrc<0) oops_fatal("failed to read");
     if(rrc != rlen) { log_info("partial read (%d/%d)", rrc, rlen); oops_fatal("..."); }
     log_info("(TCPSTUB SERVER) READ %d BYTES FROM CONNECTION", rrc);
@@ -201,7 +201,7 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
         // ---- Read a message ----
         int rlen = (int)strlen(readmsg);
         log_info("(TCPSTUB CLIENT) READING %d BYTES.",rlen);
-        int rrc = (int)read(tcpclient, actual_readmsg, rlen); // TODO: Change to readn.  Just testing.
+        int rrc = (int)readn(tcpclient, actual_readmsg, rlen);
         if(rrc<0) oops_fatal("failed to read");
         if(rrc != rlen) { log_info("(TCPSTUB CLIENT) partial read (%d/%d)", rrc, rlen); oops_fatal("..."); }
         log_info("(TCPSTUB CLIENT) READ %d BYTES FROM CONNECTION", rrc);
@@ -209,7 +209,7 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
         // ---- Write a message ----
         int wlen = (int)strlen(writemsg);
         log_info("(TCPSTUB CLIENT) WRITING %d BYTES.",wlen);
-        int wrc = (int)write(tcpclient, writemsg, wlen); // TODO: Change to readn.  Just testing.
+        int wrc = (int)writen(tcpclient, writemsg, wlen);
         if(wrc<0) oops_fatal("failed to read");
         if(wrc != wlen) { log_info("partial write (%d/%d)", wrc, wlen); oops_fatal("..."); }
         log_info("(TCPSTUB CLIENT) WROTE %d BYTES TO CONNECTION", wlen);
