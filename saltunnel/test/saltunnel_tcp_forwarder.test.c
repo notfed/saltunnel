@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <pthread.h>
+#include <signal.h>
 #include <limits.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
