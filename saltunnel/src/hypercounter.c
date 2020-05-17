@@ -14,7 +14,6 @@
 #include <sodium.h>
 #include <time.h>
 #include <errno.h>
-#include <sys/sysctl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,13 +23,13 @@
 #include <netinet/in.h>
 #include <net/if.h>
 #if defined(__APPLE__)
+#include <sys/sysctl.h>
 #include <net/if_dl.h>
 #include <mach/clock.h>
 #include <mach/mach.h>
 #endif
 #include <ifaddrs.h>
 #include <errno.h>
-#include <sys/sysctl.h>
 #include <stdio.h>
 #include <time.h>
 
