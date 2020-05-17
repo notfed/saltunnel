@@ -20,8 +20,8 @@ int main(int argc, char * argv[])
     try(sodium_init())
     || oops_fatal("sodium init");
     
-    // Must have 1+6 args
-    if(argc!=7)
+    // Must have 4 args (+1 for program path)
+    if(argc!=5)
         oops_usage();
     
     // Parse keyfile
