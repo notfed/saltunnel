@@ -9,3 +9,4 @@ saltunnel_client_LDFLAGS = -lpthread
 saltunnel_server_LDFLAGS = -lpthread
 saltunnel_test_LDFLAGS = -lpthread
 LDADD = /usr/local/lib/libsodium.a
+TESTS = saltunnel-test
