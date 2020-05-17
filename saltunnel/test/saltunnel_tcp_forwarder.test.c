@@ -261,6 +261,4 @@ void saltunnel_tcp_forwarder_tests() {
     pthread_kill(thread1, 0);
     pthread_kill(thread2, 0);
     pthread_kill(thread3, 0);
-//    pthread_kill(thread1, SIGKILL);
-//    pthread_kill(thread2, SIGKILL);
 }

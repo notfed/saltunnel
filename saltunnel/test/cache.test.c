@@ -128,21 +128,10 @@ void cache_delete_test() {
         unsigned char* post_delete_value = cache_get(&table, key);
         post_delete_value==0 || oops_fatal("cache: post-delete get failed");
     }
-//    
-//    // Assert (List == [262144,262144+127))
-//    cache_entry* first = table.first
-//    for(int i = 1; i < num_entries_to_retain; i++) {
-//
-//    }
-//
-//    // Assert All Zero (Count == 0)
-//    for(int i = 0; i < sizeof(cache); i++) {
-//        if(((char*)&table)[i]!=0) oops_fatal("cache: wasn't zero after deleting all");
-//    }
 }
 
 
 void cache_test() {
     cache_list_test();
-//    cache_cache_test();
+    // cache_delete_test(); // TODO: Fix this
 }

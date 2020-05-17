@@ -38,7 +38,7 @@ void test() {
     run(single_packet_bidirectional_test, "single_packet_bidirectional_test");
     run(saltunnel_tcp_forwarder_tests, "saltunnel_tcp_forwarder_tests");
     run(two_packet_bidirectional_test, "two_packet_bidirectional_test");
-    run(edge_case_bidirectional_tests, "edge_case_bidirectional_tests");  // <<
+    run(edge_case_bidirectional_tests, "edge_case_bidirectional_tests");
     run(calculate_filled_buffers_tests,"calculate_filled_buffers_tests");
     run(cryptostream_vector_tests,"cryptostrean_vector_tests");
     run(cache_test, "cache_test");

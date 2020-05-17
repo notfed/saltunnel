@@ -233,7 +233,7 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     try(pthread_join(saltunnel_thread_2, NULL)) || oops_fatal("pthread_join");
     
     long elapsed = stopwatch_elapsed(&sw);
-    log_info("test8 saltunnel took %dus (%d MBps)", (int)elapsed, (int)((from_peer1_local_str_len+from_peer2_local_str_len)/elapsed));
+    log_info("...took %dus (%d MBps)", (int)elapsed, (int)((from_peer1_local_str_len+from_peer2_local_str_len)/elapsed));
 
     // Compare actual peer1 local data
     int cmp1 = memcmp(from_peer2_local_str,from_peer1_local_str_actual,from_peer2_local_str_len);
@@ -241,8 +241,8 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
         int d = first_difference(from_peer2_local_str, from_peer1_local_str_actual, from_peer2_local_str_len);
         const char* s1 = from_peer2_local_str+d;
         const char* s2 = from_peer1_local_str_actual+d;
-        log_fatal("str differed ('%c'!='%c') at index %d",*s1,*s2,d);
-        log_fatal("bidirectional test (%d,%d) failed: peer1 strs differed",from_peer1_local_str_len,from_peer2_local_str_len);
+        log_fatal("...str differed ('%c'!='%c') at index %d",*s1,*s2,d);
+        log_fatal("...(%d,%d) failed: peer1 strs differed",from_peer1_local_str_len,from_peer2_local_str_len);
         _exit(1);
     }
     
@@ -252,8 +252,8 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
         int d = first_difference(from_peer1_local_str, from_peer2_local_str_actual, from_peer1_local_str_len);
         const char* s1 = from_peer1_local_str+d;
         const char* s2 = from_peer2_local_str_actual+d;
-        log_fatal("str differed ('%c'!='%c') at index %d",*s1,*s2,d);
-        log_fatal("bidirectional test (%d,%d) failed: peer1 strs differed",from_peer1_local_str_len,from_peer2_local_str_len);
+        log_fatal("...str differed ('%c'!='%c') at index %d",*s1,*s2,d);
+        log_fatal("...(%d,%d) failed: peer1 strs differed",from_peer1_local_str_len,from_peer2_local_str_len);
         _exit(1);
     }
     
@@ -269,7 +269,7 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     close(peer2_pipe_local_output[0]); close(peer2_pipe_local_output[1]);
     close(peer2_pipe_to_peer1[0]);     close(peer2_pipe_to_peer1[1]);
 
-    log_info("bidirectional test (%d,%d) passed",from_peer1_local_str_len,from_peer2_local_str_len);
+    log_info("...(%d,%d) passed",from_peer1_local_str_len,from_peer2_local_str_len);
 }
 
 //--------------------------------------------------------
