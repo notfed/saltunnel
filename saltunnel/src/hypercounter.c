@@ -20,6 +20,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <sys/ioctl.h>
 #include <netinet/in.h>
 #include <net/if.h>
 #if defined(__APPLE__)
@@ -78,7 +79,7 @@ static int get_monotonic_time_since_boot(uint64_t* monotonic_time_out) {
 }
 
 #if defined(__APPLE__)
-// Get MAC address of eth0 (Used if machine-id not available) (OS X)
+// Get MAC address of any network device (Used if machine-id not available) (OS X)
 static int get_mac_address(unsigned char mac_addr[6])
 {
     const char* if_name = "en0";
@@ -101,10 +102,43 @@ static int get_mac_address(unsigned char mac_addr[6])
     return found;
 }
 #else
-// Get MAC address of eth0 (Used if machine-id not available) (Linux)
-static int get_mac_address(unsigned char mac_addr[6])
-{
-  return -1; // TODO: 
+// Get MAC address of any network device (Used if machine-id not available) (Linux)
+int get_mac_address(unsigned char mac_address[6]) {
+    struct ifreq ifr;
+    struct ifconf ifc;
+    char buf[1024];
+    int success = 0;
+
+    int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+    if (sock == -1)
+        return -1;
+
+    ifc.ifc_len = sizeof(buf);
+    ifc.ifc_buf = buf;
+    if (ioctl(sock, SIOCGIFCONF, &ifc) == -1)
+        return -1;
+
+    struct ifreq* it = ifc.ifc_req;
+    const struct ifreq* const end = it + (ifc.ifc_len / sizeof(struct ifreq));
+
+    for (; it != end; ++it) {
+        strcpy(ifr.ifr_name, it->ifr_name);
+        if (ioctl(sock, SIOCGIFFLAGS, &ifr) == 0) {
+            if (! (ifr.ifr_flags & IFF_LOOPBACK)) { // don't count loopback
+                if (ioctl(sock, SIOCGIFHWADDR, &ifr) == 0) {
+                    success = 1;
+                    break;
+                }
+            }
+        }
+        else {
+            return -1;
+        }
+    }
+
+    if (success) memcpy(mac_address, ifr.ifr_hwaddr.sa_data, 6);
+
+    return 0;
 }
 #endif
 
