@@ -5,8 +5,13 @@
 
 #include "hypercounter.h"
 #include "uint64.h"
-#include "sodium.h"
+#include "rwn.h"
+#include "oops.h"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sodium.h>
 #include <time.h>
 #include <errno.h>
 #include <sys/sysctl.h>
@@ -18,27 +23,36 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <net/if.h>
+#if defined(__APPLE__)
 #include <net/if_dl.h>
-#include <ifaddrs.h>
-#include <errno.h>
 #include <mach/clock.h>
 #include <mach/mach.h>
+#endif
+#include <ifaddrs.h>
+#include <errno.h>
 #include <sys/sysctl.h>
 #include <stdio.h>
 #include <time.h>
 
+#ifdef KERN_BOOTTIME
+// Get when this machine last booted (using KERN_BOOTTIME)
 static int get_boot_time(uint64_t* out_boot_time) {
     struct timeval boottime;
     int mib[2] = {CTL_KERN, KERN_BOOTTIME};
-    size_t size = sizeof(boottime);
     int rc = sysctl(mib, 2, &boottime, &size, NULL, 0);
-    if (rc != 0) {
-      return -1;
-    }
+    if (rc != 0) 
+        return -1;
     *out_boot_time = (uint64_t)boottime.tv_sec * 1000000 + (uint64_t)boottime.tv_usec;
     return 0;
 }
+#else
+static int get_boot_time(uint64_t* out_boot_time) {
+    *out_boot_time = 0; // TODO: Get boot time on Linux
+    return 0;
+}
+#endif
 
+// Get monotonic time since last boot
 static int get_monotonic_time_since_boot(uint64_t* monotonic_time_out) {
     struct timespec time;
     if(clock_gettime(CLOCK_REALTIME, &time)<0)
@@ -47,25 +61,7 @@ static int get_monotonic_time_since_boot(uint64_t* monotonic_time_out) {
     return 0;
 }
 
-
-#if defined(HAVE_SIOCGIFHWADDR)
-static bool get_mac_address(char* mac_addr, const char* if_name = "eth0")
-{
-    struct ifreq ifinfo;
-    strcpy(ifinfo.ifr_name, if_name);
-    int sd = socket(AF_INET, SOCK_DGRAM, 0);
-    int result = ioctl(sd, SIOCGIFHWADDR, &ifinfo);
-    close(sd);
-
-    if ((result == 0) && (ifinfo.ifr_hwaddr.sa_family == 1)) {
-        memcpy(mac_addr, ifinfo.ifr_hwaddr.sa_data, IFHWADDRLEN);
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-#elif defined(__APPLE__)
+#if defined(__APPLE__)
 static int get_mac_address(unsigned char mac_addr[6])
 {
     const char* if_name = "en0";
@@ -88,29 +84,72 @@ static int get_mac_address(unsigned char mac_addr[6])
     return found;
 }
 #else
-#   error no definition for get_mac_address() on this platform!
+static int get_mac_address(unsigned char mac_addr[6])
+{
+  return -1;
+}
 #endif
 
-int hypercounter(unsigned char machine_id_out[16], unsigned char monotonic_time_out[8]) {
-    
-    // Calculate machine_id
-    unsigned char mac_addr[8] = {0};
-    uint64_t boot_time;
-    if(get_mac_address(mac_addr)<0)
+// Get the unique id for this machine (from the MAC address of eth0)
+static int get_machine_id_from_mac_address(unsigned char machine_id_out[16])
+{
+    memset(machine_id_out, 0, 16);
+    return get_mac_address(machine_id_out);
+}
+
+// Get the unique id for this machine (from a 32-byte hexadecimal file)
+static int get_machine_id_from_file(unsigned char machine_id_out[16], const char* file_name)
+{
+    // Open file (e.g., /etc/machine-id)
+    int machine_id_fd = open(file_name, O_RDONLY);
+    if(machine_id_fd<0) 
         return -1;
+
+    // Read 32 bytes; should be hexadecimal text
+    char machine_id_hex[32];
+    if(readn(machine_id_fd, machine_id_hex, 32)!=32) 
+        return -1;
+
+    // Convert hexadecimal text to binary
+    if(sodium_hex2bin(machine_id_out, 16,
+                      machine_id_hex, 32,
+                      NULL, NULL, NULL)<0) return -1;
+
+    return 0;
+}
+
+// Get the unique id for this machine
+static int get_machine_id(unsigned char machine_id_out[16])
+{
+    if(get_machine_id_from_file(machine_id_out, "/etc/machine-id")<0)
+      if(get_machine_id_from_file(machine_id_out, "~/.saltunnel/machine-id")<0)
+        if(get_machine_id_from_mac_address(machine_id_out)<0)
+            oops_fatal("failed to read machine-id (tried '/etc/machine-id', '~/.saltunnel/machine-id', and eth0 MAC address)");
+    return 0;
+}
+
+int hypercounter(unsigned char machine_boot_id_out[16], unsigned char monotonic_time_out[8]) {
+    
+    // Get the unique id for this machine
+    unsigned char machine_id_and_boot_time[32];
+    if(get_machine_id(&machine_id_and_boot_time[0])<0)
+        return -1;
+
+    // Get when this machine last booted
+    uint64_t boot_time;
     if(get_boot_time(&boot_time)<0)
         return -1;
-    
-    // TODO: Hash {mac_addr,boot_time} (?)
-    
-    // Calculate monotonic_time_out
+    uint64_pack(&machine_id_and_boot_time[16], boot_time);
+
+    // Hash(machine_id, boot_time) to get machine_boot_id
+    if(crypto_generichash(machine_boot_id_out, 16,
+                   machine_id_and_boot_time, 32,
+                   NULL, 0)<0) oops_fatal("failed to hash machine-id");
+
+    // Get monotonic time since last boot
     uint64_t monotonic_time_since_boot;
     if(get_monotonic_time_since_boot(&monotonic_time_since_boot)<0)
         return -1;
-    
-    // Output results
-    memcpy(machine_id_out, mac_addr, 8);
-    uint64_pack((char*)&machine_id_out[8], boot_time);
     uint64_pack((char*)monotonic_time_out, monotonic_time_since_boot);
     
     return 0;
