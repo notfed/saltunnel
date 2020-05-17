@@ -44,7 +44,7 @@ int tcpclient_new(const char* ip, const char* port, tcpclient_options options)
     if(options.OPT_SO_SNDLOWAT>0) {
         const int low_water_mark_bytes = options.OPT_SO_SNDLOWAT;
         if(setsockopt(s, SOL_SOCKET, SO_SNDLOWAT, &low_water_mark_bytes, sizeof(int))<0)
-            return oops_warn("error setting SO_SNDLOWAT");
+            oops_warn("could not set SO_SNDLOWAT"); // "Not changeable on Linux"
     }
     
     log_info("tcpclient_socket created, fd %d", s);
