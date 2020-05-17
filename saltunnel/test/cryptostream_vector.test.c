@@ -11,11 +11,10 @@ void cryptostream_vector_tests() {
     
     unsigned char data[30];
     
-    struct iovec vector[] = {
-        { .iov_base = &data[0], .iov_len = 10 },
-        { .iov_base = &data[10], .iov_len = 10 },
-        { .iov_base = &data[20], .iov_len = 10 }
-    };
+    struct iovec vector[CRYPTOSTREAM_BUFFER_COUNT*2] = {0};
+    vector[0].iov_base = &data[0];  vector[0].iov_len = 10;
+    vector[1].iov_base = &data[10]; vector[1].iov_len = 10;
+    vector[2].iov_base = &data[20]; vector[2].iov_len = 10;
     
     if(vector[0].iov_base != &data[0]) oops_fatal("assertion 10.0.1 failed");
     if(vector[0].iov_len != 10)        oops_fatal("assertion 10.0.2 failed");
