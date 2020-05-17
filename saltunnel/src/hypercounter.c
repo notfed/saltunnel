@@ -39,6 +39,7 @@
 static int get_boot_time(uint64_t* out_boot_time) {
     struct timeval boottime;
     int mib[2] = {CTL_KERN, KERN_BOOTTIME};
+    size_t size = sizeof(boottime);
     int rc = sysctl(mib, 2, &boottime, &size, NULL, 0);
     if (rc != 0) 
         return -1;
