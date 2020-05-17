@@ -23,7 +23,8 @@ static int fd_nonblock(int fd)
 static int enable_tcp_defer_accept(int socket_fd) {
 #ifdef TCP_DEFER_ACCEPT
     int on = 1;
-    try(setsockopt(s, SOL_SOCKET, TCP_DEFER_ACCEPT, &on, sizeof(int))) || return -1;
+    if(setsockopt(socket_fd, SOL_SOCKET, TCP_DEFER_ACCEPT, &on, sizeof(int))<0) 
+        return -1;
 #endif
     return 0;
 }
