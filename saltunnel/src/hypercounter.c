@@ -34,21 +34,37 @@
 #include <time.h>
 
 #ifdef KERN_BOOTTIME
-// Get when this machine last booted (using KERN_BOOTTIME)
-static int get_boot_time(uint64_t* out_boot_time) {
+// Get when this machine last booted (using KERN_BOOTTIME) (OS X)
+uint64_t get_boot_time() {
     struct timeval boottime;
     int mib[2] = {CTL_KERN, KERN_BOOTTIME};
     size_t size = sizeof(boottime);
     int rc = sysctl(mib, 2, &boottime, &size, NULL, 0);
     if (rc != 0) 
-        return -1;
-    *out_boot_time = (uint64_t)boottime.tv_sec * 1000000 + (uint64_t)boottime.tv_usec;
-    return 0;
+        return 0;
+    uint64_t result = (uint64_t)boottime.tv_sec * 1000000 + (uint64_t)boottime.tv_usec;
+    return result;
 }
 #else
-static int get_boot_time(uint64_t* out_boot_time) {
-    *out_boot_time = 0; // TODO: Get boot time on Linux
-    return 0;
+// Get when this machine last booted (using /proc/stat[btime]) (Linux)
+uint64_t get_boot_time() {
+   char token[1024];
+   FILE* fp = fopen("/proc/stat", "r");
+   if(fp==0)
+       return 0;
+   while(fscanf(fp, "%1023s", token)>0) {
+       if(strcmp("btime",token)==0) {
+           unsigned int btime;
+           int r = fscanf(fp, "%u", &btime);
+           fclose(fp);
+           if(r==1)
+             return btime;
+           else
+             return 0;
+       }
+   }
+   fclose(fp);
+   return 0;
 }
 #endif
 
@@ -62,6 +78,7 @@ static int get_monotonic_time_since_boot(uint64_t* monotonic_time_out) {
 }
 
 #if defined(__APPLE__)
+// Get MAC address of eth0 (Used if machine-id not available) (OS X)
 static int get_mac_address(unsigned char mac_addr[6])
 {
     const char* if_name = "en0";
@@ -84,9 +101,10 @@ static int get_mac_address(unsigned char mac_addr[6])
     return found;
 }
 #else
+// Get MAC address of eth0 (Used if machine-id not available) (Linux)
 static int get_mac_address(unsigned char mac_addr[6])
 {
-  return -1;
+  return -1; // TODO: 
 }
 #endif
 
@@ -136,8 +154,8 @@ int hypercounter(unsigned char machine_boot_id_out[16], unsigned char monotonic_
         return -1;
 
     // Get when this machine last booted
-    uint64_t boot_time;
-    if(get_boot_time(&boot_time)<0)
+    uint64_t boot_time = get_boot_time();
+    if(boot_time==0)
         return -1;
     uint64_pack((char*)&machine_id_and_boot_time[16], boot_time);
 
