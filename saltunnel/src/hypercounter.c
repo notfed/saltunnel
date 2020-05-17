@@ -140,7 +140,7 @@ int hypercounter(unsigned char machine_boot_id_out[16], unsigned char monotonic_
     uint64_t boot_time;
     if(get_boot_time(&boot_time)<0)
         return -1;
-    uint64_pack(&machine_id_and_boot_time[16], boot_time);
+    uint64_pack((char*)&machine_id_and_boot_time[16], boot_time);
 
     // Hash(machine_id, boot_time) to get machine_boot_id
     if(crypto_generichash(machine_boot_id_out, 16,
