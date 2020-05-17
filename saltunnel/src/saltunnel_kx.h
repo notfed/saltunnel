@@ -44,8 +44,8 @@ int saltunnel_kx_packet0_tryread(packet0* tmp_pinned,
                                  int from_fd,
                                  unsigned char their_pk_out[32]);
 
-int saltunnel_kx_calculate_shared_key(unsigned char session_key_out[32],
-                                      const unsigned char their_pk[32],
-                                      const unsigned char my_sk[32]);
+int saltunnel_kx_calculate_shared_key(unsigned char keys_out[64],
+                                      const unsigned char pk[32],
+                                      const unsigned char sk[32]);
 
 #endif /* saltunnel_kx_h */

@@ -12,6 +12,8 @@
 #include "saltunnel_kx.h"
 #include "hypercounter.h"
 #include "uint64.h"
+
+#include <sodium.h>
 #include <time.h>
 #include <string.h>
 #include <errno.h>
@@ -128,11 +130,17 @@ int saltunnel_kx_packet0_tryread(packet0* their_packet0_plaintext_pinned,
     return 0;
 }
 
-int saltunnel_kx_calculate_shared_key(unsigned char session_key_out[32],
-                                      const unsigned char their_pk[32],
-                                      const unsigned char my_sk[32]) {
-     if(crypto_box_curve25519xsalsa20poly1305_beforenm(session_key_out, their_pk, my_sk)<0)
-         return oops_warn("diffie-hellman failed");
-     //  TODO: Need to differentiate between server and client keys
+int saltunnel_kx_calculate_shared_key(unsigned char keys_out[64],
+                                      const unsigned char pk[32],
+                                      const unsigned char sk[32])
+{
+    unsigned char s[32];
+    if (crypto_scalarmult_curve25519(s, sk, pk) != 0) {
+        return -1;
+    }
+    
+    static const unsigned char zero[16] = { 0 };
+    crypto_core_salsa20(keys_out, zero, s, NULL);
+    
     return 0;
 }

@@ -18,7 +18,7 @@ typedef struct connection_thread_context {
     unsigned char long_term_shared_key[32];
     unsigned char my_sk[32];
     unsigned char their_pk[32];
-    unsigned char session_shared_key[32];
+    unsigned char session_shared_keys[64]; // Client = [0..32), Server = [32..64)
     int remote_fd;
     const char* to_ip;
     const char* to_port;
@@ -70,7 +70,7 @@ static void* connection_thread(void* v)
     // TODO: Exchange single packet to completely prevent replay attacks
     
     // Calculate shared key
-    if(saltunnel_kx_calculate_shared_key(ctx->session_shared_key, ctx->their_pk, ctx->my_sk)<0) {
+    if(saltunnel_kx_calculate_shared_key(ctx->session_shared_keys, ctx->their_pk, ctx->my_sk)<0) {
         oops_warn("failed to calculate shared key");
         return connection_thread_cleanup(v,local_fd);
     }
@@ -83,12 +83,12 @@ static void* connection_thread(void* v)
     cryptostream ingress = {
         .from_fd = ctx->remote_fd,
         .to_fd = local_fd,
-        .key = ctx->session_shared_key
+        .key = &ctx->session_shared_keys[0]
     };
     cryptostream egress = {
         .from_fd = local_fd,
         .to_fd = ctx->remote_fd,
-        .key = ctx->session_shared_key
+        .key = &ctx->session_shared_keys[32]
     };
 
     // Memory-lock the plaintext buffers
