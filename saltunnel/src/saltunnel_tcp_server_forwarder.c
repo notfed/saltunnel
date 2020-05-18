@@ -70,9 +70,14 @@ static void* connection_thread(void* v)
         return connection_thread_cleanup(v,local_fd);
     }
 
-    // Exchange packet1
-    
-    // TODO: Exchange single packet to prevent replay-attack from exploiting server-sends-first
+    // Exchange packet1 (to prevent replay-attack from exploiting server-sends-first scenarios)
+
+    log_info("about to exchange packet1 with server");
+    if(saltunnel_kx_packet1_exchange(ctx->session_shared_keys, 1, ctx->remote_fd)<0) {
+        log_warn("failed to exchange packet1 with server");
+        return connection_thread_cleanup(ctx, local_fd);
+    }
+    log_info("successfully exchanged packet1 with server");
     
     
     log_info("calculated shared key");

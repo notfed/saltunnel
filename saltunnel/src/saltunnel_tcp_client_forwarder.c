@@ -76,12 +76,17 @@ static void* connection_thread(void* v)
         log_warn("failed to calculate shared key");
         return connection_thread_cleanup(ctx, remote_fd);
     }
+    
+    log_info("successfully calculated shared key");
 
     // Exchange packet1 (to prevent replay-attack from exploiting server-sends-first scenarios)
     
-    // TODO
-    
-    log_info("calculated shared key");
+    log_info("about to exchange packet1 with server");
+    if(saltunnel_kx_packet1_exchange(ctx->session_shared_keys, 0, remote_fd)<0) {
+        log_warn("failed to exchange packet1 with server");
+        return connection_thread_cleanup(ctx, remote_fd);
+    }
+    log_info("successfully exchanged packet1 with server");
     
     log_info("running saltunnel");
     

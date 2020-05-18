@@ -51,4 +51,8 @@ int saltunnel_kx_calculate_shared_key(unsigned char keys_out[64],
                                       const unsigned char pk[32],
                                       const unsigned char sk[32]);
 
+int saltunnel_kx_packet1_exchange(unsigned char session_shared_keys[64], 
+		                  int client_or_server, 
+				  int remote_fd);
+
 #endif /* saltunnel_kx_h */
