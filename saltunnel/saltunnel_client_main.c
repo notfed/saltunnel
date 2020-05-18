@@ -46,7 +46,7 @@ int main(int argc, char * argv[])
     // Read the key
     unsigned char key[32];
     if(mlock(key, sizeof(key))<0)
-        oops_fatal("failed to mlock");
+        oops_warn("failed to mlock");
     int key_fd = open(keyfile, O_RDONLY);
     if(key_fd<0)
         oops_fatal("failed to open key");
