@@ -126,8 +126,6 @@ static void* connection_thread(void* v)
 
 static pthread_t connection_thread_spawn(connection_thread_context* ctx)
 {
-    log_info("handling connection");
-    
     pthread_t thread;
     if(pthread_create(&thread, NULL, connection_thread, (void*)ctx)!=0) {
         oops_warn("failed to spawn thread");
@@ -147,6 +145,7 @@ static int maybe_handle_connection(cache* table, connection_thread_context* ctx)
     log_info("server forwarder successfully read packet0");
     
     // If packet0 was good, spawn a thread to handle subsequent packets
+    log_info("handling connection");
     pthread_t thread = connection_thread_spawn(ctx);
     if(thread==0) return -1;
     else return 1;
@@ -168,7 +167,7 @@ int saltunnel_tcp_server_forwarder(cache* table,
     
     int s = tcpserver_new(from_ip, from_port, options);
     if(s<0)
-        return oops_warn("error creating socket");
+        return oops_warn("failed to establish TCP server socket");
     
     for(;;) {
         log_info("(SERVER FORWARDER) WAITING FOR ACCEPT ON %s:%s", from_ip, from_port);
@@ -176,7 +175,7 @@ int saltunnel_tcp_server_forwarder(cache* table,
         // Accept a new connection (or wait for one to arrive)
         int remote_fd = tcpserver_accept(s);
         if(remote_fd<0) {
-            log_warn("failed to accept connection");
+            log_warn("failed to accept incoming TCP connection");
             continue;
         }
         
@@ -196,7 +195,7 @@ int saltunnel_tcp_server_forwarder(cache* table,
                oops_warn("failed to munlock");
             free(ctx);
             try(close(remote_fd)) || log_warn("failed to close connection");
-            log_warn("refused to handle connection");
+            log_info("refused to handle connection");
         }
     }
     

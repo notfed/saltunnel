@@ -169,7 +169,7 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
         // Accept a new connection (or wait for one to arrive)
         int local_fd = tcpserver_accept(s);
         if(local_fd<0) {
-            log_warn("failed to accept connection");
+            log_warn("failed to accept incoming TCP connection");
             continue;
         }
         
@@ -188,12 +188,12 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
             if(munlock(ctx, sizeof(connection_thread_context))<0)
                oops_warn("failed to munlock");
             free(ctx);
-            try(close(local_fd)) || log_warn("failed to close connection");
+            try(close(local_fd)) || log_warn("failed to close file descriptor");
             log_warn("encountered error with TCP connection");
         }
     }
     
     // The above loop should never exit
-    oops_fatal("this should never happen");
+    oops_fatal("saltunnel exited unexpectedly");
     return 0;
 }

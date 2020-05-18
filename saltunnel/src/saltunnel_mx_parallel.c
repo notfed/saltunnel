@@ -20,13 +20,13 @@
 
 static void fd_nonblock(int fd) {
     int flags;
-    try((flags=fcntl(fd, F_GETFL, 0))) || oops_fatal("setting O_NONBLOCK");
-    try(fcntl(fd, F_SETFL, flags|O_NONBLOCK)) || oops_fatal("setting O_NONBLOCK");
+    try((flags=fcntl(fd, F_GETFL, 0))) || oops_fatal("failed to get file flags");
+    try(fcntl(fd, F_SETFL, flags|O_NONBLOCK)) || oops_fatal("failed to set file as non-blocking");
 }
 
 static int fd_issocket(int fd) {
     struct stat statbuf;
-    if(fstat(fd, &statbuf)<0) oops_fatal("fstat failed");
+    if(fstat(fd, &statbuf)<0) oops_fatal("failed to get file status");
     return S_ISSOCK(statbuf.st_mode);
 }
 
@@ -56,7 +56,7 @@ void* exchange_messages_egress(void* ctx_void) {
         
         /* Poll */
         log_debug("poll: polling [%2d->D->%2d]...", pfds[0].fd, pfds[1].fd);
-        try(poll(pfds,2,-1)) || oops_fatal("poll failed");
+        try(poll(pfds,2,-1)) || oops_fatal("failed to poll");
         log_debug("poll: polled  [%2d->D->%2d].", pfds[0].fd, pfds[1].fd);
         
         /* If an fd is ready, mark it as FD_READY */
@@ -92,9 +92,9 @@ void* exchange_messages_egress(void* ctx_void) {
         if(pfds[0].fd == FD_EOF && pfds[1].fd != FD_EOF && !cryptostream_encrypt_feed_canwrite(egress)) {
             log_debug("egress is done; closing egress->to_fd (%d)", egress->to_fd);
             if(egress_to_fd_is_socket) {
-                try(shutdown(egress->to_fd, SHUT_WR)) || oops_fatal("shutdown failed");
+                try(shutdown(egress->to_fd, SHUT_WR)) || oops_fatal("failed to shutdown socket");
             } else {
-                try(close(egress->to_fd)) || oops_fatal("close failed");
+                try(close(egress->to_fd)) || oops_fatal("failed to close file descriptor");
             }
             pfds[1].fd = FD_EOF;
         }
@@ -133,7 +133,7 @@ void* exchange_messages_ingress(void* ctx_void) {
     while(pfds[0].fd != FD_EOF || pfds[1].fd != FD_EOF) {
         /* Poll */
         log_debug("poll: polling [%2d->D->%2d]...", pfds[0].fd, pfds[1].fd);
-        try(poll(pfds,2,-1)) || oops_fatal("poll: failed to poll");
+        try(poll(pfds,2,-1)) || oops_fatal("failed to poll");
         log_debug("poll: polled  [%2d->D->%2d].", pfds[0].fd, pfds[1].fd);
         
         /* If an fd is ready, mark it as FD_READY */
@@ -200,15 +200,15 @@ void exchange_messages_parallel(cryptostream *ingress, cryptostream *egress) {
     pthread_t ingress_thread;
     
     pthread_create(&egress_thread, NULL, exchange_messages_egress, (void*)&ctx)==0
-    || oops_fatal("pthread_create failed");
+    || oops_fatal("failed to create thread");
     
     pthread_create(&ingress_thread, NULL, exchange_messages_ingress, (void*)&ctx)==0
-    || oops_fatal("pthread_create failed");
+    || oops_fatal("failed to create thread");
     
     pthread_join(egress_thread, NULL)==0
-    || oops_fatal("pthread_create failed");
+    || oops_fatal("failed to join thread");
     
     pthread_join(ingress_thread, NULL)==0
-    || oops_fatal("pthread_create failed");
+    || oops_fatal("failed to join thread");
     
 }
