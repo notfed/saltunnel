@@ -21,8 +21,8 @@ int encrypt_all(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesr
 
     int all_buffers_full = (buffer_encrypt_count==CRYPTOSTREAM_BUFFER_COUNT);
     if(all_buffers_full && threadpool_enough_cpus_for_parallel()) {
-        encrypt_all_parallel(buffer_encrypt_count, buffer_encrypt_start_i, bytesread, cs);
-        // TODO
+        if(encrypt_all_parallel(buffer_encrypt_count, buffer_encrypt_start_i, bytesread, cs)<0)
+            return -1;
     }
     else {
         if(encrypt_all_serial(buffer_encrypt_count, buffer_encrypt_start_i, bytesread, cs, cs->nonce)<0)
