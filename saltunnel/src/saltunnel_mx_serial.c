@@ -25,8 +25,7 @@ static void fd_nonblock(int fd) {
 
 static int fd_issocket(int fd) {
     struct stat statbuf;
-    if(fstat(fd, &statbuf)<0)
-        oops_fatal("failed to fstat");
+    if(fstat(fd, &statbuf)<0) oops_fatal("fstat failed");
     return S_ISSOCK(statbuf.st_mode);
 }
 
@@ -47,8 +46,8 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
     fd_nonblock(egress->from_fd);  fd_nonblock(egress->to_fd);
     
     // Determine if fds are sockets
-    int ingress_to_fd_is_socket   = fd_issocket(ingress->to_fd);   if(ingress_to_fd_is_socket<0)   oops_fatal("failed to fstat...");
-    int egress_to_fd_is_socket    = fd_issocket(egress->to_fd);    if(egress_to_fd_is_socket<0)    oops_fatal("failed to fstat...");
+    int ingress_to_fd_is_socket   = fd_issocket(ingress->to_fd);
+    int egress_to_fd_is_socket    = fd_issocket(egress->to_fd);
     
     // Main Loop
     while(pfds[0].fd != FD_EOF || pfds[1].fd != FD_EOF || pfds[2].fd != FD_EOF || pfds[3].fd != FD_EOF) {

@@ -26,8 +26,7 @@ static void fd_nonblock(int fd) {
 
 static int fd_issocket(int fd) {
     struct stat statbuf;
-    if(fstat(fd, &statbuf)<0)
-        oops_fatal("failed to fstat");
+    if(fstat(fd, &statbuf)<0) oops_fatal("fstat failed");
     return S_ISSOCK(statbuf.st_mode);
 }
 
@@ -50,14 +49,14 @@ void* exchange_messages_egress(void* ctx_void) {
     fd_nonblock(egress->from_fd);  fd_nonblock(egress->to_fd);
     
     // Determine if fds are sockets
-    int egress_to_fd_is_socket = fd_issocket(egress->to_fd); if(egress_to_fd_is_socket<0) oops_fatal("failed to fstat...");
-    
+    int egress_to_fd_is_socket = fd_issocket(egress->to_fd); 
+
     // Main Loop
     while(pfds[0].fd != FD_EOF || pfds[1].fd != FD_EOF) {
         
         /* Poll */
         log_debug("poll: polling [%2d->D->%2d]...", pfds[0].fd, pfds[1].fd);
-        try(poll(pfds,2,-1)) || oops_fatal("poll: failed to poll");
+        try(poll(pfds,2,-1)) || oops_fatal("poll failed");
         log_debug("poll: polled  [%2d->D->%2d].", pfds[0].fd, pfds[1].fd);
         
         /* If an fd is ready, mark it as FD_READY */
@@ -93,9 +92,9 @@ void* exchange_messages_egress(void* ctx_void) {
         if(pfds[0].fd == FD_EOF && pfds[1].fd != FD_EOF && !cryptostream_encrypt_feed_canwrite(egress)) {
             log_debug("egress is done; closing egress->to_fd (%d)", egress->to_fd);
             if(egress_to_fd_is_socket) {
-                try(shutdown(egress->to_fd, SHUT_WR)) || oops_fatal("failed to close");
+                try(shutdown(egress->to_fd, SHUT_WR)) || oops_fatal("shutdown failed");
             } else {
-                try(close(egress->to_fd)) || oops_fatal("failed to close");
+                try(close(egress->to_fd)) || oops_fatal("close failed");
             }
             pfds[1].fd = FD_EOF;
         }
@@ -128,7 +127,7 @@ void* exchange_messages_ingress(void* ctx_void) {
     fd_nonblock(ingress->from_fd); fd_nonblock(ingress->to_fd);
     
     // Determine if fds are sockets
-    int ingress_to_fd_is_socket = fd_issocket(ingress->to_fd); if(ingress_to_fd_is_socket<0) oops_fatal("failed to fstat...");
+    int ingress_to_fd_is_socket = fd_issocket(ingress->to_fd); 
     
     // Main Loop
     while(pfds[0].fd != FD_EOF || pfds[1].fd != FD_EOF) {
