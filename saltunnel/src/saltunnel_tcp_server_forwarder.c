@@ -175,7 +175,7 @@ int saltunnel_tcp_server_forwarder(cache *table,
         // Handle the connection
         connection_thread_context* ctx = calloc(1,sizeof(connection_thread_context));
         if(mlock(ctx, sizeof(connection_thread_context))<0)
-            oops_warn("error with mlock");
+            oops_warn("failed to mlock");
         ctx->remote_fd = remote_fd;
         ctx->to_ip = to_ip;
         ctx->to_port = to_port;
@@ -186,7 +186,7 @@ int saltunnel_tcp_server_forwarder(cache *table,
                oops_warn("failed to munlock");
             free(ctx);
             try(close(remote_fd)) || log_warn("failed to close connection");
-            log_warn("encountered error with TCP connection");
+            log_warn("refused to handle connection");
         }
     }
     
