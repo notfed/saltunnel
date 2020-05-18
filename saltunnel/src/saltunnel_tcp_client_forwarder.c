@@ -42,7 +42,7 @@ static void* connection_thread(void* v)
     
     log_info("connection thread entered");
 
-    // Create a TCP Client
+    // Create a TCP Client to connect to server
     tcpclient_options options = {
      .OPT_TCP_NODELAY = 1,
      .OPT_SO_SNDLOWAT = 512
@@ -50,18 +50,18 @@ static void* connection_thread(void* v)
     log_info("(CLIENT FORWARDER) ABOUT TO CONNECT TO %s:%s", ctx->remote_ip, ctx->remote_port);
     int remote_fd = tcpclient_new(ctx->remote_ip, ctx->remote_port, options);
     if(remote_fd<0) {
-        log_warn("failed to create TCP client connection");
+        log_warn("failed to connect to server");
         return connection_thread_cleanup(ctx, remote_fd);
     }
     
-    // Write packet0
+    // Write packet0 to server
     if(saltunnel_kx_packet0_trywrite(&ctx->tmp_pinned, ctx->long_term_shared_key, remote_fd, ctx->my_sk)<0) {
-        log_warn("failed to write packet0");
+        log_warn("failed to write packet0 to server");
         return connection_thread_cleanup(ctx, remote_fd);
     }
     log_info("(CLIENT FORWARDER) SUCCESSFULLY CONNECTED TO %s:%s", ctx->remote_ip, ctx->remote_port);
     
-    log_info("client forwarder successfully wrote packet0");
+    log_info("client forwarder successfully wrote packet0 to server");
                                      
     // Read packet0
     if(saltunnel_kx_packet0_tryread(NULL, &ctx->tmp_pinned, ctx->long_term_shared_key, remote_fd, ctx->their_pk)<0) {
@@ -71,15 +71,15 @@ static void* connection_thread(void* v)
     
     log_info("client forwarder successfully read packet0");
     
-    // Exchange packet1
-    
-    // TODO: Exchange single packet to completely prevent replay attacks
-        
     // Calculate shared key
     if(saltunnel_kx_calculate_shared_key(ctx->session_shared_keys, ctx->their_pk, ctx->my_sk)<0) {
         log_warn("failed to calculate shared key");
         return connection_thread_cleanup(ctx, remote_fd);
     }
+
+    // Exchange packet1 (to prevent replay-attack from exploiting server-sends-first scenarios)
+    
+    // TODO
     
     log_info("calculated shared key");
     

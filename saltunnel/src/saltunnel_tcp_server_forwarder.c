@@ -42,7 +42,7 @@ static void* connection_thread(void* v)
     
     log_info("connection thread entered");
 
-    // Create a TCP Client
+    // Create a TCP Client to connect to target
     tcpclient_options options = {
      .OPT_TCP_NODELAY = 1
     };
@@ -50,29 +50,30 @@ static void* connection_thread(void* v)
     
     int local_fd = tcpclient_new(ctx->to_ip, ctx->to_port, options);
     if(local_fd<0) {
-        oops_warn("failed to create TCP client connection");
+        oops_warn("failed to connect to target");
         return connection_thread_cleanup(v,local_fd);
     }
     
-    // Write packet0
+    // Write packet0 to client
     if(saltunnel_kx_packet0_trywrite(&ctx->tmp_pinned, ctx->long_term_shared_key, ctx->remote_fd, ctx->my_sk)<0) {
-        oops_warn("failed to write packet0");
+        oops_warn("failed to write packet0 to client");
         return connection_thread_cleanup(v,local_fd);
     }
     
     log_info("(SERVER FORWARDER) SUCCESSFULLY CONNECTED TO %s:%s", ctx->to_ip, ctx->to_port);
     
-    log_info("server forwarder successfully wrote packet0");
-    
-    // Exchange packet1
-    
-    // TODO: Exchange single packet to completely prevent replay attacks
+    log_info("server forwarder successfully wrote packet0 to client");
     
     // Calculate shared key
     if(saltunnel_kx_calculate_shared_key(ctx->session_shared_keys, ctx->their_pk, ctx->my_sk)<0) {
         oops_warn("failed to calculate shared key");
         return connection_thread_cleanup(v,local_fd);
     }
+
+    // Exchange packet1
+    
+    // TODO: Exchange single packet to prevent replay-attack from exploiting server-sends-first
+    
     
     log_info("calculated shared key");
     
