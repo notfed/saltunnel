@@ -45,7 +45,6 @@ static void* connection_thread(void* v)
     // Create a TCP Client
     tcpclient_options options = {
      .OPT_TCP_NODELAY = 1,
-     .OPT_TCP_FASTOPEN = 1,
      .OPT_SO_SNDLOWAT = 512
     };
     log_info("(CLIENT FORWARDER) ABOUT TO CONNECT TO %s:%s", ctx->remote_ip, ctx->remote_port);
