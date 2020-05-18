@@ -101,6 +101,10 @@ static void* connection_thread(void* v)
         .to_fd = remote_fd,
         .key = &ctx->session_shared_keys[0]
     };
+
+    // Nonces should start at 1
+    nonce8_increment(ingress.nonce, ingress.nonce);
+    nonce8_increment(egress.nonce, egress.nonce);
     
     // Memory-lock the plaintext buffers
     if(mlock(ingress.plaintext, sizeof(ingress.plaintext))<0)

@@ -165,8 +165,6 @@ int saltunnel_kx_calculate_shared_key(unsigned char keys_out[64],
     return 0;
 }
 
-
-// TODO: Go back and ensure nonce #0 isn't re-used in later code
 static const unsigned char packet1_nonce[24] = {0};
 static const packet1 my_packet1_plaintext = {0};
 int saltunnel_kx_packet1_exchange(unsigned char session_shared_keys[64],
@@ -181,7 +179,6 @@ int saltunnel_kx_packet1_exchange(unsigned char session_shared_keys[64],
     memset(&my_packet1_ciphertext, 0, 32);
     memset(&their_packet1_plaintext, 0, 32);
     memset(&their_packet1_ciphertext, 0, 32);
-
 
     // Clarify keys
     unsigned char* my_key = &session_shared_keys[32*client_or_server];
