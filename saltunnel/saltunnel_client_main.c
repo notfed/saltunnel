@@ -18,7 +18,7 @@ int main(int argc, char * argv[])
 {
     // Seed random bytes
     try(sodium_init())
-    || oops_fatal("sodium init");
+    || oops_fatal("failed to initialize random number generator");
     
     // Must have 4 args (+1 for program path)
     if(argc!=5)
@@ -46,7 +46,7 @@ int main(int argc, char * argv[])
     // Read the key
     unsigned char key[32];
     if(mlock(key, sizeof(key))<0)
-        oops_warn("failed to mlock");
+        oops_warn("failed to mlock key");
     int key_fd = open(keyfile, O_RDONLY);
     if(key_fd<0)
         oops_fatal("failed to open key");
