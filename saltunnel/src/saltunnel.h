@@ -8,6 +8,6 @@
 
 #include "cryptostream.h"
 
-void saltunnel(cryptostream* ingress, cryptostream* egress);  // TODO: Error handling
+void saltunnel(cryptostream* ingress, cryptostream* egress);
 
 #endif /* saltunnel_common_h */
