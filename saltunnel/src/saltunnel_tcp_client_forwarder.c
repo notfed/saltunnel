@@ -64,7 +64,7 @@ static void* connection_thread(void* v)
     log_info("client forwarder successfully wrote packet0");
                                      
     // Read packet0
-    if(saltunnel_kx_packet0_tryread(&ctx->tmp_pinned, ctx->long_term_shared_key, remote_fd, ctx->their_pk)<0) {
+    if(saltunnel_kx_packet0_tryread(NULL, &ctx->tmp_pinned, ctx->long_term_shared_key, remote_fd, ctx->their_pk)<0) {
         log_warn("failed to read packet0");
         return connection_thread_cleanup(ctx, remote_fd);
     }

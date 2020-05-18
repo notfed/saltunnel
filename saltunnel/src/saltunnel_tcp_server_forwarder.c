@@ -126,11 +126,11 @@ static pthread_t connection_thread_spawn(connection_thread_context* ctx)
     return thread;
 }
 
-static int maybe_handle_connection(connection_thread_context* ctx) {
+static int maybe_handle_connection(cache* table, connection_thread_context* ctx) {
     log_info("maybe handling connection");
     
     // Read packet0
-    if(saltunnel_kx_packet0_tryread(&ctx->tmp_pinned, ctx->long_term_shared_key, ctx->remote_fd, ctx->their_pk)<0) {
+    if(saltunnel_kx_packet0_tryread(table, &ctx->tmp_pinned, ctx->long_term_shared_key, ctx->remote_fd, ctx->their_pk)<0) {
         return oops_warn("failed to read packet0");
     }
     
@@ -142,7 +142,7 @@ static int maybe_handle_connection(connection_thread_context* ctx) {
     else return 1;
 }
 
-int saltunnel_tcp_server_forwarder(cache *table,
+int saltunnel_tcp_server_forwarder(cache* table,
                          unsigned char* long_term_shared_key,
                          const char* from_ip, const char* from_port,
                          const char* to_ip, const char* to_port)
@@ -181,7 +181,7 @@ int saltunnel_tcp_server_forwarder(cache *table,
         ctx->to_port = to_port;
         memcpy(ctx->long_term_shared_key, long_term_shared_key, 32);
         
-        if(maybe_handle_connection(ctx)<0) {
+        if(maybe_handle_connection(table, ctx)<0) {
             if(munlock(ctx, sizeof(connection_thread_context))<0)
                oops_warn("failed to munlock");
             free(ctx);
