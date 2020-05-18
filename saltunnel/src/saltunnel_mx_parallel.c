@@ -36,6 +36,7 @@ typedef struct {
 } exchange_messages_thread_context;
 
 void* exchange_messages_egress(void* ctx_void) {
+    int had_error = 0;
     exchange_messages_thread_context* ctx = (exchange_messages_thread_context*)ctx_void;
     cryptostream* egress = ctx->egress;
 
@@ -78,11 +79,13 @@ void* exchange_messages_egress(void* ctx_void) {
             int r = cryptostream_encrypt_feed_read(egress);
             if(r>0) { pfds[0].fd = egress->from_fd; }
             if(r==0) { pfds[0].fd = FD_EOF; }
+            if(r<0) { had_error = 1; break; }
         }
         
         // write to 'to' when: 'to' is ready, and buffers not empty
         if ((pfds[1].fd == FD_READY) && cryptostream_encrypt_feed_canwrite(egress)) {
-            cryptostream_encrypt_feed_write(egress);
+            if(cryptostream_encrypt_feed_write(egress)<0)
+            { had_error = 1; break; }
             pfds[1].fd = egress->to_fd;
         }
         
@@ -98,10 +101,20 @@ void* exchange_messages_egress(void* ctx_void) {
         }
 
     }
+
+    // If we encountered an error, simply close all fds
+    if(had_error) {
+        close(ctx->ingress->from_fd);
+        close(ctx->egress->to_fd);
+        close(ctx->ingress->to_fd);
+        close(ctx->egress->from_fd);
+    }
+
     log_debug("all fds are closed [%d,%d,%d,%d]; done polling", ingress->from_fd, ingress->to_fd, egress->from_fd, egress->to_fd);
     return 0;
 }
 void* exchange_messages_ingress(void* ctx_void) {
+    int had_error = 0;
     exchange_messages_thread_context* ctx = (exchange_messages_thread_context*)ctx_void;
     cryptostream* ingress = ctx->ingress;
     
@@ -119,7 +132,6 @@ void* exchange_messages_ingress(void* ctx_void) {
     
     // Main Loop
     while(pfds[0].fd != FD_EOF || pfds[1].fd != FD_EOF) {
-        
         /* Poll */
         log_debug("poll: polling [%2d->D->%2d]...", pfds[0].fd, pfds[1].fd);
         try(poll(pfds,2,-1)) || oops_fatal("poll: failed to poll");
@@ -141,14 +153,16 @@ void* exchange_messages_ingress(void* ctx_void) {
 
         // read from 'from' when: 'from' is ready, and buffers not full
         if ((pfds[0].fd == FD_READY) && cryptostream_decrypt_feed_canread(ingress)) {
-            int r = cryptostream_decrypt_feed_read(ingress); // TODO: Handle error
+            int r = cryptostream_decrypt_feed_read(ingress);
             if(r>0) { pfds[0].fd = ingress->from_fd; }
             if(r==0) { pfds[0].fd = FD_EOF; }
+            if(r<0) { had_error = 1; break; }
         }
         
         // write to 'to' when: 'to' is ready, and buffers not empty
         if ((pfds[1].fd == FD_READY) && cryptostream_decrypt_feed_canwrite(ingress)) {
-            cryptostream_decrypt_feed_write(ingress); // TODO: Handle error
+            if(cryptostream_decrypt_feed_write(ingress)<0)
+            { had_error = 1; break; }
             pfds[1].fd = ingress->to_fd;
         }
         
@@ -156,15 +170,24 @@ void* exchange_messages_ingress(void* ctx_void) {
         if(pfds[0].fd == FD_EOF && pfds[1].fd != FD_EOF && !cryptostream_decrypt_feed_canwrite(ingress)) {
             log_debug("ingress is done; closing ingress->to_fd (%d)", ingress->to_fd);
             if(ingress_to_fd_is_socket) {
-                try(shutdown(ingress->to_fd, SHUT_WR)) || oops_fatal("failed to close");
+                shutdown(ingress->to_fd, SHUT_WR);
             } else {
-                try(close(ingress->to_fd)) || oops_fatal("failed to close");
+                close(ingress->to_fd);
             }
             pfds[1].fd = FD_EOF;
         }
-
     }
-    log_debug("all fds are closed [%d,%d,%d,%d]; done polling", ingress->from_fd, ingress->to_fd, egress->from_fd, egress->to_fd);
+
+    // If we encountered an error, simply close all fds
+    if(had_error) {
+        close(ctx->ingress->from_fd);
+        close(ctx->egress->to_fd);
+        close(ctx->ingress->to_fd);
+        close(ctx->egress->from_fd);
+    }
+
+    log_debug("all fds are closed [%d,%d,%d,%d]; done polling", 
+              ingress->from_fd, ingress->to_fd, egress->from_fd, egress->to_fd);
     return 0;
 }
 

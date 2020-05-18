@@ -31,6 +31,8 @@ static int fd_issocket(int fd) {
 }
 
 void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
+
+    int had_error = 0;
     
     // Configure poll (we will poll both "readable" fds)
     struct pollfd pfds[] = {
@@ -81,12 +83,13 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
             int r = cryptostream_encrypt_feed_read(egress);
             if(r>0) { pfds[2].fd = egress->from_fd; }
             if(r==0) { pfds[2].fd = FD_EOF; }
-            if(r<0) { oops_fatal("assertion failed"); }
+            if(r<0) { had_error = 1; break; }
         }
         
         // write to 'to' when: 'to' is ready, and buffers not empty
         if ((pfds[3].fd == FD_READY) && cryptostream_encrypt_feed_canwrite(egress)) {
-            cryptostream_encrypt_feed_write(egress);
+            if(cryptostream_encrypt_feed_write(egress)<0)
+            { had_error = 1; break; }
             pfds[3].fd = egress->to_fd;
         }
         
@@ -100,6 +103,7 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
             }
             pfds[3].fd = FD_EOF;
         }
+
         //
         // Handle ingress data
         //
@@ -109,12 +113,13 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
             int r = cryptostream_decrypt_feed_read(ingress);
             if(r>0) { pfds[0].fd = ingress->from_fd; }
             if(r==0) { pfds[0].fd = FD_EOF; }
-            if(r<0) { oops_fatal("assertion failed"); }
+            if(r<0) { had_error = 1; break; }
         }
         
         // write to 'to' when: 'to' is ready, and buffers not empty
         if ((pfds[1].fd == FD_READY) && cryptostream_decrypt_feed_canwrite(ingress)) {
-            cryptostream_decrypt_feed_write(ingress);
+            if(cryptostream_decrypt_feed_write(ingress)<0)
+            { had_error = 1; break; }
             pfds[1].fd = ingress->to_fd;
         }
         
@@ -129,7 +134,15 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
             }
             pfds[1].fd = FD_EOF;
         }
-
     }
+
+    // If we encountered an error, simply close all fds
+    if(had_error) {
+        close(ingress->from_fd);
+        close(egress->to_fd);
+        close(ingress->to_fd);
+        close(egress->from_fd);
+    }
+
     log_debug("all fds are closed [%d,%d,%d,%d]; done polling", ingress->from_fd, ingress->to_fd, egress->from_fd, egress->to_fd);
 }
