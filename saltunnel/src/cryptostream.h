@@ -1,6 +1,6 @@
 //
 //  cryptostream.h
-//  saltunnel2
+//  saltunnel
 //
 
 #ifndef cryptostream_h

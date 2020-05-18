@@ -1,6 +1,6 @@
 //
 //  nonce.test.h
-//  saltunnel2
+//  saltunnel
 //
 
 #ifndef noncetest_h

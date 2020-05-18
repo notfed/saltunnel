@@ -1,6 +1,6 @@
 //
 //  stopwatch.c
-//  saltunnel2
+//  saltunnel
 //
 
 #include "stopwatch.h"

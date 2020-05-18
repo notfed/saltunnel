@@ -1,6 +1,6 @@
 //
 //  saltunnel_test_main.c
-//  saltunnel2
+//  saltunnel
 //
 
 #include <stdio.h>

@@ -1,6 +1,6 @@
 //
 //  threadpool_barrier.c
-//  saltunnel2
+//  saltunnel
 //
 
 #include "threadpool_barrier.h"

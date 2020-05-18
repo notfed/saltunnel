@@ -1,6 +1,6 @@
 //
 //  threadpool_barrier.h
-//  saltunnel2
+//  saltunnel
 //
 #ifndef pthread_barrier_h
 #define pthread_barrier_h

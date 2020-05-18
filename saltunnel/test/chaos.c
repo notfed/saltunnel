@@ -1,6 +1,6 @@
 //
 //  chaos.c
-//  saltunnel2
+//  saltunnel
 //
 
 #include "math.h"

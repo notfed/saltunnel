@@ -1,6 +1,6 @@
 //
 //  crypto_secretbox_salsa20poly1305.h
-//  saltunnel2
+//  saltunnel
 //
 
 #ifndef crypto_secretbox_salsa20poly1305_h

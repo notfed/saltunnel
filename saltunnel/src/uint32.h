@@ -1,6 +1,6 @@
 //
 //  uint32.h
-//  saltunnel2
+//  saltunnel
 //
 
 #ifndef uint32_h

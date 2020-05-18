@@ -1,6 +1,6 @@
 //
 //  threadpool.h
-//  saltunnel2
+//  saltunnel
 //
 
 #ifndef threadpool_h

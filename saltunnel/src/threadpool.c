@@ -1,6 +1,6 @@
 //
 //  threadpool.c
-//  saltunnel2
+//  saltunnel
 //
 
 #include "config.h"

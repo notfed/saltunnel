@@ -1,6 +1,6 @@
 //
 //  nonce.test.c
-//  saltunnel2
+//  saltunnel
 //
 
 #include "nonce.test.h"

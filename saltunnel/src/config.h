@@ -1,6 +1,6 @@
 //
 //  config.h
-//  saltunnel2
+//  saltunnel
 //
 
 #ifndef config_h

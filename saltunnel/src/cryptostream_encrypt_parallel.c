@@ -1,6 +1,6 @@
 //
 //  cryptostream_encrypt_parallel.c
-//  saltunnel2
+//  saltunnel
 //
 
 #include "config.h"

@@ -1,6 +1,6 @@
 //
 //  log.h
-//  saltunnel2
+//  saltunnel
 //
 
 #ifndef log_h

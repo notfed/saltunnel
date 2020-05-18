@@ -1,6 +1,6 @@
 //
 //  test.h
-//  saltunnel2
+//  saltunnel
 //
 
 #ifndef saltunnel_tests_h

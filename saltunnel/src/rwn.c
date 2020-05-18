@@ -1,6 +1,6 @@
 //
 //  rwn.c
-//  saltunnel2
+//  saltunnel
 //
 
 #include "rwn.h"

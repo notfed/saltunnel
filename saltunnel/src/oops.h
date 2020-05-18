@@ -1,6 +1,6 @@
 //
 //  oops.h
-//  saltunnel2
+//  saltunnel
 //
 
 #ifndef oops_h

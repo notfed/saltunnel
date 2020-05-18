@@ -1,6 +1,6 @@
 //
 //  chaos.h
-//  saltunnel2
+//  saltunnel
 //
 
 #ifndef chaos_h

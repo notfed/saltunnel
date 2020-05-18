@@ -1,6 +1,6 @@
 //
 //  saltunnel_tests.c
-//  saltunnel2
+//  saltunnel
 //
 #define _GNU_SOURCE
 #include "cryptostream_vector.test.h"

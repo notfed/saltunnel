@@ -1,6 +1,6 @@
 //
 //  cryptostream_decrypt_feed.c
-//  saltunnel2
+//  saltunnel
 //
 
 #include "cryptostream.h"

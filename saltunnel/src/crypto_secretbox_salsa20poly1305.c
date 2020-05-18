@@ -1,6 +1,6 @@
 //
 //  crypto_secretbox_salsa20poly1305.c
-//  saltunnel2
+//  saltunnel
 //
 
 #include "sodium/crypto_onetimeauth_poly1305.h"

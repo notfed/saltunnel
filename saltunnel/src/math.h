@@ -1,6 +1,6 @@
 //
 //  math.h
-//  saltunnel2
+//  saltunnel
 //
 
 #ifndef math_h

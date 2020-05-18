@@ -1,6 +1,6 @@
 //
 //  cryptostream_vector.c
-//  saltunnel2
+//  saltunnel
 //
 
 #include "cryptostream.h"

@@ -1,6 +1,6 @@
 //
 //  rwn.h
-//  saltunnel2
+//  saltunnel
 //
 
 #ifndef rwn_h

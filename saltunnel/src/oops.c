@@ -1,6 +1,6 @@
 //
 //  oops.c
-//  saltunnel2
+//  saltunnel
 //
 
 #include "oops.h"

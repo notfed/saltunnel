@@ -1,6 +1,6 @@
 //
 //  saltunnel.c
-//  saltunnel2
+//  saltunnel
 //
 
 #include "saltunnel.h"

@@ -1,6 +1,6 @@
 //
 //  uint16.c
-//  saltunnel2
+//  saltunnel
 //
 
 #include "uint16.h"
