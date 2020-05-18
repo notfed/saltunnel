@@ -53,8 +53,8 @@ int cryptostream_decrypt_feed_read(cryptostream* cs) {
     //    - u8[494] data;
     //    - ... (x128 packets) ...
     int bytesread;
-    if((bytesread = (int)readv(cs->from_fd, buffer_free_start, buffer_free_count))<0)
-    { return oops_warn("error reading from cs->from_fd"); }
+    bytesread = (int)readv(cs->from_fd, buffer_free_start, buffer_free_count);
+    if(bytesread<0) return oops_warn("failed to read from source");
     
     cs->debug_read_total += bytesread;
     
