@@ -20,14 +20,15 @@
 
 typedef struct decrypt_thread_param {
     int buffer_decrypt_count; int buffer_decrypt_start_i; cryptostream *cs; nonce8 nonce;
+    int return_code;
 } decrypt_thread_param;
 
 void decrypt_thread_action(void* params_v) {
     decrypt_thread_param* p = (decrypt_thread_param*)params_v;
-    decrypt_all_serial(p->buffer_decrypt_count, p->buffer_decrypt_start_i, p->cs, p->nonce);
+    p->return_code = decrypt_all_serial(p->buffer_decrypt_count, p->buffer_decrypt_start_i, p->cs, p->nonce);
 }
 
-void decrypt_all_parallel(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream *cs) {
+int decrypt_all_parallel(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream *cs) {
     
     // Allocate a list of "tasks" and their associated params
     threadpool_task tasks[THREADPOOL_THREAD_COUNT] = {0};
@@ -52,4 +53,12 @@ void decrypt_all_parallel(int buffer_decrypt_count, int buffer_decrypt_start, cr
     
     // Run tasks in parallel
     threadpool_for(1, tasks);
+
+    // Assert that all tasks succeeded
+    for(int thread_i = 0; thread_i < THREADPOOL_THREAD_COUNT; thread_i++) {
+        if(params[thread_i].return_code<0)
+            return -1;
+    }
+    log_debug("decrypt_all_parallel: successfully decrypted entire span");
+    return 0;
 }

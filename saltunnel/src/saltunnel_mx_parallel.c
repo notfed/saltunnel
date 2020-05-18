@@ -141,14 +141,14 @@ void* exchange_messages_ingress(void* ctx_void) {
 
         // read from 'from' when: 'from' is ready, and buffers not full
         if ((pfds[0].fd == FD_READY) && cryptostream_decrypt_feed_canread(ingress)) {
-            int r = cryptostream_decrypt_feed_read(ingress);
+            int r = cryptostream_decrypt_feed_read(ingress); // TODO: Handle error
             if(r>0) { pfds[0].fd = ingress->from_fd; }
             if(r==0) { pfds[0].fd = FD_EOF; }
         }
         
         // write to 'to' when: 'to' is ready, and buffers not empty
         if ((pfds[1].fd == FD_READY) && cryptostream_decrypt_feed_canwrite(ingress)) {
-            cryptostream_decrypt_feed_write(ingress);
+            cryptostream_decrypt_feed_write(ingress); // TODO: Handle error
             pfds[1].fd = ingress->to_fd;
         }
         

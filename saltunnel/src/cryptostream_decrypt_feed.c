@@ -27,6 +27,7 @@ int cryptostream_decrypt_feed_canread(cryptostream* cs) {
 // Returns:
 //   >1 => ok
 //    0 => read fd closed
+//   -1 => error
 //
 int cryptostream_decrypt_feed_read(cryptostream* cs) {
 
@@ -52,8 +53,8 @@ int cryptostream_decrypt_feed_read(cryptostream* cs) {
     //    - u8[494] data;
     //    - ... (x128 packets) ...
     int bytesread;
-    try((bytesread =  (int)readv(cs->from_fd, buffer_free_start, buffer_free_count)))
-        || oops_fatal("error reading from cs->from_fd");
+    if((bytesread = (int)readv(cs->from_fd, buffer_free_start, buffer_free_count))<0)
+    { return oops_warn("error reading from cs->from_fd"); }
     
     cs->debug_read_total += bytesread;
     
@@ -85,7 +86,9 @@ int cryptostream_decrypt_feed_read(cryptostream* cs) {
     int buffer_decrypt_count = buffers_filled;
 
     // Iterate the decryptable buffers (if any)
-    decrypt_all(buffer_decrypt_count, buffer_decrypt_start, cs);
+    if(decrypt_all(buffer_decrypt_count, buffer_decrypt_start, cs)<0)
+        return -1;
+
     log_debug("decrypted %d bytes from %d buffers", bytesread, buffer_decrypt_count);
 
     // Rotate buffer offsets

@@ -83,20 +83,20 @@ int cryptostream_encrypt_feed_read(cryptostream* cs);
 int cryptostream_encrypt_feed_canwrite(cryptostream* cs);
 int cryptostream_encrypt_feed_write(cryptostream* cs);
 
-void encrypt_all(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs);
-void encrypt_all_serial(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs, nonce8 nonce);
-void encrypt_all_parallel(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs);
-void encrypt_one(int buffer_i, int buffer_n, int bytesread, cryptostream *cs, nonce8 nonce);
+int encrypt_all(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs);
+int encrypt_all_serial(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs, nonce8 nonce);
+int encrypt_all_parallel(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs);
+int encrypt_one(int buffer_i, int buffer_n, int bytesread, cryptostream *cs, nonce8 nonce);
 
 int cryptostream_decrypt_feed_canread(cryptostream* cs);
 int cryptostream_decrypt_feed_read(cryptostream* cs);
 int cryptostream_decrypt_feed_canwrite(cryptostream* cs);
 int cryptostream_decrypt_feed_write(cryptostream* cs);
 
-void decrypt_all(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream* cs);
-void decrypt_all_serial(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream *cs, nonce8 nonce);
-void decrypt_all_parallel(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream *cs);
-void decrypt_one(int buffer_i, cryptostream *cs, nonce8 nonce);
+int decrypt_all(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream* cs);
+int decrypt_all_serial(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream *cs, nonce8 nonce);
+int decrypt_all_parallel(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream *cs);
+int decrypt_one(int buffer_i, cryptostream *cs, nonce8 nonce);
 
 void vector_init(cryptostream *cs);
 void vector_reset_plaintext(struct iovec* iovec_array, unsigned char* span, int vec_i);

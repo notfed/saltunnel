@@ -21,14 +21,15 @@
 
 typedef struct encrypt_thread_param {
     int buffer_encrypt_count; int buffer_encrypt_start_i; int bytesread; cryptostream* cs; nonce8 nonce;
+    int return_code;
 } encrypt_thread_param;
 
 void encrypt_thread_action(void* params_v) {
     encrypt_thread_param* p = (encrypt_thread_param*)params_v;
-    encrypt_all_serial(p->buffer_encrypt_count, p->buffer_encrypt_start_i, p->bytesread, p->cs, p->nonce);
+    p->return_code = encrypt_all_serial(p->buffer_encrypt_count, p->buffer_encrypt_start_i, p->bytesread, p->cs, p->nonce);
 }
 
-void encrypt_all_parallel(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs) {
+int encrypt_all_parallel(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs) {
 
     // Allocate a list of "tasks" and their associated params
     threadpool_task tasks[THREADPOOL_THREAD_COUNT] = {0};
@@ -54,6 +55,12 @@ void encrypt_all_parallel(int buffer_encrypt_count, int buffer_encrypt_start_i, 
     
     // Run tasks in parallel
     threadpool_for(0, tasks);
-    
+
+    // Assert that all tasks succeeded
+    for(int thread_i = 0; thread_i < THREADPOOL_THREAD_COUNT; thread_i++) {
+        if(params[thread_i].return_code<0)
+            return -1;
+    }
     log_debug("encrypt_all_parallel: successfully encrypted entire span");
+    return 0;
 }
