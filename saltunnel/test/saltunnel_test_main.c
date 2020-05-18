@@ -17,7 +17,7 @@ int main(int argc, const char * argv[]) {
     
     // Seed random bytes
     try(sodium_init())
-    || oops_fatal("sodium init");
+    || oops_fatal("failed to initialize random number generator");
     
     // Initialize thread pool
     threadpool_init_all();
