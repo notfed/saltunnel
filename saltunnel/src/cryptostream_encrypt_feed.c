@@ -27,6 +27,7 @@ int cryptostream_encrypt_feed_canread(cryptostream* cs) {
 // Returns:
 //   >1 => ok
 //    0 => read fd closed
+//   -1 => error
 //
 int cryptostream_encrypt_feed_read(cryptostream* cs) {
     
@@ -51,10 +52,10 @@ int cryptostream_encrypt_feed_read(cryptostream* cs) {
     //    - u8[494] data;
     //    - ... (x128 packets) ...
     int bytesread;
-    try((bytesread =  (int)readv(cs->from_fd,          // fd
-                                buffer_free_start,     // vector
-                                buffer_free_count)))   // count
-    || oops_fatal("error reading from cs->from_fd");
+    bytesread =  (int)readv(cs->from_fd,        // fd
+                            buffer_free_start,  // vector
+                            buffer_free_count); // count
+    if(bytesread<0) return oops_warn("failed to read from source");
     
     cs->debug_read_total += bytesread;
     

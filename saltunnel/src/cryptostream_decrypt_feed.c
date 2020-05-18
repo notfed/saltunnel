@@ -117,10 +117,10 @@ int cryptostream_decrypt_feed_write(cryptostream* cs) {
     
     // Write as much as possible
     int byteswritten;
-    try((byteswritten = (int)writev(cs->to_fd, // fd
-                                 buffer_full_start,  // vector
-                                 buffer_full_count   // vcount
-    ))) || oops_fatal("failed to write");
+    byteswritten = (int)writev(cs->to_fd,          // fd
+                               buffer_full_start,  // vector
+                               buffer_full_count); // vcount
+    if(byteswritten<0) return oops_warn("failed to write to target");
     
     cs->debug_write_total += byteswritten;
     
