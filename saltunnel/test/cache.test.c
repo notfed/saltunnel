@@ -26,8 +26,9 @@ void assert_list_has_n_entries(cache* table, int expected_n) {
     actual_n==expected_n || oops_fatal("cache: wrong number of members in list");
 }
 
-void cache_list_test() {
-    int stress = CACHE_NUM_ENTRIES_MAX+1;
+void cache_test() {
+    int num_entries_to_overflow = 127;
+    int num_entries_to_insert = CACHE_NUM_ENTRIES_MAX + num_entries_to_overflow;
     
     // Arrange
     cache table = {0};
@@ -36,47 +37,47 @@ void cache_list_test() {
     
     // Assert (Pre-Insert)
     assert_list_has_n_entries(&table, 0);
-    for(int i = 1; i <= stress; i++) {
+    for(int i = 1; i <= num_entries_to_insert; i++) {
         gen_testkey(key, i); gen_testvalue(value, i*3);
         unsigned char* pre_insert_value = cache_get(&table, key);
         pre_insert_value==0 || oops_fatal("cache: pre-insert get failed");
     }
     
     // Insert
-    for(int i = 1; i <= stress; i++) {
+    for(int i = 1; i <= num_entries_to_insert; i++) {
         gen_testkey(key, i); gen_testvalue(value,i*3);
         try(cache_insert(&table, key, value)) || oops_fatal("cache: failed to insert");
     }
     
     // Assert (Post-Insert)
     assert_list_has_n_entries(&table, CACHE_NUM_ENTRIES_MAX);
-    for(int i = 1; i <= stress; i++) {
+    for(int i = 1; i <= num_entries_to_insert; i++) {
         gen_testkey(key, i); gen_testvalue(value,i*3);
         unsigned char* post_insert_value = cache_get(&table, key);
-        if(i==1)
+        if(i<=num_entries_to_overflow)
             post_insert_value == 0 || oops_fatal("cache: insert+get failed");
         else
             memcmp(post_insert_value,value,CACHE_VALUE_BYTES)==0 || oops_fatal("cache: insert+get failed");
     }
     
-    // Delete
-    for(int i = 1; i <= stress; i++) {
+    // Delete (should get 0 return value for overflow values)
+    for(int i = 1; i <= num_entries_to_insert; i++) {
         gen_testkey(key, i); gen_testvalue(value,i*3);
-        if(i==1)
+        if(i<=num_entries_to_overflow)
             cache_delete(&table, key)==0 || oops_fatal("cache: failed to delete");
         else
             cache_delete(&table, key)==1 || oops_fatal("cache: failed to delete");
     }
     
-    // Delete again (it should not fail when re-deleting)
-    for(int i = 1; i <= stress; i++) {
+    // Delete again (should get 0 return value each time, now)
+    for(int i = 1; i <= num_entries_to_insert; i++) {
         gen_testkey(key, i); gen_testvalue(value,i*3);
         cache_delete(&table, key)==0 || oops_fatal("cache: failed to delete");
     }
     
     // Assert (Post-Delete)
     assert_list_has_n_entries(&table, 0);
-    for(int i = 1; i <= stress; i++) {
+    for(int i = 1; i <= num_entries_to_insert; i++) {
         unsigned char* post_delete_value = cache_get(&table, key);
         post_delete_value==0 || oops_fatal("cache: post-delete get failed");
     }
@@ -87,51 +88,3 @@ void cache_list_test() {
     }
 }
 
-void cache_delete_test() {
-    int num_entries_to_insert = 262144 + 127;
-    int num_entries_to_delete = 262144;
-    int num_entries_to_retain = 127;
-    
-    // Arrange
-    cache table = {0};
-    unsigned char key[CACHE_KEY_BYTES] = {0};
-    unsigned char value[CACHE_VALUE_BYTES] = {0};
-    
-    // Assert (Count == 0)
-    for(int i = 1; i < num_entries_to_insert; i++) {
-        gen_testkey(key, i); gen_testvalue(value, i*3);
-        unsigned char* pre_insert_value = cache_get(&table, key);
-        pre_insert_value==0 || oops_fatal("cache: pre-insert get failed");
-    }
-    
-    // Insert (Count -> 262144 + 127)
-    for(int i = 1; i < num_entries_to_insert; i++) {
-        gen_testkey(key, i); gen_testvalue(value,i*3);
-        try(cache_insert(&table, key, value)) || oops_fatal("cache: failed to insert");
-    }
-    
-    // Assert (Count == 262144 + 127)
-    for(int i = 1; i < num_entries_to_insert; i++) {
-        gen_testkey(key, i); gen_testvalue(value,i*3);
-        unsigned char* post_insert_value = cache_get(&table, key);
-        memcmp(post_insert_value,value,CACHE_VALUE_BYTES)==0 || oops_fatal("cache: insert+get failed");
-    }
-    
-    // Delete (Count -> 127)
-    for(int i = 1; i < num_entries_to_retain; i++) {
-        gen_testkey(key, i); gen_testvalue(value,i*3);
-        cache_delete(&table, key)==1 || oops_fatal("cache: failed to delete");
-    }
-    
-    // Assert (Count == 127)
-    for(int i = 1; i < num_entries_to_delete; i++) {
-        unsigned char* post_delete_value = cache_get(&table, key);
-        post_delete_value==0 || oops_fatal("cache: post-delete get failed");
-    }
-}
-
-
-void cache_test() {
-    cache_list_test();
-    // cache_delete_test(); // TODO: Fix this
-}
