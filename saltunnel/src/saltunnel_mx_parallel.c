@@ -21,7 +21,7 @@
 static void fd_nonblock(int fd) {
     int flags;
     try((flags=fcntl(fd, F_GETFL, 0))) || oops_fatal("failed to get file flags");
-    try(fcntl(fd, F_SETFL, flags|O_NONBLOCK)) || oops_fatal("failed to set file as non-blocking");
+    try(fcntl(fd, F_SETFL, flags|O_NONBLOCK)) || oops_fatal("failed to set file descriptor as non-blocking");
 }
 
 static int fd_issocket(int fd) {
