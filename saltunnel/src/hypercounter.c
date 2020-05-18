@@ -189,7 +189,7 @@ static int get_machine_id(unsigned char machine_id_out[16])
     if(get_machine_id_from_file(machine_id_out, "/etc/machine-id")<0)
       if(get_machine_id_from_file(machine_id_out, "~/.saltunnel/machine-id")<0)
         if(get_machine_id_from_mac_address(machine_id_out)<0)
-            oops_fatal("failed to read machine-id (tried '/etc/machine-id', '~/.saltunnel/machine-id', and eth0 MAC address)");
+            oops_fatal("failed to find a unique machine-id (tried '/etc/machine-id', '~/.saltunnel/machine-id', and MAC address)");
     return 0;
 }
 
@@ -209,7 +209,8 @@ int hypercounter(unsigned char machine_boot_id_out[16], unsigned char monotonic_
     // Hash(machine_id, boot_time) to get machine_boot_id
     if(crypto_generichash(machine_boot_id_out, 16,
                    machine_id_and_boot_time, 32,
-                   NULL, 0)<0) oops_fatal("failed to hash machine-id");
+                   NULL, 0)<0) 
+    { oops_fatal("failed to hash machine-id"); }
 
     // Get monotonic time since last boot
     uint64_t monotonic_time_since_boot;
