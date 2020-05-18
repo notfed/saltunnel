@@ -2,6 +2,17 @@
 //  cryptostream_vector.c
 //  saltunnel
 //
+//  The primary function here is vector_skip.
+//
+//  vector_skip(struct iovec *v, int start_i, size_t count_i, unsigned int n)
+//
+//      This is used to 'skip' some specified number of bytes from within an array of 
+//      iovec vectors (i.e., used with readv and writev).  In particular, it will jump 
+//      to the vector with index 'start_i', and feed the vector 'n' bytes, and will 
+//      only keep feeding until 'count_i' vectors have been filled.  
+//      Returns how many iovecs have been completely filled.
+//  
+//
 
 #include "cryptostream.h"
 #include "oops.h"
@@ -17,8 +28,9 @@ static int second(int buffer_i) {
 }
 
 static void vector_reset_plaintext_one(struct iovec* iovec_array, unsigned char* span, int buffer_i) {
-    iovec_array[buffer_i].iov_base = span + CRYPTOSTREAM_BUFFER_MAXBYTES*first(buffer_i) + 32+2; // DOH! This might be > 128*528?
+    iovec_array[buffer_i].iov_base = span + CRYPTOSTREAM_BUFFER_MAXBYTES*first(buffer_i) + 32+2;
     iovec_array[buffer_i].iov_len  = CRYPTOSTREAM_BUFFER_MAXBYTES_DATA;
+
 }
 
 void vector_reset_plaintext(struct iovec* iovec_array, unsigned char* span, int buffer_i) {
@@ -27,7 +39,7 @@ void vector_reset_plaintext(struct iovec* iovec_array, unsigned char* span, int 
 }
 
 static void vector_reset_ciphertext_one(struct iovec* iovec_array, unsigned char* span, int buffer_i) {
-    iovec_array[buffer_i].iov_base = span + CRYPTOSTREAM_BUFFER_MAXBYTES*first(buffer_i) + 16; // DOH! This might be > 128*528?
+    iovec_array[buffer_i].iov_base = span + CRYPTOSTREAM_BUFFER_MAXBYTES*first(buffer_i) + 16;
     iovec_array[buffer_i].iov_len  = CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT;
 }
 
@@ -56,7 +68,6 @@ void vector_init(cryptostream *cs) {
     }
 }
 
-// Skip n bytes, and return how many iovecs have been filled
 ssize_t vector_skip(struct iovec *v, int start_i, size_t count_i, unsigned int n)
 {
     int filled=0;
