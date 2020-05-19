@@ -66,7 +66,7 @@ int cryptostream_encrypt_feed_read(cryptostream* cs) {
         return 0;
     }
     
-    log_debug("cryptostream_encrypt_feed_read: got %d bytes from egress local (total %d)",(int)bytesread,cs->debug_read_total);
+    log_debug("cryptostream_encrypt_feed_read: got %d bytes from egress local (total %l)",(int)bytesread,cs->debug_read_total);
 
     //
     // Encrypt
