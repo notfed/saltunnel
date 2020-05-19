@@ -27,6 +27,7 @@ int decrypt_all(int buffer_decrypt_count, int buffer_decrypt_start_i, cryptostre
         if(decrypt_all_serial(buffer_decrypt_count, buffer_decrypt_start_i, cs, cs->nonce)<0)
             return -1;
     }
+    return 0;
 }
 
 int decrypt_all_serial(int buffer_decrypt_count, int buffer_decrypt_start, cryptostream *cs, nonce8 nonce) {

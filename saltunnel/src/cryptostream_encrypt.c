@@ -28,6 +28,7 @@ int encrypt_all(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesr
         if(encrypt_all_serial(buffer_encrypt_count, buffer_encrypt_start_i, bytesread, cs, cs->nonce)<0)
             return -1;
     }
+    return 0;
 }
 
 int encrypt_all_serial(int buffer_encrypt_count, int buffer_encrypt_start_i, int bytesread, cryptostream *cs, nonce8 nonce) {
