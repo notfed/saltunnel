@@ -79,7 +79,7 @@ int main(int argc, char * argv[])
     || oops_fatal("failed to initialize random number generator");
     
     // Run the client forwarder
-    if(saltunnel_tcp_client_forwarder(key, from_host, from_port, to_host, to_port))
+    if(saltunnel_tcp_client_forwarder(key, from_host, from_port, to_host, to_port)<0)
         return 1;
 
     // Exit successfully
