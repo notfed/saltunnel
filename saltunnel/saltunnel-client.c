@@ -1,6 +1,7 @@
 #include "src/oops.h"
 #include "src/saltunnel_tcp_client_forwarder.h"
 #include "src/rwn.h"
+#include "src/math.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,6 +43,9 @@ int main(int argc, char * argv[])
     int pos_arg_c = argc - optind;
     if(pos_arg_c != 2 || !keyfile)
         oops_usage();
+
+    // Set verbosity level
+    log_level = 2 - MAX(0,MIN(2,verbosity));
 
     // Parse [fromip]:[fromport]
     const char * first_arg_ptr = argv[pos_arg_i+0];
