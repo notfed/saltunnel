@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <string.h>
 
+int log_level = 2;
+
 static void strncpy_boring(char *output, char* src, int maxlen) {
     for(int i = 0; i < maxlen; i++) {
         output[i] = src[i];
