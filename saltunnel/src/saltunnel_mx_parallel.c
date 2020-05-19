@@ -109,7 +109,7 @@ void* exchange_messages_egress(void* ctx_void) {
         close(ctx->egress->from_fd);
     }
 
-    log_debug("all fds are closed [%d,%d,%d,%d]; done polling", ingress->from_fd, ingress->to_fd, egress->from_fd, egress->to_fd);
+    log_debug("all fds are closed [%d,%d,%d,%d]; done polling", ctx->ingress->from_fd, ctx->ingress->to_fd, ctx->egress->from_fd, ctx->egress->to_fd);
     return 0;
 }
 void* exchange_messages_ingress(void* ctx_void) {
@@ -186,7 +186,7 @@ void* exchange_messages_ingress(void* ctx_void) {
     }
 
     log_debug("all fds are closed [%d,%d,%d,%d]; done polling", 
-              ingress->from_fd, ingress->to_fd, egress->from_fd, egress->to_fd);
+              ctx->ingress->from_fd, ctx->ingress->to_fd, ctx->egress->from_fd, ctx->egress->to_fd);
     return 0;
 }
 

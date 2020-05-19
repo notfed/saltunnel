@@ -4,8 +4,8 @@
 //
 // 
 //     0    log_debug	    Verbose logging.             Requires -vv flag.	  Writes to stderr.
-//     1    log_info	        Standard logging.            Requires -v flag. 	  Writes to stderr.
-//     2    log_warn	        Non-fatal errors.            Always writes.       Writes to stderr.
+//     1    log_info	    Standard logging.            Requires -v flag. 	  Writes to stderr.
+//     2    log_warn	    Non-fatal errors.            Always writes.       Writes to stderr.
 //
 
 #ifndef log_h
@@ -26,6 +26,7 @@ const char* log_get_thread_name_formatted(void);
 
 #define LOG_NAME(log_filename) (log_filename_filled ? log_filename : log_filename_idempotent_fill(log_filename, __FILE__, sizeof(__FILE__), &log_filename_filled))
 
+#define IFV(vvyes,vvno)  (log_level<=1?(vvyes):(vvno))
 #define IFVV(vvyes,vvno) (log_level==0?(vvyes):(vvno))
  
 #define LOG_0(level)                 !error
@@ -62,8 +63,8 @@ const char* log_get_thread_name_formatted(void);
 #define MACRO_CHOOSER(...) CHOOSE_FROM_ARG_COUNT(NO_ARG_EXPANDER __VA_ARGS__ ())
 
 //#define log_debug(...) MACRO_CHOOSER(__VA_ARGS__)("debug",__VA_ARGS__)
-#define log_debug(...)
-#define log_info(...)  MACRO_CHOOSER(__VA_ARGS__)("info", __VA_ARGS__)
+#define log_debug(...) (log_level==0 ? MACRO_CHOOSER(__VA_ARGS__)("debug", __VA_ARGS__) :0)
+#define log_info(...)  (log_level<=1 ? MACRO_CHOOSER(__VA_ARGS__)("info", __VA_ARGS__) :0)
 #define log_warn(...)  MACRO_CHOOSER(__VA_ARGS__)("warn", __VA_ARGS__)
 #define log_fatal(...) MACRO_CHOOSER(__VA_ARGS__)("fatal",__VA_ARGS__)
 
