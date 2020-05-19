@@ -45,6 +45,7 @@ char* log_filename_idempotent_fill(char* log_name, char* log_filename_from_macro
         
         // Copy the final result to log_name
         strncpy_boring(log_name, result, 255);
+        log_name[255] = 0;
         
         *log_name_filled = 1;
     }
