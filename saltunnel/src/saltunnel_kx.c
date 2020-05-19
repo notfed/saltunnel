@@ -193,11 +193,11 @@ int saltunnel_kx_packet1_exchange(unsigned char session_shared_keys[64],
     { return oops_warn("encryption failed for packet1"); }
 
     // Send my packet1
-    if(writen(remote_fd, my_packet1_ciphertext.auth, 512)<0)
+    if(writen(remote_fd, (const char*)my_packet1_ciphertext.auth, 512)<0)
         return oops_warn("failed to send packet1");
 
     // Read their packet1
-    if(readn(remote_fd, their_packet1_ciphertext.auth, 512)<0)
+    if(readn(remote_fd, (char*)their_packet1_ciphertext.auth, 512)<0)
         return oops_warn("failed to send packet1");
 
     // Decrypt my packet1
