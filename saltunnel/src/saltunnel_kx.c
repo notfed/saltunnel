@@ -185,11 +185,11 @@ int saltunnel_kx_packet1_exchange(unsigned char session_shared_keys[64],
     unsigned char* their_key = &session_shared_keys[32*!client_or_server];
 
     // Encrypt my packet1
-    if(crypto_secretbox_xsalsa20poly1305((char*)&my_packet1_ciphertext,
-                                          (char*)&my_packet1_plaintext,
-                                          sizeof(packet1), 
-                                          packet1_nonce, 
-                                          my_key)<0)
+    if(crypto_secretbox_xsalsa20poly1305(my_packet1_ciphertext.prezeros,
+                                         my_packet1_plaintext.prezeros,
+                                         sizeof(packet1), 
+                                         packet1_nonce, 
+                                         my_key)<0)
     { return oops_warn("encryption failed for packet1"); }
 
     // Send my packet1
@@ -201,11 +201,11 @@ int saltunnel_kx_packet1_exchange(unsigned char session_shared_keys[64],
         return oops_warn("failed to send packet1");
 
     // Decrypt my packet1
-    if(crypto_secretbox_xsalsa20poly1305_open((char*)&their_packet1_plaintext,
-                                          (char*)&their_packet1_ciphertext,
-                                          sizeof(packet1), 
-                                          packet1_nonce, 
-                                          their_key)<0)
+    if(crypto_secretbox_xsalsa20poly1305_open(their_packet1_plaintext.prezeros,
+                                              their_packet1_ciphertext.prezeros,
+                                              sizeof(packet1), 
+                                              packet1_nonce, 
+                                              their_key)<0)
     { return oops_warn("decryption failed for packet1"); }
 
     log_info("successfully exchanged packet1");
