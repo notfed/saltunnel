@@ -89,7 +89,6 @@ int get_mac_address(unsigned char mac_addr[6]) {
     // Loop through each network interface
     if (getifaddrs(&iflist) == 0) {
         for (struct ifaddrs* cur = iflist; cur; cur = cur->ifa_next) {
-            printf("? %s\n", cur->ifa_name);
 
             // Filter for ipv4 devices
             if (cur->ifa_addr && cur->ifa_addr->sa_family == AF_LINK) {
@@ -101,7 +100,6 @@ int get_mac_address(unsigned char mac_addr[6]) {
 
                     // Filter for non-zero MAC addresses
                     if(memcmp(mac_addr_zero, mac_addr_tmp, 6)!=0) {
-                        printf("! %s\n", cur->ifa_name);
                         memcpy(mac_addr, mac_addr_tmp, 6);
                         found = 1;
                         break;
