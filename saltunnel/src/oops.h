@@ -2,6 +2,11 @@
 //  oops.h
 //  saltunnel
 //
+//     oops_warn	    Non-fatal error, return -1.  Always writes.       Writes to stderr.
+//     oops_warn_sys	oops_warn with errno.        Always writes.       Writes to stderr.
+//     oops_fatal	    Fatal errors (no errno).     Always writes.       Writes to stderr.
+//     oops_fatal_sys	oops_fatal with errno.       Always writes.       Writes to stderr.
+//     ^ TODO ^
 
 #ifndef oops_h
 #define oops_h

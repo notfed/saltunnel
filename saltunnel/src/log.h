@@ -2,6 +2,11 @@
 //  log.h
 //  saltunnel
 //
+// 
+//     log_debug	    Verbose logging.             Requires -vv flag.	  Writes to stderr.
+//     log_info	        Standard logging.            Requires -v flag. 	  Writes to stderr.
+//     log_warn	        Non-fatal errors.            Always writes.       Writes to stderr.
+//     ^ TODO ^
 
 #ifndef log_h
 #define log_h
