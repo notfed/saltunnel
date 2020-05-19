@@ -1,6 +1,10 @@
 # C
 
 *.o
+*.swp
+saltunnel-test
+saltunnel-client
+saltunnel-server
 
 # http://www.gnu.org/software/automake
 
