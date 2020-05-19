@@ -55,9 +55,9 @@ int main(int argc, char * argv[])
     close(key_fd);
     
     // Run the client forwarder
-    if(saltunnel_tcp_client_forwarder(key, from_host, from_port, to_host, to_port)<0)
-        oops_fatal("fatal error");
-    
+    if(saltunnel_tcp_client_forwarder(key, from_host, from_port, to_host, to_port))
+        return 1;
+
     // Exit successfully
     return 0;
 }

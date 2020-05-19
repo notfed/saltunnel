@@ -60,7 +60,6 @@ int main(int argc, char * argv[])
     // Run the client forwarder
     saltunnel_tcp_server_forwarder(&table, key, from_host, from_port, to_host, to_port);
     
-    // The server forwarder should never return
-    oops_fatal("assertion failed");
+    // The server forwarder only returns in case of unrecoverable error
     return 1;
 }

@@ -108,9 +108,9 @@ static void* connection_thread(void* v)
     
     // Memory-lock the plaintext buffers
     if(mlock(ingress.plaintext, sizeof(ingress.plaintext))<0)
-       oops_warn("failed to mlock");
+       oops_warn("failed to mlock client data");
     if(mlock(egress.plaintext, sizeof(egress.plaintext))<0)
-       oops_warn("failed to mlock");
+       oops_warn("failed to mlock client data");
     
     // Run saltunnel
     log_info("client forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
@@ -122,9 +122,9 @@ static void* connection_thread(void* v)
     
     // Un-memory-lock the plaintext buffers
     if(munlock(ingress.plaintext, sizeof(ingress.plaintext))<0)
-        oops_warn("failed to munlock");
+        oops_warn("failed to munlock client data");
     if(munlock(egress.plaintext, sizeof(egress.plaintext))<0)
-        oops_warn("failed to munlock");
+        oops_warn("failed to munlock client data");
     
     // Clean up
     return connection_thread_cleanup(ctx, remote_fd);
@@ -178,7 +178,7 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
         // Handle the connection
         connection_thread_context* ctx = calloc(1,sizeof(connection_thread_context));
         if(mlock(ctx, sizeof(connection_thread_context))<0)
-           oops_warn("failed to mlock");
+           oops_warn("failed to mlock client thread context");
         ctx->local_fd = local_fd;
         ctx->remote_ip = to_ip;
         ctx->remote_port = to_port;
@@ -186,7 +186,7 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
         
         if(handle_connection(ctx)<0) {
             if(munlock(ctx, sizeof(connection_thread_context))<0)
-               oops_warn("failed to munlock");
+               oops_warn("failed to munlock client thread context");
             free(ctx);
             try(close(local_fd)) || log_warn("failed to close file descriptor");
             log_warn("encountered error with TCP connection");
