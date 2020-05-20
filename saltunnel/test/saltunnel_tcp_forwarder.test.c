@@ -226,6 +226,7 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
         try(close(tcpclient)) || oops_error("failed to close socket");
         break;
     }
+
     log_debug("TCP stub client: connection succeeded");
     
     // Assert that what we read is valid
@@ -233,6 +234,8 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
         log_debug("TCP stub client: successfully read correct message");
     else
         oops_error("TCP stub client: readmsg differed from expected");
+
+    usleep(1000); // TODO: Wait synchronously for TCP threads to finish
 }
 
 // TCP Server test
@@ -256,7 +259,7 @@ void saltunnel_tcp_forwarder_tests() {
                                  "this string from TCP client stub to server stub",
                                  "this string from TCP server stub to client stub.");
     
-    // Clean up
+    // Kill the ever-running forwarder threads
     pthread_kill(thread1, 0);
     pthread_kill(thread2, 0);
     pthread_kill(thread3, 0);
