@@ -3,6 +3,7 @@
 #include "src/oops.h"
 #include "src/rwn.h"
 #include "src/math.h"
+#include "src/threadpool.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -79,11 +80,14 @@ int main(int argc, char * argv[])
     // Seed random bytes
     try(sodium_init())
     || oops_error("failed to initialize libsodium");
+
+    // Initialize thread pool
+    threadpool_init_all();
     
     // Run the client forwarder
     if(saltunnel_tcp_client_forwarder(key, from_host, from_port, to_host, to_port)<0)
         return 1;
-
+    
     // Exit successfully
     return 0;
 }
