@@ -11,7 +11,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-int oops_mode = 0;
+int oops_mode = 1;
 
 void oops_should_warn() {
     oops_mode = 0;
