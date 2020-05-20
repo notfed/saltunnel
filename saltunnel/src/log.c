@@ -38,7 +38,7 @@ char* log_filename_idempotent_fill(char* log_name, char* log_filename_from_macro
         strncpy(result,last_slash,255);
         
         // After that, point to the first period
-        char* first_dot = memchr(result, '.', 255);
+        char* first_dot = memchr(result, '.', 255); // TODO: Last period!
         
         // If there was a period, null it out
         if(first_dot!=0) {
