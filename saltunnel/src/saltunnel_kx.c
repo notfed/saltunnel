@@ -156,7 +156,7 @@ int saltunnel_kx_calculate_shared_key(unsigned char keys_out[64],
 {
     unsigned char s[32];
     if (crypto_scalarmult_curve25519(s, sk, pk) != 0) {
-        return -1;
+        return oops("failed to derive shared key");
     }
     
     static const unsigned char zero[16] = { 0 };
