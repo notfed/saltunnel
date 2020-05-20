@@ -268,7 +268,7 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     close(peer2_pipe_local_output[0]); close(peer2_pipe_local_output[1]);
     close(peer2_pipe_to_peer1[0]);     close(peer2_pipe_to_peer1[1]);
 
-    log_info("...passed",from_peer1_local_str_len,from_peer2_local_str_len);
+    log_info("...passed");
 }
 
 //--------------------------------------------------------

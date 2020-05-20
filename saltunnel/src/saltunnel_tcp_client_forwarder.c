@@ -98,7 +98,7 @@ static void* connection_thread(void* v)
         log_debug("failed to exchange packet1 with server");
         return connection_thread_cleanup(ctx, remote_fd, 1);
     }
-    log_debug("successfully exchanged packet1 with server", remote_fd);
+    log_debug("successfully exchanged packet1 with server");
     
     log_debug("running saltunnel");
     
