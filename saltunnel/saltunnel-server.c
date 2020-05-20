@@ -87,6 +87,6 @@ int main(int argc, char * argv[])
     // Run the server forwarder
     saltunnel_tcp_server_forwarder(&table, key, from_host, from_port, to_host, to_port);
 
-    // The server forwarder only returns in case of unrecoverable error
+    // The forwarder should never exit except in case of error
     return 1;
 }

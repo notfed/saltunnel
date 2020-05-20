@@ -85,10 +85,9 @@ int main(int argc, char * argv[])
     threadpool_init_all();
     
     // Run the client forwarder
-    if(saltunnel_tcp_client_forwarder(key, from_host, from_port, to_host, to_port)<0)
-        return 1;
+    saltunnel_tcp_client_forwarder(key, from_host, from_port, to_host, to_port);
     
-    // Exit successfully
-    return 0;
+    // The forwarder should never exit except in case of error
+    return 1;
 }
 

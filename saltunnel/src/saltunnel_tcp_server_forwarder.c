@@ -179,7 +179,7 @@ int saltunnel_tcp_server_forwarder(cache* table,
         }
         log_info("received connection request on %s:%s (fd %d)", from_ip, from_port, remote_fd);
 
-        // Handle the connection
+        // Handle the connection (but validate before spawning thread)
         connection_thread_context* ctx = calloc(1,sizeof(connection_thread_context));
         if(mlock(ctx, sizeof(connection_thread_context))<0)
             oops_warn_sys("failed to mlock server thread context");

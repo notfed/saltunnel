@@ -167,7 +167,7 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
     log_debug("created socket %d\n", s);
     
     for(;;) {
-        log_info("(CLIENT FORWARDER) WAITING FOR ACCEPT ON %s:%s", from_ip, from_port);
+        log_info("waiting for connections (on %s:%s)", from_ip, from_port);
         
         // Accept a new connection (or wait for one to arrive)
         int local_fd = tcpserver_accept(s);
@@ -176,7 +176,7 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
             continue;
         }
         
-        log_info("(CLIENT FORWARDER) ACCEPTED ON %s:%s", from_ip, from_port);
+        log_info("accepted TCP connection (fd %d) ", local_fd);
         
         // Handle the connection
         connection_thread_context* ctx = calloc(1,sizeof(connection_thread_context));
@@ -191,12 +191,11 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
             if(munlock(ctx, sizeof(connection_thread_context))<0)
                oops_warn_sys("failed to munlock client thread context");
             free(ctx);
-            close(local_fd);
+            try(close(local_fd)) || log_warn("failed to close connection");
             log_warn("encountered error with TCP connection");
         }
     }
     
     // The above loop should never exit
-    oops_error("saltunnel exited unexpectedly");
-    return 0;
+    return -1;
 }
