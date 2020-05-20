@@ -121,7 +121,7 @@ static void* tcpstub_server_write_inner(void* v)
     log_trace("TCP stub server: writing %d bytes.",wlen);
     int wrc = (int)writen(fd_conn, writemsg, wlen);
     if(wrc<0) oops_error("failed to read");
-    if(wrc != wlen) { log_trace("partial write (%d/%d)", wrc, wlen); oops_error("..."); }
+    if(wrc != wlen) { log_error("partial write (%d/%d)", wrc, wlen); exit(1); }
     log_trace("TCP stub server: wrote %d bytes to connection", wlen);
     
     // ---- Read a message ----
@@ -130,7 +130,7 @@ static void* tcpstub_server_write_inner(void* v)
     log_trace("TCP stub server: reading %d bytes.",rlen);
     int rrc = (int)readn(fd_conn, actual_readmsg, rlen);
     if(rrc<0) oops_error("failed to read");
-    if(rrc != rlen) { log_trace("partial read (%d/%d)", rrc, rlen); oops_error("..."); } // TODO: Allow oops to take varargs
+    if(rrc != rlen) { log_error("partial read (%d/%d)", rrc, rlen); exit(1);} // TODO: Allow oops to take varargs
     log_trace("TCP stub server: read %d bytes from connection", rrc);
     
     // ---- Signal EOF ----
@@ -203,7 +203,7 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
         log_trace("TCP stub client: reading %d bytes.",rlen);
         int rrc = (int)readn(tcpclient, actual_readmsg, rlen);
         if(rrc<0) oops_error("failed to read");
-        if(rrc != rlen) { log_trace("TCP stub client: partial read (%d/%d)", rrc, rlen); oops_error("..."); }
+        if(rrc != rlen) { log_error("TCP stub client: partial read (%d/%d)", rrc, rlen); exit(1); }
         log_trace("TCP stub client: read %d bytes from connection", rrc);
         
         // ---- Write a message ----
@@ -211,7 +211,7 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
         log_trace("TCP stub client: writing %d bytes.",wlen);
         int wrc = (int)writen(tcpclient, writemsg, wlen);
         if(wrc<0) oops_error("failed to read");
-        if(wrc != wlen) { log_trace("partial write (%d/%d)", wrc, wlen); oops_error("..."); }
+        if(wrc != wlen) { log_error("partial write (%d/%d)", wrc, wlen); exit(1); }
         log_trace("TCP stub client: wrote %d bytes to connection", wlen);
         
         // ---- Signal EOF ----
