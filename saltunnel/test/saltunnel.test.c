@@ -122,8 +122,8 @@ static void* write_thread_inner(void* v)
     write_thread_context* c = (write_thread_context*)v;
     log_set_thread_name(c->thread_name);
     int w = (int)writen(c->fd, c->buf, c->len);
-    if(w != c->len) oops_error("write");
-    try(close(c->fd)) || oops_error("close");
+    if(w != c->len) oops_error_sys("write");
+    close(c->fd);
     log_debug("write_thread wrote %d bytes to fd %d (and closed it)",(int)w,c->fd);
     free(v);
     return 0;

@@ -83,7 +83,7 @@ int saltunnel_kx_packet0_tryread(cache* table,
                                  int from_fd,
                                  unsigned char their_pk_out[32]) {
     errno = EBADMSG;
-    log_info("kx on fd %d", from_fd);
+    log_debug("starting key exchange (with fd %d)", from_fd);
     
     packet0 their_buffer_ciphertext = {0};
     memset(their_packet0_plaintext_pinned, 0, sizeof(packet0));
@@ -207,8 +207,6 @@ int saltunnel_kx_packet1_exchange(unsigned char session_shared_keys[64],
                                               packet1_nonce, 
                                               their_key)<0)
     { return oops("decryption failed for packet1"); }
-
-    log_info("successfully exchanged packet1");
 
     return 0;
 }

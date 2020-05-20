@@ -114,24 +114,24 @@ static void* tcpstub_server_write_inner(void* v)
     int fd_conn = tcpserver_accept(tcpserver);
     if(fd_conn<0)
         oops_error("failed to establish TCP connection");
-    log_info("TCP stub server: accepted on %s:%s", ip, port);
+    log_debug("TCP stub server: accepted on %s:%s", ip, port);
     
     // ---- Write a message ----
     int wlen = (int)strlen(writemsg);
-    log_info("TCP stub server: writing %d bytes.",wlen);
+    log_debug("TCP stub server: writing %d bytes.",wlen);
     int wrc = (int)writen(fd_conn, writemsg, wlen);
     if(wrc<0) oops_error("failed to read");
-    if(wrc != wlen) { log_info("partial write (%d/%d)", wrc, wlen); oops_error("..."); }
-    log_info("TCP stub server: wrote %d bytes to connection", wlen);
+    if(wrc != wlen) { log_debug("partial write (%d/%d)", wrc, wlen); oops_error("..."); }
+    log_debug("TCP stub server: wrote %d bytes to connection", wlen);
     
     // ---- Read a message ----
     char actual_readmsg[512] = {0};
     int rlen = (int)strlen(readmsg);
-    log_info("TCP stub server: reading %d bytes.",rlen);
+    log_debug("TCP stub server: reading %d bytes.",rlen);
     int rrc = (int)readn(fd_conn, actual_readmsg, rlen);
     if(rrc<0) oops_error("failed to read");
-    if(rrc != rlen) { log_info("partial read (%d/%d)", rrc, rlen); oops_error("..."); }
-    log_info("TCP stub server: read %d bytes from connection", rrc);
+    if(rrc != rlen) { log_debug("partial read (%d/%d)", rrc, rlen); oops_error("..."); }
+    log_debug("TCP stub server: read %d bytes from connection", rrc);
     
     // ---- Signal EOF ----
     if(shutdown(fd_conn, SHUT_WR)<0)
@@ -147,7 +147,7 @@ static void* tcpstub_server_write_inner(void* v)
     
     // Assert that what we read is valid
     if(strcmp(actual_readmsg,readmsg)==0)
-        log_info("TCP stub server: successfully read correct message");
+        log_debug("TCP stub server: successfully read correct message");
     else
         oops_error("TCP stub server: readmsg differed from expected");
     
@@ -188,7 +188,7 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
         
         // If connection was refused, try to connect again
         if(tcpclient<0 && errno == ECONNREFUSED) {
-            log_info("TCP stub client: connection refused (to %s:%s), trying again...", ip, port);
+            log_debug("TCP stub client: connection refused (to %s:%s), trying again...", ip, port);
             usleep(50000); errno = 0;
             continue;
         }
@@ -196,23 +196,23 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
         if(tcpclient<0)
             oops_error("failed to establish TCP connection");
         
-        log_info("TCP stub client: connection succeeded (to %s:%s).", ip, port);
+        log_debug("TCP stub client: connection succeeded (to %s:%s).", ip, port);
         
         // ---- Read a message ----
         int rlen = (int)strlen(readmsg);
-        log_info("TCP stub client: reading %d bytes.",rlen);
+        log_debug("TCP stub client: reading %d bytes.",rlen);
         int rrc = (int)readn(tcpclient, actual_readmsg, rlen);
         if(rrc<0) oops_error("failed to read");
-        if(rrc != rlen) { log_info("TCP stub client: partial read (%d/%d)", rrc, rlen); oops_error("..."); }
-        log_info("TCP stub client: read %d bytes from connection", rrc);
+        if(rrc != rlen) { log_debug("TCP stub client: partial read (%d/%d)", rrc, rlen); oops_error("..."); }
+        log_debug("TCP stub client: read %d bytes from connection", rrc);
         
         // ---- Write a message ----
         int wlen = (int)strlen(writemsg);
-        log_info("TCP stub client: writing %d bytes.",wlen);
+        log_debug("TCP stub client: writing %d bytes.",wlen);
         int wrc = (int)writen(tcpclient, writemsg, wlen);
         if(wrc<0) oops_error("failed to read");
-        if(wrc != wlen) { log_info("partial write (%d/%d)", wrc, wlen); oops_error("..."); }
-        log_info("TCP stub client: wrote %d bytes to connection", wlen);
+        if(wrc != wlen) { log_debug("partial write (%d/%d)", wrc, wlen); oops_error("..."); }
+        log_debug("TCP stub client: wrote %d bytes to connection", wlen);
         
         // ---- Signal EOF ----
         if(shutdown(tcpclient, SHUT_WR)<0)
@@ -226,11 +226,11 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
         try(close(tcpclient)) || oops_error("failed to close socket");
         break;
     }
-    log_info("TCP stub client: connection succeeded");
+    log_debug("TCP stub client: connection succeeded");
     
     // Assert that what we read is valid
     if(strcmp(actual_readmsg,readmsg)==0)
-        log_info("TCP stub client: successfully read correct message");
+        log_debug("TCP stub client: successfully read correct message");
     else
         oops_error("TCP stub client: readmsg differed from expected");
 }
@@ -255,7 +255,6 @@ void saltunnel_tcp_forwarder_tests() {
     tcpstub_client_writer_reader("127.0.0.1", "3250",
                                  "this string from TCP client stub to server stub",
                                  "this string from TCP server stub to client stub.");
-    log_info("test11 assertion successfully completed");
     
     // Clean up
     pthread_kill(thread1, 0);

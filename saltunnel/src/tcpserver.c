@@ -102,8 +102,6 @@ int tcpserver_new(const char* ip, const char* port, tcpserver_options options)
         if(setsockopt(s, IPPROTO_TCP, TCP_FASTOPEN, &enable_tcp_fastopen, sizeof(int))<0)
             return cleanup_then_oops(s, "failed to enable TCP_FASTOPEN on TCP server socket");
     }
-
-    log_info("TCP client socket created (fd %d)", s);
     
     return s;
 }
@@ -115,7 +113,6 @@ int tcpserver_accept(int s) {
     int fd_conn = accept(s, (struct sockaddr *) &client_address, &client_address_len);
     if(fd_conn<0)
         return oops_sys("TCP server failed to accept new connection");
-    log_info("TCP server accepted new connection (fd %d)", fd_conn);
     return fd_conn;
 }
 

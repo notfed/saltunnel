@@ -48,7 +48,7 @@ int tcpclient_new(const char* ip, const char* port, tcpclient_options options)
     if(options.OPT_SO_SNDLOWAT>0) {
         const int low_water_mark_bytes = options.OPT_SO_SNDLOWAT;
         if(setsockopt(s, SOL_SOCKET, SO_SNDLOWAT, &low_water_mark_bytes, sizeof(int))<0)
-            log_info("could not set SO_SNDLOWAT on TCP client socket"); // "Not changeable on Linux"
+            log_debug("could not set SO_SNDLOWAT on TCP client socket"); // "Not changeable on Linux"
     }
     
     
@@ -62,7 +62,5 @@ int tcpclient_new(const char* ip, const char* port, tcpclient_options options)
             return cleanup_then_oops(s, "failed to set set O_NONBLOCK on TCP client connection");
     }
 
-    log_info("TCP client socket created (fd %d)", s);
-        
     return s;
 }

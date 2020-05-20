@@ -61,11 +61,11 @@ static void* connection_thread(void* v)
     
     int local_fd = tcpclient_new(ctx->to_ip, ctx->to_port, options);
     if(local_fd<0) {
-        log_debug("failed to connect to destination port");
+        log_debug("failed to connect to 'to' endpoint");
         return connection_thread_cleanup(v,local_fd,1);
     }
 
-    log_info("TCP connection established with 'to' endpoint (fd %d)", local_fd);
+    log_info("established TCP connection (with 'to' endpoint; fd %d)", local_fd);
     
     // Write packet0 to client
     if(saltunnel_kx_packet0_trywrite(&ctx->tmp_pinned, ctx->long_term_shared_key, ctx->remote_fd, ctx->my_sk)<0) {
@@ -182,13 +182,14 @@ int saltunnel_tcp_server_forwarder(cache* table,
     
     oops_should_warn();
     for(;;) {
+        log_info("waiting for TCP connections (on 'from' endpoint; socket fd %d)", s);
+
         // Accept a new connection (or wait for one to arrive)
-        log_debug("waiting for connections on %s:%s (fd %d)...", from_ip, from_port, s);
         int remote_fd = tcpserver_accept(s);
         if(remote_fd<0) {
             continue;
         }
-        log_info("TCP connection with source server established (fd %d)", remote_fd);
+        log_info("established TCP connection (with 'from' endpoint; fd %d)", remote_fd);
 
         // Handle the connection (but do some DoS prevention checks first)
         connection_thread_context* ctx = calloc(1,sizeof(connection_thread_context));
