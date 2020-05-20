@@ -116,9 +116,9 @@ static void* connection_thread(void* v)
     
     // Un-memory-lock the plaintext buffers
     if(munlock(ingress.plaintext, sizeof(ingress.plaintext))<0)
-        oops_warn("failed to munlock server data");
+        oops_warn_sys("failed to munlock server data");
     if(munlock(egress.plaintext, sizeof(egress.plaintext))<0)
-        oops_warn("failed to munlock server data");
+        oops_warn_sys("failed to munlock server data");
     
     // Clean up
     return connection_thread_cleanup(v,local_fd);
@@ -182,7 +182,7 @@ int saltunnel_tcp_server_forwarder(cache* table,
         // Handle the connection
         connection_thread_context* ctx = calloc(1,sizeof(connection_thread_context));
         if(mlock(ctx, sizeof(connection_thread_context))<0)
-            oops_warn("failed to mlock server thread context");
+            oops_warn_sys("failed to mlock server thread context");
         ctx->remote_fd = remote_fd;
         ctx->to_ip = to_ip;
         ctx->to_port = to_port;
@@ -190,7 +190,7 @@ int saltunnel_tcp_server_forwarder(cache* table,
         
         if(maybe_handle_connection(table, ctx)<0) {
             if(munlock(ctx, sizeof(connection_thread_context))<0)
-               oops_warn("failed to munlock server data");
+               oops_warn_sys("failed to munlock server data");
             free(ctx);
             try(close(remote_fd)) || log_warn("failed to close connection");
         }
