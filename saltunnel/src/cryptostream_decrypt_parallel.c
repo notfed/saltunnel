@@ -59,6 +59,6 @@ int decrypt_all_parallel(int buffer_decrypt_count, int buffer_decrypt_start, cry
         if(params[thread_i].return_code<0)
             return -1;
     }
-    log_debug("decrypt_all_parallel: successfully decrypted entire span");
+    log_trace("decrypt_all_parallel: successfully decrypted entire span");
     return 0;
 }

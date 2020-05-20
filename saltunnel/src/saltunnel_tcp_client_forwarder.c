@@ -51,7 +51,7 @@ static void* connection_thread(void* v)
     connection_thread_context* ctx = (connection_thread_context*)v;
     log_set_thread_name(" cf ");
     
-    log_debug("connection thread entered");
+    log_trace("connection thread entered");
 
     // Create a TCP Client to connect to server
     tcpclient_options options = {
@@ -59,10 +59,10 @@ static void* connection_thread(void* v)
      .OPT_SO_SNDLOWAT = 512
     };
 
-    log_debug("connecting to %s:%s", ctx->remote_ip, ctx->remote_port);
+    log_trace("connecting to %s:%s", ctx->remote_ip, ctx->remote_port);
     int remote_fd = tcpclient_new(ctx->remote_ip, ctx->remote_port, options);
     if(remote_fd<0) {
-        log_debug("failed to connect to 'to' endpoint");
+        log_trace("failed to connect to 'to' endpoint");
         return connection_thread_cleanup(ctx, remote_fd, 1);
     }
 
@@ -70,37 +70,37 @@ static void* connection_thread(void* v)
     
     // Write packet0 to server
     if(saltunnel_kx_packet0_trywrite(&ctx->tmp_pinned, ctx->long_term_shared_key, remote_fd, ctx->my_sk)<0) {
-        log_debug("connection %d: failed to write packet0 to server", remote_fd);
+        log_trace("connection %d: failed to write packet0 to server", remote_fd);
         return connection_thread_cleanup(ctx, remote_fd, 1);
     }
     
-    log_debug("connection %d: client forwarder successfully wrote packet0 to server", remote_fd);
+    log_trace("connection %d: client forwarder successfully wrote packet0 to server", remote_fd);
                                      
     // Read packet0
     if(saltunnel_kx_packet0_tryread(NULL, &ctx->tmp_pinned, ctx->long_term_shared_key, remote_fd, ctx->their_pk)<0) {
-        log_debug("connection %d: failed to read packet0", remote_fd);
+        log_trace("connection %d: failed to read packet0", remote_fd);
         return connection_thread_cleanup(ctx, remote_fd, 1);
     }
     
-    log_debug("connection %d: client forwarder successfully read packet0", remote_fd);
+    log_trace("connection %d: client forwarder successfully read packet0", remote_fd);
     
     // Calculate shared key
     if(saltunnel_kx_calculate_shared_key(ctx->session_shared_keys, ctx->their_pk, ctx->my_sk)<0) {
         return connection_thread_cleanup(ctx, remote_fd, 1);
     }
     
-    log_debug("connection %d: successfully calculated shared key", remote_fd);
+    log_trace("connection %d: successfully calculated shared key", remote_fd);
 
     // Exchange packet1 (to prevent replay-attack from exploiting server-sends-first scenarios)
     
-    log_debug("connection %d: about to exchange packet1 with server", remote_fd);
+    log_trace("connection %d: about to exchange packet1 with server", remote_fd);
     if(saltunnel_kx_packet1_exchange(ctx->session_shared_keys, 0, remote_fd)<0) {
-        log_debug("failed to exchange packet1 with server");
+        log_trace("failed to exchange packet1 with server");
         return connection_thread_cleanup(ctx, remote_fd, 1);
     }
-    log_debug("successfully exchanged packet1 with server");
+    log_trace("successfully exchanged packet1 with server");
     
-    log_debug("running saltunnel");
+    log_trace("running saltunnel");
     
     // Initialize saltunnel parameters
     cryptostream ingress = {
@@ -125,7 +125,7 @@ static void* connection_thread(void* v)
        oops_warn_sys("failed to mlock client data");
     
     // Run saltunnel
-    log_debug("client forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
+    log_trace("client forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
     saltunnel(&ingress, &egress);
     
     // Clear the plaintext buffers/keys
@@ -163,7 +163,7 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
                          const char* to_ip, const char* to_port)
 {
     
-    log_debug("entered");
+    log_trace("entered");
     
     // Create socket
     tcpserver_options options = {
@@ -175,7 +175,7 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
     if(s<0)
         return -1;
 
-    log_debug("created socket %d\n", s);
+    log_trace("created socket %d\n", s);
     
     for(;;) {
         log_info("waiting for TCP connections (on 'from' endpoint; socket fd %d)", s);

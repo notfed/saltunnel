@@ -38,7 +38,7 @@ int decrypt_all_serial(int buffer_decrypt_count, int buffer_decrypt_start, crypt
             return -1;
         nonce8_increment(nonce, nonce);
     }
-    log_debug("cryptostream_decrypt_feed_read: decrypted %d buffers", buffer_decrypt_count);
+    log_trace("cryptostream_decrypt_feed_read: decrypted %d buffers", buffer_decrypt_count);
     return 0;
 }
 

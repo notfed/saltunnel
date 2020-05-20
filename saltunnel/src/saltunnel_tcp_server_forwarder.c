@@ -51,17 +51,17 @@ static void* connection_thread(void* v)
     connection_thread_context* ctx = (connection_thread_context*)v;
     log_set_thread_name(" sf ");
     
-    log_debug("connection thread entered");
+    log_trace("connection thread entered");
 
     // Create a TCP Client to connect to target
     tcpclient_options options = {
      .OPT_TCP_NODELAY = 1
     };
-    log_debug("connecting to %s:%s", ctx->to_ip, ctx->to_port);
+    log_trace("connecting to %s:%s", ctx->to_ip, ctx->to_port);
     
     int local_fd = tcpclient_new(ctx->to_ip, ctx->to_port, options);
     if(local_fd<0) {
-        log_debug("failed to connect to 'to' endpoint");
+        log_trace("failed to connect to 'to' endpoint");
         return connection_thread_cleanup(v,local_fd,1);
     }
 
@@ -73,7 +73,7 @@ static void* connection_thread(void* v)
         return connection_thread_cleanup(v,local_fd,1);
     }
     
-    log_debug("server forwarder successfully wrote packet0 to client");
+    log_trace("server forwarder successfully wrote packet0 to client");
     
     // Calculate shared key
     if(saltunnel_kx_calculate_shared_key(ctx->session_shared_keys, ctx->their_pk, ctx->my_sk)<0) {
@@ -83,17 +83,17 @@ static void* connection_thread(void* v)
 
     // Exchange packet1 (to prevent replay-attack from exploiting server-sends-first scenarios)
 
-    log_debug("about to exchange packet1 with server");
+    log_trace("about to exchange packet1 with server");
     if(saltunnel_kx_packet1_exchange(ctx->session_shared_keys, 1, ctx->remote_fd)<0) {
         log_warn("failed to exchange packet1 with server");
         return connection_thread_cleanup(ctx, local_fd,1);
     }
-    log_debug("successfully exchanged packet1 with server");
+    log_trace("successfully exchanged packet1 with server");
     
     
-    log_debug("calculated shared key");
+    log_trace("calculated shared key");
     
-    log_debug("running saltunnel");
+    log_trace("running saltunnel");
     
     // Initialize saltunnel parameters
     cryptostream ingress = {
@@ -118,7 +118,7 @@ static void* connection_thread(void* v)
         oops_warn_sys("failed to mlock server data");
      
      // Run saltunnel
-    log_debug("server forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
+    log_trace("server forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
     saltunnel(&ingress, &egress);
     
     // Clear the plaintext buffers
@@ -146,17 +146,17 @@ static pthread_t connection_thread_spawn(connection_thread_context* ctx)
 }
 
 static int maybe_handle_connection(cache* table, connection_thread_context* ctx) {
-    log_debug("maybe handling connection");
+    log_trace("maybe handling connection");
     
     // Read packet0
     if(saltunnel_kx_packet0_tryread(table, &ctx->tmp_pinned, ctx->long_term_shared_key, ctx->remote_fd, ctx->their_pk)<0) {
         return oops_warn("refused connection");
     }
     
-    log_debug("server forwarder successfully read packet0");
+    log_trace("server forwarder successfully read packet0");
     
     // If packet0 was good, spawn a thread to handle subsequent packets
-    log_debug("accepted connection");
+    log_trace("accepted connection");
     pthread_t thread = connection_thread_spawn(ctx);
     if(thread==0) return -1;
     else return 1;

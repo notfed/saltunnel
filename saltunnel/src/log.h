@@ -63,7 +63,7 @@ const char* log_get_thread_name_formatted(void);
 #define NO_ARG_EXPANDER() ,,,,,LOG_0
 #define MACRO_CHOOSER(...) CHOOSE_FROM_ARG_COUNT(NO_ARG_EXPANDER __VA_ARGS__ ())
 
-//#define log_debug(...) MACRO_CHOOSER(__VA_ARGS__)("debug",__VA_ARGS__)
+#define log_trace(...)
 #define log_debug(...) (log_level==0 ? MACRO_CHOOSER(__VA_ARGS__)("debug", __VA_ARGS__) :0)
 #define log_info(...)  (log_level<=1 ? MACRO_CHOOSER(__VA_ARGS__)("info", __VA_ARGS__) :0)
 #define log_warn(...)  MACRO_CHOOSER(__VA_ARGS__)("warn", __VA_ARGS__)

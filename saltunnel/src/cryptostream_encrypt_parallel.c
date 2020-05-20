@@ -61,6 +61,6 @@ int encrypt_all_parallel(int buffer_encrypt_count, int buffer_encrypt_start_i, i
         if(params[thread_i].return_code<0)
             return -1;
     }
-    log_debug("encrypt_all_parallel: successfully encrypted entire span");
+    log_trace("encrypt_all_parallel: successfully encrypted entire span");
     return 0;
 }

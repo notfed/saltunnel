@@ -124,7 +124,7 @@ static void* write_thread_inner(void* v)
     int w = (int)writen(c->fd, c->buf, c->len);
     if(w != c->len) oops_error_sys("write");
     close(c->fd);
-    log_debug("write_thread wrote %d bytes to fd %d (and closed it)",(int)w,c->fd);
+    log_trace("write_thread wrote %d bytes to fd %d (and closed it)",(int)w,c->fd);
     free(v);
     return 0;
 }
@@ -165,13 +165,13 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     int peer1_pipe_to_peer2[2];     create_test_pipe(peer1_pipe_to_peer2);
     int peer2_pipe_to_peer1[2];     create_test_pipe(peer2_pipe_to_peer1);
     
-    log_debug("created pipe: peer1_pipe_local_input [%2d,%2d]", peer1_pipe_local_input[0], peer1_pipe_local_input[1]);
-    log_debug("created pipe: peer1_pipe_local_output[%2d,%2d]", peer1_pipe_local_output[0], peer1_pipe_local_output[1]);
-    log_debug("created pipe: peer1_pipe_to_peer2    [%2d,%2d]", peer1_pipe_to_peer2[0], peer1_pipe_to_peer2[1]);
+    log_trace("created pipe: peer1_pipe_local_input [%2d,%2d]", peer1_pipe_local_input[0], peer1_pipe_local_input[1]);
+    log_trace("created pipe: peer1_pipe_local_output[%2d,%2d]", peer1_pipe_local_output[0], peer1_pipe_local_output[1]);
+    log_trace("created pipe: peer1_pipe_to_peer2    [%2d,%2d]", peer1_pipe_to_peer2[0], peer1_pipe_to_peer2[1]);
     
-    log_debug("created pipe: peer2_pipe_local_input [%2d,%2d]", peer2_pipe_local_input[0], peer2_pipe_local_input[1]);
-    log_debug("created pipe: peer2_pipe_local_output[%2d,%2d]", peer2_pipe_local_output[0], peer2_pipe_local_output[1]);
-    log_debug("created pipe: peer2_pipe_to_peer1    [%2d,%2d]", peer2_pipe_to_peer1[0], peer2_pipe_to_peer1[1]);
+    log_trace("created pipe: peer2_pipe_local_input [%2d,%2d]", peer2_pipe_local_input[0], peer2_pipe_local_input[1]);
+    log_trace("created pipe: peer2_pipe_local_output[%2d,%2d]", peer2_pipe_local_output[0], peer2_pipe_local_output[1]);
+    log_trace("created pipe: peer2_pipe_to_peer1    [%2d,%2d]", peer2_pipe_to_peer1[0], peer2_pipe_to_peer1[1]);
     
     // Start with "expected value" available for reading from peer1's local pipe
     pthread_t write_thread_1 = write_thread("wpeer1", peer1_pipe_local_input[1], from_peer1_local_str, from_peer1_local_str_len);
@@ -212,12 +212,12 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     // Read from outputs
     
     // Read "actual value" from peer1's local pipe
-    log_debug("reading %d bytes from %d", from_peer2_local_str_len, peer1_pipe_local_output[0]);
+    log_trace("reading %d bytes from %d", from_peer2_local_str_len, peer1_pipe_local_output[0]);
     char* from_peer1_local_str_actual = calloc(from_peer2_local_str_len+1,sizeof(char));
     try(readn(peer1_pipe_local_output[0], from_peer1_local_str_actual, from_peer2_local_str_len)) || oops_error("read");
     
     // Read "actual value" from peer2's local pipe
-    log_debug("reading %d bytes from %d", from_peer1_local_str_len, peer2_pipe_local_output[0]);
+    log_trace("reading %d bytes from %d", from_peer1_local_str_len, peer2_pipe_local_output[0]);
     char* from_peer2_local_str_actual = calloc(from_peer1_local_str_len+1,sizeof(char));
     try(readn(peer2_pipe_local_output[0], from_peer2_local_str_actual, from_peer1_local_str_len)) || oops_error("read");
     
@@ -298,7 +298,7 @@ void two_packet_bidirectional_test() {
 }
 
 static void variable_size_bidirectional_test(int i) {
-    log_debug("---- testing with %d bytes ----", i);
+    log_trace("---- testing with %d bytes ----", i);
     
     int peer1n = i;
     int peer2n = i;

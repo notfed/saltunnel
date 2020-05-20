@@ -83,7 +83,7 @@ int saltunnel_kx_packet0_tryread(cache* table,
                                  int from_fd,
                                  unsigned char their_pk_out[32]) {
     errno = EBADMSG;
-    log_debug("starting key exchange (with fd %d)", from_fd);
+    log_trace("starting key exchange (with fd %d)", from_fd);
     
     packet0 their_buffer_ciphertext = {0};
     memset(their_packet0_plaintext_pinned, 0, sizeof(packet0));

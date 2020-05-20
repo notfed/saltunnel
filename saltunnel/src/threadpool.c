@@ -31,7 +31,7 @@ static void* threadpool_loop(void* ctx_void) {
     int thread_i = ctx->thread_i;
 
     for(;;) {
-        log_debug("threadpool_loop: about to wait for 'start' signal");
+        log_trace("threadpool_loop: about to wait for 'start' signal");
         
         // Wait for start signal
         pthread_mutex_lock(&tp->mutex)==0 || oops_error_sys("failed to lock thread mutex");
@@ -39,17 +39,17 @@ static void* threadpool_loop(void* ctx_void) {
             pthread_cond_wait(&tp->start, &tp->mutex)==0 || oops_error_sys("failed to wait on thread condition");
         pthread_mutex_unlock(&tp->mutex)==0 || oops_error_sys("failed to unlock thread mutex");
         
-        log_debug("threadpool_loop: received 'start' signal; encrypting...");
+        log_trace("threadpool_loop: received 'start' signal; encrypting...");
         
         // Run the thread action
         threadpool_task* task = &tp->tasks[thread_i];
         task->action(task->param);
         
-        log_debug("threadpool_loop: done encrypting; about to wait for 'finish' barrier");
+        log_trace("threadpool_loop: done encrypting; about to wait for 'finish' barrier");
         // Finish all threads together
         threadpool_barrier_wait(&tp->finish, &tp->started);
         
-        log_debug("threadpool_loop: 'finish' barrier completed");
+        log_trace("threadpool_loop: 'finish' barrier completed");
         
         // TODO: Break when shutdown is requested
     }
@@ -117,20 +117,20 @@ void threadpool_for(int threadpool_index, threadpool_task* tasks) {
     
     // Broadcast start signal
     pthread_mutex_lock(&tp->mutex)==0 || oops_error_sys("failed to lock thread mutex");
-    log_debug("threadpool_for: about to send 'start' signal");
+    log_trace("threadpool_for: about to send 'start' signal");
         tp->started = 1;
         pthread_cond_broadcast(&tp->start)==0 || oops_error_sys("failed to broadcast thread condition");
-    log_debug("threadpool_for: sent 'start' signal");
+    log_trace("threadpool_for: sent 'start' signal");
     pthread_mutex_unlock(&tp->mutex)==0 || oops_error_sys("failed to unlock thread mutex");
     
     // Run the first task in the calling thread
     tasks[0].action(tasks[0].param);
     
     // Wait for all threads to finish
-    log_debug("threadpool_for: about to wait for 'finish' barrier");
+    log_trace("threadpool_for: about to wait for 'finish' barrier");
     int r = threadpool_barrier_wait(&tp->finish, &tp->started);
     if(r<0 || r>1) oops_error_sys("failed to wait for thread barrier");
-    log_debug("threadpool_for: 'finish' barrier completed");
+    log_trace("threadpool_for: 'finish' barrier completed");
     
     // Release big lock
     pthread_mutex_unlock(&tp->parallel_for_mutex)==0 || oops_error_sys("failed to unlock thread mutex");

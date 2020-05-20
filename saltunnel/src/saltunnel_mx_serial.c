@@ -53,7 +53,7 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
     while(pfds[0].fd != FD_EOF || pfds[1].fd != FD_EOF || pfds[2].fd != FD_EOF || pfds[3].fd != FD_EOF) {
         
         /* Poll */
-        log_debug("poll: polling [%2d->D->%2d, %2d->E->%2d]...", pfds[0].fd, pfds[1].fd,pfds[2].fd, pfds[3].fd);
+        log_trace("poll: polling [%2d->D->%2d, %2d->E->%2d]...", pfds[0].fd, pfds[1].fd,pfds[2].fd, pfds[3].fd);
         int rc = poll(pfds,4,-1);
         if(rc<0 && errno == EINTR) continue;
         if(rc<0) oops_error_sys("failed to poll");
@@ -64,13 +64,13 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
         if ((pfds[1].fd>=0) && (pfds[1].revents & (POLLOUT)))        { pfds[1].fd = FD_READY; }
         if ((pfds[2].fd>=0) && (pfds[2].revents & (POLLIN|POLLHUP))) { pfds[2].fd = FD_READY; }
         if ((pfds[3].fd>=0) && (pfds[3].revents & (POLLOUT)))        { pfds[3].fd = FD_READY; }
-        log_debug("poll: polled  [%2d->D->%2d, %2d->E->%2d].", pfds[0].fd, pfds[1].fd,pfds[2].fd, pfds[3].fd);
+        log_trace("poll: polled  [%2d->D->%2d, %2d->E->%2d].", pfds[0].fd, pfds[1].fd,pfds[2].fd, pfds[3].fd);
 
         /* Loud Version*/
-//        if ((pfds[0].fd>=0) && (pfds[0].revents & (POLLIN|POLLHUP))) { log_debug("%d is ready to read from", pfds[0].fd); pfds[0].fd = FD_READY; }
-//        if ((pfds[1].fd>=0) && (pfds[1].revents & (POLLOUT)))        { log_debug("%d is ready to write to",  pfds[1].fd); pfds[1].fd = FD_READY; }
-//        if ((pfds[2].fd>=0) && (pfds[2].revents & (POLLIN|POLLHUP))) { log_debug("%d is ready to read from", pfds[2].fd); pfds[2].fd = FD_READY; }
-//        if ((pfds[3].fd>=0) && (pfds[3].revents & (POLLOUT)))        { log_debug("%d is ready to write to",  pfds[3].fd); pfds[3].fd = FD_READY; }
+//        if ((pfds[0].fd>=0) && (pfds[0].revents & (POLLIN|POLLHUP))) { log_trace("%d is ready to read from", pfds[0].fd); pfds[0].fd = FD_READY; }
+//        if ((pfds[1].fd>=0) && (pfds[1].revents & (POLLOUT)))        { log_trace("%d is ready to write to",  pfds[1].fd); pfds[1].fd = FD_READY; }
+//        if ((pfds[2].fd>=0) && (pfds[2].revents & (POLLIN|POLLHUP))) { log_trace("%d is ready to read from", pfds[2].fd); pfds[2].fd = FD_READY; }
+//        if ((pfds[3].fd>=0) && (pfds[3].revents & (POLLOUT)))        { log_trace("%d is ready to write to",  pfds[3].fd); pfds[3].fd = FD_READY; }
         
 
         //
@@ -94,7 +94,7 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
         
         // close 'to' when: 'from' is EOF, and all buffers are empty
         if(pfds[2].fd == FD_EOF && pfds[3].fd != FD_EOF && !cryptostream_encrypt_feed_canwrite(egress)) {
-            log_debug("egress is done; closing egress->to_fd (%d)", egress->to_fd);
+            log_trace("egress is done; closing egress->to_fd (%d)", egress->to_fd);
             if(egress_to_fd_is_socket) {
                 try(shutdown(egress->to_fd, SHUT_WR)) || oops_error_sys("failed to shutdown socket");
             } else {
@@ -125,7 +125,7 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
         
         // close 'to' when: 'from' is EOF, and all buffers are empty
         if(pfds[0].fd == FD_EOF && pfds[1].fd != FD_EOF && !cryptostream_decrypt_feed_canwrite(ingress)) {
-            log_debug("ingress is done; closing ingress->to_fd (%d)", ingress->to_fd);
+            log_trace("ingress is done; closing ingress->to_fd (%d)", ingress->to_fd);
             if(ingress_to_fd_is_socket) {
                 try(shutdown(ingress->to_fd, SHUT_WR)) || oops_error_sys("failed to shutdown socket");
             } else {
@@ -143,5 +143,5 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
         close(egress->from_fd);
     }
 
-    log_debug("all fds are closed [%d,%d,%d,%d]; done polling", ingress->from_fd, ingress->to_fd, egress->from_fd, egress->to_fd);
+    log_trace("all fds are closed [%d,%d,%d,%d]; done polling", ingress->from_fd, ingress->to_fd, egress->from_fd, egress->to_fd);
 }

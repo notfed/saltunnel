@@ -62,11 +62,11 @@ int cryptostream_encrypt_feed_read(cryptostream* cs) {
     // If the read returned a 0, it means the read fd is closed
     if(bytesread==0)
     {
-        log_debug("egress local fd (%d) was closed", cs->from_fd);
+        log_trace("egress local fd (%d) was closed", cs->from_fd);
         return 0;
     }
     
-    log_debug("cryptostream_encrypt_feed_read: got %d bytes from egress local (total %ld)",(int)bytesread,cs->debug_read_total);
+    log_trace("cryptostream_encrypt_feed_read: got %d bytes from egress local (total %ld)",(int)bytesread,cs->debug_read_total);
 
     //
     // Encrypt
@@ -113,7 +113,7 @@ int cryptostream_encrypt_feed_write(cryptostream* cs) {
     
     cs->debug_write_total += byteswritten;
     
-    log_debug("cryptostream_encrypt_feed_write: wrote %d bytes (total %d)", byteswritten, (int)cs->debug_write_total);
+    log_trace("cryptostream_encrypt_feed_write: wrote %d bytes (total %d)", byteswritten, (int)cs->debug_write_total);
     
     // Seek the vectors so that, if we didn't write all the bytes, then, later, we can try again
     int buffers_flushed = (int)vector_skip(cs->ciphertext_vector,

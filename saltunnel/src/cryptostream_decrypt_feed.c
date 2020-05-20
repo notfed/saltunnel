@@ -61,7 +61,7 @@ int cryptostream_decrypt_feed_read(cryptostream* cs) {
     // If the read returned a 0, it means the read fd is closed
     if(bytesread==0)
     {
-        log_debug("ingress local fd (%d) was closed", cs->from_fd);
+        log_trace("ingress local fd (%d) was closed", cs->from_fd);
         return 0;
     }
     
@@ -89,7 +89,7 @@ int cryptostream_decrypt_feed_read(cryptostream* cs) {
     if(decrypt_all(buffer_decrypt_count, buffer_decrypt_start, cs)<0)
         return -1;
 
-    log_debug("decrypted %d bytes from %d buffers", bytesread, buffer_decrypt_count);
+    log_trace("decrypted %d bytes from %d buffers", bytesread, buffer_decrypt_count);
 
     // Rotate buffer offsets
     cs->vector_len += buffer_decrypt_count;

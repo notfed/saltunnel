@@ -55,15 +55,15 @@ void* exchange_messages_egress(void* ctx_void) {
     while(pfds[0].fd != FD_EOF || pfds[1].fd != FD_EOF) {
         
         /* Poll */
-        log_debug("poll: polling [%2d->D->%2d]...", pfds[0].fd, pfds[1].fd);
+        log_trace("poll: polling [%2d->D->%2d]...", pfds[0].fd, pfds[1].fd);
         try(poll(pfds,2,-1)) || oops_error_sys("failed to poll");
-        log_debug("poll: polled  [%2d->D->%2d].", pfds[0].fd, pfds[1].fd);
+        log_trace("poll: polled  [%2d->D->%2d].", pfds[0].fd, pfds[1].fd);
         
         /* If an fd is ready, mark it as FD_READY */
         
         /* Loud Version*/
-//        if ((pfds[0].fd>=0) && (pfds[0].revents & (POLLIN|POLLHUP))) { log_debug("%d is ready to read from", pfds[0].fd); pfds[0].fd = FD_READY; }
-//        if ((pfds[1].fd>=0) && (pfds[1].revents & (POLLOUT)))        { log_debug("%d is ready to write to",  pfds[1].fd); pfds[1].fd = FD_READY; }
+//        if ((pfds[0].fd>=0) && (pfds[0].revents & (POLLIN|POLLHUP))) { log_trace("%d is ready to read from", pfds[0].fd); pfds[0].fd = FD_READY; }
+//        if ((pfds[1].fd>=0) && (pfds[1].revents & (POLLOUT)))        { log_trace("%d is ready to write to",  pfds[1].fd); pfds[1].fd = FD_READY; }
 //
         /* Quiet Version */
         if ((pfds[0].fd>=0) && (pfds[0].revents & (POLLIN|POLLHUP))) { pfds[0].fd = FD_READY; }
@@ -90,7 +90,7 @@ void* exchange_messages_egress(void* ctx_void) {
         
         // close 'to' when: 'from' is EOF, and all buffers are empty
         if(pfds[0].fd == FD_EOF && pfds[1].fd != FD_EOF && !cryptostream_encrypt_feed_canwrite(egress)) {
-            log_debug("egress is done; closing egress->to_fd (%d)", egress->to_fd);
+            log_trace("egress is done; closing egress->to_fd (%d)", egress->to_fd);
             if(egress_to_fd_is_socket) {
                 try(shutdown(egress->to_fd, SHUT_WR)) || oops_error_sys("failed to shutdown socket");
             } else {
@@ -109,7 +109,7 @@ void* exchange_messages_egress(void* ctx_void) {
         close(ctx->egress->from_fd);
     }
 
-    log_debug("all fds are closed [%d,%d,%d,%d]; done polling", ctx->ingress->from_fd, ctx->ingress->to_fd, ctx->egress->from_fd, ctx->egress->to_fd);
+    log_trace("all fds are closed [%d,%d,%d,%d]; done polling", ctx->ingress->from_fd, ctx->ingress->to_fd, ctx->egress->from_fd, ctx->egress->to_fd);
     return 0;
 }
 void* exchange_messages_ingress(void* ctx_void) {
@@ -132,15 +132,15 @@ void* exchange_messages_ingress(void* ctx_void) {
     // Main Loop
     while(pfds[0].fd != FD_EOF || pfds[1].fd != FD_EOF) {
         /* Poll */
-        log_debug("poll: polling [%2d->D->%2d]...", pfds[0].fd, pfds[1].fd);
+        log_trace("poll: polling [%2d->D->%2d]...", pfds[0].fd, pfds[1].fd);
         try(poll(pfds,2,-1)) || oops_error_sys("failed to poll");
-        log_debug("poll: polled  [%2d->D->%2d].", pfds[0].fd, pfds[1].fd);
+        log_trace("poll: polled  [%2d->D->%2d].", pfds[0].fd, pfds[1].fd);
         
         /* If an fd is ready, mark it as FD_READY */
         
         /* Loud Version*/
-//        if ((pfds[0].fd>=0) && (pfds[0].revents & (POLLIN|POLLHUP))) { log_debug("%d is ready to read from", pfds[0].fd); pfds[0].fd = FD_READY; }
-//        if ((pfds[1].fd>=0) && (pfds[1].revents & (POLLOUT)))        { log_debug("%d is ready to write to",  pfds[1].fd); pfds[1].fd = FD_READY; }
+//        if ((pfds[0].fd>=0) && (pfds[0].revents & (POLLIN|POLLHUP))) { log_trace("%d is ready to read from", pfds[0].fd); pfds[0].fd = FD_READY; }
+//        if ((pfds[1].fd>=0) && (pfds[1].revents & (POLLOUT)))        { log_trace("%d is ready to write to",  pfds[1].fd); pfds[1].fd = FD_READY; }
 //
         /* Quiet Version */
         if ((pfds[0].fd>=0) && (pfds[0].revents & (POLLIN|POLLHUP))) { pfds[0].fd = FD_READY; }
@@ -167,7 +167,7 @@ void* exchange_messages_ingress(void* ctx_void) {
         
         // close 'to' when: 'from' is EOF, and all buffers are empty
         if(pfds[0].fd == FD_EOF && pfds[1].fd != FD_EOF && !cryptostream_decrypt_feed_canwrite(ingress)) {
-            log_debug("ingress is done; closing ingress->to_fd (%d)", ingress->to_fd);
+            log_trace("ingress is done; closing ingress->to_fd (%d)", ingress->to_fd);
             if(ingress_to_fd_is_socket) {
                 shutdown(ingress->to_fd, SHUT_WR);
             } else {
@@ -185,7 +185,7 @@ void* exchange_messages_ingress(void* ctx_void) {
         close(ctx->egress->from_fd);
     }
 
-    log_debug("all fds are closed [%d,%d,%d,%d]; done polling", 
+    log_trace("all fds are closed [%d,%d,%d,%d]; done polling", 
               ctx->ingress->from_fd, ctx->ingress->to_fd, ctx->egress->from_fd, ctx->egress->to_fd);
     return 0;
 }
