@@ -28,9 +28,6 @@ typedef struct connection_thread_context {
 
 static void* connection_thread_cleanup(void* v, int remote_fd, int force_close) {
     connection_thread_context* ctx = (connection_thread_context*)v;
-    memset(ctx,0,sizeof(connection_thread_context));
-    if(munlock(ctx, sizeof(connection_thread_context))<0)
-       oops_warn_sys("failed to munlock");
 
     if(force_close) {
         close(ctx->local_fd);
@@ -41,6 +38,10 @@ static void* connection_thread_cleanup(void* v, int remote_fd, int force_close) 
     }
     log_info("TCP connection (with 'from' endpoint) terminated (fd %d)", ctx->local_fd);
     log_info("TCP connection (with 'to' endpoint) terminated (fd %d)", remote_fd);
+
+    memset(ctx,0,sizeof(connection_thread_context));
+    if(munlock(ctx, sizeof(connection_thread_context))<0)
+       oops_warn_sys("failed to munlock");
     free(ctx);
     return 0;
 }
