@@ -65,7 +65,7 @@ static void* connection_thread(void* v)
         return connection_thread_cleanup(v,local_fd,1);
     }
 
-    log_info("established TCP connection (with 'to' endpoint; fd %d)", local_fd);
+    log_info("TCP connection established (with 'to' endpoint; fd %d)", local_fd);
     
     // Write packet0 to client
     if(saltunnel_kx_packet0_trywrite(&ctx->tmp_pinned, ctx->long_term_shared_key, ctx->remote_fd, ctx->my_sk)<0) {
@@ -189,7 +189,7 @@ int saltunnel_tcp_server_forwarder(cache* table,
         if(remote_fd<0) {
             continue;
         }
-        log_info("established TCP connection (with 'from' endpoint; fd %d)", remote_fd);
+        log_info("TCP connection established (with 'from' endpoint; fd %d)", remote_fd);
 
         // Handle the connection (but do some DoS prevention checks first)
         connection_thread_context* ctx = calloc(1,sizeof(connection_thread_context));
