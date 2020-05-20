@@ -60,7 +60,7 @@ static void* saltunnel_forwarder_thread_inner(void* v)
         saltunnel_tcp_client_forwarder(testkey, c->from_ip, c->from_port, c->to_ip, c->to_port);
     } else {
         log_set_thread_name("sfwd");
-        try(cache_clear(&table)) || oops_fatal("error");
+        try(cache_clear(&table)) || oops_error("error");
         saltunnel_tcp_server_forwarder(&table, testkey, c->from_ip, c->from_port, c->to_ip, c->to_port);
     }
     free(v);
@@ -80,7 +80,7 @@ static pthread_t saltunnel_forwarder_thread(int client_or_server,
     c->to_ip = to_ip;
     c->to_port = to_port;
     pthread_t thread;
-    pthread_create(&thread, NULL, saltunnel_forwarder_thread_inner, (void*)c)==0 || oops_fatal("pthread_create failed");
+    pthread_create(&thread, NULL, saltunnel_forwarder_thread_inner, (void*)c)==0 || oops_error("pthread_create failed");
     return thread;
 }
 
@@ -107,21 +107,21 @@ static void* tcpstub_server_write_inner(void* v)
     };
     int tcpserver = tcpserver_new(ip, port, options);
     if(tcpserver<0)
-        oops_fatal("failed to create TCP server");
+        oops_error("failed to create TCP server");
     
     // Accept a connection
     log_info("(TCPSTUB SERVER) WAITING FOR ACCEPT ON %s:%s", ip, port);
     int fd_conn = tcpserver_accept(tcpserver);
     if(fd_conn<0)
-        oops_fatal("failed to establish TCP connection");
+        oops_error("failed to establish TCP connection");
     log_info("(TCPSTUB SERVER) ACCEPTED ON %s:%s", ip, port);
     
     // ---- Write a message ----
     int wlen = (int)strlen(writemsg);
     log_info("(TCPSTUB SERVER) WRITING %d BYTES.",wlen);
     int wrc = (int)writen(fd_conn, writemsg, wlen);
-    if(wrc<0) oops_fatal("failed to read");
-    if(wrc != wlen) { log_info("partial write (%d/%d)", wrc, wlen); oops_fatal("..."); }
+    if(wrc<0) oops_error("failed to read");
+    if(wrc != wlen) { log_info("partial write (%d/%d)", wrc, wlen); oops_error("..."); }
     log_info("(TCPSTUB SERVER) WROTE %d BYTES TO CONNECTION", wlen);
     
     // ---- Read a message ----
@@ -129,27 +129,27 @@ static void* tcpstub_server_write_inner(void* v)
     int rlen = (int)strlen(readmsg);
     log_info("(TCPSTUB SERVER) READING %d BYTES.",rlen);
     int rrc = (int)readn(fd_conn, actual_readmsg, rlen);
-    if(rrc<0) oops_fatal("failed to read");
-    if(rrc != rlen) { log_info("partial read (%d/%d)", rrc, rlen); oops_fatal("..."); }
+    if(rrc<0) oops_error("failed to read");
+    if(rrc != rlen) { log_info("partial read (%d/%d)", rrc, rlen); oops_error("..."); }
     log_info("(TCPSTUB SERVER) READ %d BYTES FROM CONNECTION", rrc);
     
     // ---- Signal EOF ----
     if(shutdown(fd_conn, SHUT_WR)<0)
-        oops_fatal("failed to shutdown");
+        oops_error("failed to shutdown");
     
     // ---- Receive EOF ----
     if(read(fd_conn, actual_readmsg, rlen)!=0)
-        oops_fatal("expected EOF from socket");
+        oops_error("expected EOF from socket");
     
     // Clean up
-    try(close(fd_conn)) || oops_fatal("failed to close TCP connection");
-    try(close(tcpserver)) || oops_fatal("failed to close TCP server");
+    try(close(fd_conn)) || oops_error("failed to close TCP connection");
+    try(close(tcpserver)) || oops_error("failed to close TCP server");
     
     // Assert that what we read is valid
     if(strcmp(actual_readmsg,readmsg)==0)
         log_info("(TCPSTUB SERVER) successfully read CORRECT message");
     else
-        oops_fatal("(TCPSTUB SERVER) readmsg differed from expected");
+        oops_error("(TCPSTUB SERVER) readmsg differed from expected");
     
     free(v);
     return 0;
@@ -166,7 +166,7 @@ static pthread_t tcpstub_server_writer_reader(const char* ip,
     c->readmsg = readmsg;
     c->writemsg = writemsg;
     pthread_t thread;
-    pthread_create(&thread, NULL, tcpstub_server_write_inner, (void*)c)==0 || oops_fatal("pthread_create failed");
+    pthread_create(&thread, NULL, tcpstub_server_write_inner, (void*)c)==0 || oops_error("pthread_create failed");
     return thread;
 }
 
@@ -176,7 +176,7 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
     
     for(int tries_left=100; tries_left>0; tries_left--) {
         if(tries_left==0)
-            oops_fatal("failed to connect too many times");
+            oops_error("failed to connect too many times");
             
         // Create a TCP client
         tcpclient_options options = {
@@ -194,7 +194,7 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
         }
         // Any other error is test failure
         if(tcpclient<0)
-            oops_fatal("failed to establish TCP connection");
+            oops_error("failed to establish TCP connection");
         
         log_info("(TCPSTUB CLIENT) CONNECTION SUCCEEDED (TO %s:%s).", ip, port);
         
@@ -202,28 +202,28 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
         int rlen = (int)strlen(readmsg);
         log_info("(TCPSTUB CLIENT) READING %d BYTES.",rlen);
         int rrc = (int)readn(tcpclient, actual_readmsg, rlen);
-        if(rrc<0) oops_fatal("failed to read");
-        if(rrc != rlen) { log_info("(TCPSTUB CLIENT) partial read (%d/%d)", rrc, rlen); oops_fatal("..."); }
+        if(rrc<0) oops_error("failed to read");
+        if(rrc != rlen) { log_info("(TCPSTUB CLIENT) partial read (%d/%d)", rrc, rlen); oops_error("..."); }
         log_info("(TCPSTUB CLIENT) READ %d BYTES FROM CONNECTION", rrc);
         
         // ---- Write a message ----
         int wlen = (int)strlen(writemsg);
         log_info("(TCPSTUB CLIENT) WRITING %d BYTES.",wlen);
         int wrc = (int)writen(tcpclient, writemsg, wlen);
-        if(wrc<0) oops_fatal("failed to read");
-        if(wrc != wlen) { log_info("partial write (%d/%d)", wrc, wlen); oops_fatal("..."); }
+        if(wrc<0) oops_error("failed to read");
+        if(wrc != wlen) { log_info("partial write (%d/%d)", wrc, wlen); oops_error("..."); }
         log_info("(TCPSTUB CLIENT) WROTE %d BYTES TO CONNECTION", wlen);
         
         // ---- Signal EOF ----
         if(shutdown(tcpclient, SHUT_WR)<0)
-            oops_fatal("failed to shutdown");
+            oops_error("failed to shutdown");
         
         // ---- Receive EOF ----
         if(read(tcpclient, actual_readmsg, rlen)!=0)
-            oops_fatal("expected EOF from socket");
+            oops_error("expected EOF from socket");
         
         // Clean up
-        try(close(tcpclient)) || oops_fatal("failed to close socket");
+        try(close(tcpclient)) || oops_error("failed to close socket");
         break;
     }
     log_info("(TCPSTUB CLIENT) connection succeeded");
@@ -232,7 +232,7 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
     if(strcmp(actual_readmsg,readmsg)==0)
         log_info("(TCPSTUB CLIENT) successfully read CORRECT message");
     else
-        oops_fatal("(TCPSTUB CLIENT) readmsg differed from expected");
+        oops_error("(TCPSTUB CLIENT) readmsg differed from expected");
 }
 
 // TCP Server test

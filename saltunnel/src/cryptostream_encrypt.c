@@ -72,7 +72,7 @@ int encrypt_one(int buffer_i, int buffer_n, int bytesread, cryptostream *cs, non
     //   - [32..]   == ciphertext
     if(crypto_secretbox_salsa20poly1305(ciphertext_buffer_ptr, plaintext_buffer_ptr,
                          CRYPTOSTREAM_BUFFER_MAXBYTES, nonce, cs->key)<0) 
-    { return oops_warn("failed to encrypt"); }
+    { return oops("failed to encrypt"); }
 
     return 0;
 }

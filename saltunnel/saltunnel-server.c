@@ -68,17 +68,17 @@ int main(int argc, char * argv[])
     // Read the key
     unsigned char key[32];
     if(mlock(key, sizeof(key))<0)
-        oops_warn("failed to mlock key");
+        oops_warn_sys("failed to mlock key");
     int key_fd = open(keyfile, O_RDONLY);
     if(key_fd<0)
-        oops_fatal("failed to open key");
+        oops_error_sys("failed to open key");
     if(readn(key_fd, (char*)key,  sizeof(key))<0)
-        oops_fatal("failed to read key");
-    close(key_fd);
+        oops_error_sys("failed to read key");
+    if(close(key_fd)<0) oops_error_sys("failed to close fd");
 
     // Seed random bytes
     try(sodium_init())
-    || oops_fatal("failed to initialize random number generator");
+    || oops_error("failed to initialize libsodium");
     
     // Run the client forwarder
     saltunnel_tcp_server_forwarder(&table, key, from_host, from_port, to_host, to_port);

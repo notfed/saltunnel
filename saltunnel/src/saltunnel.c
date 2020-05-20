@@ -31,5 +31,5 @@ void saltunnel(cryptostream* ingress, cryptostream* egress) {
     else if(SALTUNNEL_PUMP_THREADS==2)
         exchange_messages_parallel(ingress, egress);
     else
-        oops_fatal("assertion failed: SALTUNNEL_PUMP_THREADS must be either '1' or '2'");
+        oops_error("assertion failed: SALTUNNEL_PUMP_THREADS must be either '1' or '2'");
 }

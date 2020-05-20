@@ -182,15 +182,17 @@ static int get_machine_id_from_file(unsigned char machine_id_out[16], const char
 }
 
 // Get the unique id for this machine
+// TODO: Cache this at system startup
 static int get_machine_id(unsigned char machine_id_out[16])
 {
-    if(get_machine_id_from_file(machine_id_out, "/etc/machine-id")<0)
-      if(get_machine_id_from_file(machine_id_out, "~/.saltunnel/machine-id")<0)
+    if(get_machine_id_from_file(machine_id_out, "~/.saltunnel/machine-id")<0)
+      if(get_machine_id_from_file(machine_id_out, "/etc/machine-id")<0)
         if(get_machine_id_from_mac_address(machine_id_out)<0)
-            oops_fatal("failed to find a unique machine-id (tried '/etc/machine-id', '~/.saltunnel/machine-id', and MAC address)");
+            oops_error("failed to find a unique machine-id (tried '~/.saltunnel/machine-id', '/etc/machine-id', and MAC address)");
     return 0;
 }
 
+// TODO: Cache machine-id.  This gets called each time a connection is made from server.
 int hypercounter(unsigned char machine_boot_id_out[16], unsigned char monotonic_time_out[8]) {
     
     // Get the unique id for this machine
@@ -208,7 +210,7 @@ int hypercounter(unsigned char machine_boot_id_out[16], unsigned char monotonic_
     if(crypto_generichash(machine_boot_id_out, 16,
                    machine_id_and_boot_time, 32,
                    NULL, 0)<0) 
-    { oops_fatal("failed to hash machine-id"); }
+    { return -1; }
 
     // Get monotonic time since last boot
     uint64_t monotonic_time_since_boot;

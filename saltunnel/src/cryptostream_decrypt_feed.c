@@ -54,7 +54,7 @@ int cryptostream_decrypt_feed_read(cryptostream* cs) {
     //    - ... (x128 packets) ...
     int bytesread;
     bytesread = (int)readv(cs->from_fd, buffer_free_start, buffer_free_count);
-    if(bytesread<0) return oops_warn("failed to read from source");
+    if(bytesread<0) return oops_sys("failed to read from source");
     
     cs->debug_read_total += bytesread;
     
@@ -120,7 +120,7 @@ int cryptostream_decrypt_feed_write(cryptostream* cs) {
     byteswritten = (int)writev(cs->to_fd,          // fd
                                buffer_full_start,  // vector
                                buffer_full_count); // vcount
-    if(byteswritten<0) return oops_warn("failed to write to target");
+    if(byteswritten<0) return oops_sys("failed to write to target");
     
     cs->debug_write_total += byteswritten;
     

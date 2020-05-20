@@ -23,7 +23,7 @@ int main(int argc, const char * argv[]) {
     
     // Seed random bytes
     try(sodium_init())
-    || oops_fatal("failed to initialize random number generator");
+    || oops_error("failed to initialize libsodium");
     
     // Initialize thread pool
     threadpool_init_all();

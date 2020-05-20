@@ -12,8 +12,8 @@
 
 void rwn_test() {
     // Create two pipes
-    int pipe_local[2]; try(pipe(pipe_local)) || oops_fatal("failed to create pipe");
-    int pipe_net[2];   try(pipe(pipe_net)) || oops_fatal("failed to create pipe");
+    int pipe_local[2]; try(pipe(pipe_local)) || oops_error("failed to create pipe");
+    int pipe_net[2];   try(pipe(pipe_net)) || oops_error("failed to create pipe");
          
     // Write "expected value" to both pipes
     const char local_teststr_expected[] = "send_nt_pipe";
@@ -28,6 +28,6 @@ void rwn_test() {
     readn(pipe_net[0], net_teststr_actual, 12);
     
     // Assert "expected value" equals "actual value"
-    strcmp(local_teststr_expected, local_teststr_actual) == 0 || oops_fatal("local teststr did not match");
-    strcmp(net_teststr_expected, net_teststr_actual) == 0 || oops_fatal("net teststr did not match");
+    strcmp(local_teststr_expected, local_teststr_actual) == 0 || oops_error("local teststr did not match");
+    strcmp(net_teststr_expected, net_teststr_actual) == 0 || oops_error("net teststr did not match");
 }

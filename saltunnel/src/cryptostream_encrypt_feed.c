@@ -55,7 +55,7 @@ int cryptostream_encrypt_feed_read(cryptostream* cs) {
     bytesread =  (int)readv(cs->from_fd,        // fd
                             buffer_free_start,  // vector
                             buffer_free_count); // count
-    if(bytesread<0) return oops_warn("failed to read from source");
+    if(bytesread<0) return oops_sys("failed to read from source");
     
     cs->debug_read_total += bytesread;
     
@@ -109,7 +109,7 @@ int cryptostream_encrypt_feed_write(cryptostream* cs) {
     byteswritten = (int)writev(cs->to_fd,          // fd
                                buffer_full_start,  // vector
                                buffer_full_count); // vcount
-    if(byteswritten<0) return oops_warn("failed to write to target");
+    if(byteswritten<0) return oops_warn_sys("failed to write to target");
     
     cs->debug_write_total += byteswritten;
     

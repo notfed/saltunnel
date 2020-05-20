@@ -10,6 +10,7 @@
 #include "saltunnel_tcp_client_forwarder.h"
 #include "tcpserver.h"
 #include "tcpclient.h"
+
 #include <stdlib.h>
 #include <sys/mman.h>
 
@@ -27,11 +28,11 @@ typedef struct connection_thread_context {
 static void* connection_thread_cleanup(void* ctx, int fd) {
     memset(ctx,0,sizeof(connection_thread_context));
     if(munlock(ctx, sizeof(connection_thread_context))<0)
-       oops_warn("failed to munlock");
+       oops_warn_sys("failed to munlock");
     free(ctx);
     if(fd>=0)
-        if(close(fd)<0)
-            oops_warn("failed to close fd");
+        if(close(fd))
+            oops_error_sys("failed to close fd");
     return 0;
 }
 
@@ -151,7 +152,7 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
                          const char* to_ip, const char* to_port)
 {
     
-    log_info("handling connection");
+    log_debug("entered");
     
     // Create socket
     tcpserver_options options = {
@@ -161,7 +162,9 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
     };
     int s = tcpserver_new(from_ip, from_port, options);
     if(s<0)
-        return oops_warn("error creating socket");
+        return -1;
+
+    log_debug("created socket %d\n", s);
     
     for(;;) {
         log_info("(CLIENT FORWARDER) WAITING FOR ACCEPT ON %s:%s", from_ip, from_port);
@@ -178,7 +181,7 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
         // Handle the connection
         connection_thread_context* ctx = calloc(1,sizeof(connection_thread_context));
         if(mlock(ctx, sizeof(connection_thread_context))<0)
-           oops_warn("failed to mlock client thread context");
+           oops_warn_sys("failed to mlock client thread context");
         ctx->local_fd = local_fd;
         ctx->remote_ip = to_ip;
         ctx->remote_port = to_port;
@@ -186,14 +189,14 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
         
         if(handle_connection(ctx)<0) {
             if(munlock(ctx, sizeof(connection_thread_context))<0)
-               oops_warn("failed to munlock client thread context");
+               oops_warn_sys("failed to munlock client thread context");
             free(ctx);
-            try(close(local_fd)) || log_warn("failed to close file descriptor");
+            close(local_fd);
             log_warn("encountered error with TCP connection");
         }
     }
     
     // The above loop should never exit
-    oops_fatal("saltunnel exited unexpectedly");
+    oops_error("saltunnel exited unexpectedly");
     return 0;
 }

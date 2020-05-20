@@ -14,7 +14,7 @@
 // Only read at most CHAOS_READ_N bytes at a time (for testing)
 int chaos_readv(int fd, struct iovec* vector, int count) {
     if(vector[0].iov_len == 0)
-        oops_fatal("chaos_readv currently requires first vector to be non-zero size");
+        oops_error("chaos_readv currently requires first vector to be non-zero size");
     struct iovec newvector = {
         .iov_base = vector[0].iov_base,
         .iov_len = MIN((CHAOS_READ_N),vector[0].iov_len)
@@ -26,7 +26,7 @@ int chaos_readv(int fd, struct iovec* vector, int count) {
 // Only write at most CHAOS_WRITE_N bytes at a time (for testing)
 int chaos_writev(int fd, struct iovec* vector, int count) {
     if(vector[0].iov_len == 0)
-        oops_fatal("chaos_writev currently requires first vector to be non-zero size");
+        oops_error("chaos_writev currently requires first vector to be non-zero size");
     struct iovec newvector = {
         .iov_base = vector[0].iov_base,
         .iov_len = MIN((CHAOS_WRITE_N),vector[0].iov_len)

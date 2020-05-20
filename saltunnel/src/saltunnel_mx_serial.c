@@ -19,13 +19,13 @@
 
 static void fd_nonblock(int fd) {
     int flags;
-    try((flags=fcntl(fd, F_GETFL, 0))) || oops_fatal("failed to get file flags");
-    try(fcntl(fd, F_SETFL, flags|O_NONBLOCK)) || oops_fatal("failed to set file descriptor as non-blocking");
+    try((flags=fcntl(fd, F_GETFL, 0))) || oops_error_sys("failed to get file flags");
+    try(fcntl(fd, F_SETFL, flags|O_NONBLOCK)) || oops_error_sys("failed to set file descriptor as non-blocking");
 }
 
 static int fd_issocket(int fd) {
     struct stat statbuf;
-    if(fstat(fd, &statbuf)<0) oops_fatal("failed to get file status");
+    if(fstat(fd, &statbuf)<0) oops_error_sys("failed to get file status");
     return S_ISSOCK(statbuf.st_mode);
 }
 
@@ -56,7 +56,7 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
         log_debug("poll: polling [%2d->D->%2d, %2d->E->%2d]...", pfds[0].fd, pfds[1].fd,pfds[2].fd, pfds[3].fd);
         int rc = poll(pfds,4,-1);
         if(rc<0 && errno == EINTR) continue;
-        if(rc<0) oops_fatal("failed to poll");
+        if(rc<0) oops_error_sys("failed to poll");
         
         /* If an fd is ready, mark it as FD_READY */
         
@@ -96,9 +96,9 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
         if(pfds[2].fd == FD_EOF && pfds[3].fd != FD_EOF && !cryptostream_encrypt_feed_canwrite(egress)) {
             log_debug("egress is done; closing egress->to_fd (%d)", egress->to_fd);
             if(egress_to_fd_is_socket) {
-                try(shutdown(egress->to_fd, SHUT_WR)) || oops_fatal("failed to shutdown socket");
+                try(shutdown(egress->to_fd, SHUT_WR)) || oops_error_sys("failed to shutdown socket");
             } else {
-                try(close(egress->to_fd)) || oops_fatal("failed to close file descriptor");
+                try(close(egress->to_fd)) || oops_error_sys("failed to close file descriptor");
             }
             pfds[3].fd = FD_EOF;
         }
@@ -127,15 +127,15 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
         if(pfds[0].fd == FD_EOF && pfds[1].fd != FD_EOF && !cryptostream_decrypt_feed_canwrite(ingress)) {
             log_debug("ingress is done; closing ingress->to_fd (%d)", ingress->to_fd);
             if(ingress_to_fd_is_socket) {
-                try(shutdown(ingress->to_fd, SHUT_WR)) || oops_fatal("failed to shutdown socket");
+                try(shutdown(ingress->to_fd, SHUT_WR)) || oops_error_sys("failed to shutdown socket");
             } else {
-                try(close(ingress->to_fd)) || oops_fatal("failed to close file descriptor");
+                try(close(ingress->to_fd)) || oops_error_sys("failed to close file descriptor");
             }
             pfds[1].fd = FD_EOF;
         }
     }
 
-    // If we encountered an error, simply close all fds
+    // Regardless of error or success, close all fds
     if(had_error) {
         close(ingress->from_fd);
         close(egress->to_fd);

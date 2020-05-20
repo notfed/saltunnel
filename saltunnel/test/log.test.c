@@ -19,7 +19,7 @@ void log_test() {
         
         log_filename_idempotent_fill(log_name, log_filename_from_macro, len, &log_name_filled);
         
-        strcmp(log_name, "test") == 0 || oops_fatal("log test, assertion 1 failed");
+        strcmp(log_name, "test") == 0 || oops_error("log test, assertion 1 failed");
     }
     {
         char log_name[256];
@@ -29,7 +29,7 @@ void log_test() {
         
         log_filename_idempotent_fill(log_name, log_filename_from_macro, len, &log_name_filled);
         
-        strcmp(log_name, "test") == 0 || oops_fatal("log test, assertion 2 failed");
+        strcmp(log_name, "test") == 0 || oops_error("log test, assertion 2 failed");
     }
     {
         char log_name[256];
@@ -39,7 +39,7 @@ void log_test() {
         
         log_filename_idempotent_fill(log_name, log_filename_from_macro, len, &log_name_filled);
         
-        strcmp(log_name, "test") == 0 || oops_fatal("log test, assertion 2 failed");
+        strcmp(log_name, "test") == 0 || oops_error("log test, assertion 2 failed");
     }
     {
         char log_name[256];
@@ -49,6 +49,6 @@ void log_test() {
         
         log_filename_idempotent_fill(log_name, log_filename_from_macro, len, &log_name_filled);
         
-        strcmp(log_name, "test") == 0 || oops_fatal("log test, assertion 2 failed");
+        strcmp(log_name, "test") == 0 || oops_error("log test, assertion 2 failed");
     }
 }

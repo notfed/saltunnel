@@ -48,10 +48,10 @@ static unsigned char testkey[32] = {
 //----------------------------------------
 
 static void create_test_pipe(int fds[2]) {
-    try(pipe(fds)) || oops_fatal("failed to create pipe");
+    try(pipe(fds)) || oops_error("failed to create pipe");
     #ifdef F_SETPIPE_SZ
-    try(fcntl(fds[0], F_SETPIPE_SZ, 1048576)) || oops_fatal("failed to configure pipe");
-    try(fcntl(fds[1], F_SETPIPE_SZ, 1048576)) || oops_fatal("failed to configure pipe");
+    try(fcntl(fds[0], F_SETPIPE_SZ, 1048576)) || oops_error("failed to configure pipe");
+    try(fcntl(fds[1], F_SETPIPE_SZ, 1048576)) || oops_error("failed to configure pipe");
     #endif
 }
 
@@ -60,20 +60,20 @@ static int calculate_filled_buffers(int start, int end, int buffersize) {
 }
 
 void calculate_filled_buffers_tests() {
-    if(calculate_filled_buffers(5,15,10)!=0) oops_fatal("failed test9.1");
-    if(calculate_filled_buffers(5,25,10)!=1) oops_fatal("failed test9.2");
-    if(calculate_filled_buffers(5,35,10)!=2) oops_fatal("failed test9.3");
+    if(calculate_filled_buffers(5,15,10)!=0) oops_error("failed test9.1");
+    if(calculate_filled_buffers(5,25,10)!=1) oops_error("failed test9.2");
+    if(calculate_filled_buffers(5,35,10)!=2) oops_error("failed test9.3");
     
-    if(calculate_filled_buffers(0,10,10)!=1) oops_fatal("failed test9.4");
-    if(calculate_filled_buffers(1,10,10)!=0) oops_fatal("failed test9.5");
-    if(calculate_filled_buffers(0,11,10)!=1) oops_fatal("failed test9.6");
+    if(calculate_filled_buffers(0,10,10)!=1) oops_error("failed test9.4");
+    if(calculate_filled_buffers(1,10,10)!=0) oops_error("failed test9.5");
+    if(calculate_filled_buffers(0,11,10)!=1) oops_error("failed test9.6");
     
-    if(calculate_filled_buffers(10,11,10)!=0) oops_fatal("failed test9.7");
-    if(calculate_filled_buffers(10,19,10)!=0) oops_fatal("failed test9.8");
-    if(calculate_filled_buffers(10,20,10)!=1) oops_fatal("failed test9.9");
-    if(calculate_filled_buffers(10,21,10)!=1) oops_fatal("failed test9.10");
-    if(calculate_filled_buffers(10,29,10)!=1) oops_fatal("failed test9.11");
-    if(calculate_filled_buffers(10,30,10)!=2) oops_fatal("failed test9.12");
+    if(calculate_filled_buffers(10,11,10)!=0) oops_error("failed test9.7");
+    if(calculate_filled_buffers(10,19,10)!=0) oops_error("failed test9.8");
+    if(calculate_filled_buffers(10,20,10)!=1) oops_error("failed test9.9");
+    if(calculate_filled_buffers(10,21,10)!=1) oops_error("failed test9.10");
+    if(calculate_filled_buffers(10,29,10)!=1) oops_error("failed test9.11");
+    if(calculate_filled_buffers(10,30,10)!=2) oops_error("failed test9.12");
 }
 
 //--------------------------------------------
@@ -102,7 +102,7 @@ static pthread_t saltunnel_thread(const char* thread_name, cryptostream* ingress
     c->ingress = ingress;
     c->egress = egress;
     pthread_t thread;
-    pthread_create(&thread, NULL, saltunnel_thread_inner, (void*)c)==0 || oops_fatal("pthread_create failed");
+    pthread_create(&thread, NULL, saltunnel_thread_inner, (void*)c)==0 || oops_error("pthread_create failed");
     return thread;
 }
 
@@ -122,8 +122,8 @@ static void* write_thread_inner(void* v)
     write_thread_context* c = (write_thread_context*)v;
     log_set_thread_name(c->thread_name);
     int w = (int)write(c->fd, c->buf, c->len);
-    if(w != c->len) oops_fatal("write");
-    try(close(c->fd)) || oops_fatal("close");
+    if(w != c->len) oops_error("write");
+    try(close(c->fd)) || oops_error("close");
     log_debug("write_thread wrote %d bytes to fd %d (and closed it)",(int)w,c->fd);
     free(v);
     return 0;
@@ -137,7 +137,7 @@ static pthread_t write_thread(const char* thread_name, int fd,const char *buf,un
     c->buf = buf;
     c->len = len;
     pthread_t thread;
-    pthread_create(&thread, NULL, write_thread_inner, (void*)c)==0 || oops_fatal("pthread_create failed");
+    pthread_create(&thread, NULL, write_thread_inner, (void*)c)==0 || oops_error("pthread_create failed");
     return thread;
 }
 
@@ -214,18 +214,18 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     // Read "actual value" from peer1's local pipe
     log_debug("reading %d bytes from %d", from_peer2_local_str_len, peer1_pipe_local_output[0]);
     char* from_peer1_local_str_actual = calloc(from_peer2_local_str_len+1,sizeof(char));
-    try(readn(peer1_pipe_local_output[0], from_peer1_local_str_actual, from_peer2_local_str_len)) || oops_fatal("read");
+    try(readn(peer1_pipe_local_output[0], from_peer1_local_str_actual, from_peer2_local_str_len)) || oops_error("read");
     
     // Read "actual value" from peer2's local pipe
     log_debug("reading %d bytes from %d", from_peer1_local_str_len, peer2_pipe_local_output[0]);
     char* from_peer2_local_str_actual = calloc(from_peer1_local_str_len+1,sizeof(char));
-    try(readn(peer2_pipe_local_output[0], from_peer2_local_str_actual, from_peer1_local_str_len)) || oops_fatal("read");
+    try(readn(peer2_pipe_local_output[0], from_peer2_local_str_actual, from_peer1_local_str_len)) || oops_error("read");
     
     // Clean up threads
-    try(pthread_join(write_thread_1, NULL)) || oops_fatal("pthread_join");
-    try(pthread_join(write_thread_2, NULL)) || oops_fatal("pthread_join");
-    try(pthread_join(saltunnel_thread_1, NULL)) || oops_fatal("pthread_join");
-    try(pthread_join(saltunnel_thread_2, NULL)) || oops_fatal("pthread_join");
+    try(pthread_join(write_thread_1, NULL)) || oops_error("pthread_join");
+    try(pthread_join(write_thread_2, NULL)) || oops_error("pthread_join");
+    try(pthread_join(saltunnel_thread_1, NULL)) || oops_error("pthread_join");
+    try(pthread_join(saltunnel_thread_2, NULL)) || oops_error("pthread_join");
     
     long elapsed = stopwatch_elapsed(&sw);
     log_info("...took %dus (%d MBps)", (int)elapsed, (int)((from_peer1_local_str_len+from_peer2_local_str_len)/elapsed));
@@ -236,8 +236,8 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
         int d = first_difference(from_peer2_local_str, from_peer1_local_str_actual, from_peer2_local_str_len);
         const char* s1 = from_peer2_local_str+d;
         const char* s2 = from_peer1_local_str_actual+d;
-        log_fatal("...str differed ('%c'!='%c') at index %d",*s1,*s2,d);
-        log_fatal("...(%d,%d) failed: peer1 strs differed",from_peer1_local_str_len,from_peer2_local_str_len);
+        log_error("...str differed ('%c'!='%c') at index %d",*s1,*s2,d);
+        log_error("...(%d,%d) failed: peer1 strs differed",from_peer1_local_str_len,from_peer2_local_str_len);
         _exit(1);
     }
     
@@ -247,8 +247,8 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
         int d = first_difference(from_peer1_local_str, from_peer2_local_str_actual, from_peer1_local_str_len);
         const char* s1 = from_peer1_local_str+d;
         const char* s2 = from_peer2_local_str_actual+d;
-        log_fatal("...str differed ('%c'!='%c') at index %d",*s1,*s2,d);
-        log_fatal("...(%d,%d) failed: peer1 strs differed",from_peer1_local_str_len,from_peer2_local_str_len);
+        log_error("...str differed ('%c'!='%c') at index %d",*s1,*s2,d);
+        log_error("...(%d,%d) failed: peer1 strs differed",from_peer1_local_str_len,from_peer2_local_str_len);
         _exit(1);
     }
     

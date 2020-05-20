@@ -27,11 +27,11 @@ typedef struct connection_thread_context {
 static void* connection_thread_cleanup(void* ctx, int fd) {
     memset(ctx,0,sizeof(connection_thread_context));
     if(munlock(ctx, sizeof(connection_thread_context))<0)
-       oops_warn("failed to munlock");
+       oops_warn_sys("failed to munlock");
     free(ctx);
     if(fd>=0)
-        if(close(fd)<0)
-            oops_warn("failed to close fd");
+        if(close(fd))
+            oops_error_sys("failed to close fd");
     return 0;
 }
 
@@ -139,13 +139,13 @@ static int maybe_handle_connection(cache* table, connection_thread_context* ctx)
     
     // Read packet0
     if(saltunnel_kx_packet0_tryread(table, &ctx->tmp_pinned, ctx->long_term_shared_key, ctx->remote_fd, ctx->their_pk)<0) {
-        return oops_warn("failed to read packet0");
+        return oops_warn("refused connection");
     }
     
     log_info("server forwarder successfully read packet0");
     
     // If packet0 was good, spawn a thread to handle subsequent packets
-    log_info("handling connection");
+    log_info("accepted connection");
     pthread_t thread = connection_thread_spawn(ctx);
     if(thread==0) return -1;
     else return 1;
@@ -167,19 +167,17 @@ int saltunnel_tcp_server_forwarder(cache* table,
     
     int s = tcpserver_new(from_ip, from_port, options);
     if(s<0)
-        return oops_warn("failed to establish TCP server socket");
+        return -1;
     
+    oops_should_warn();
     for(;;) {
-        log_info("(SERVER FORWARDER) WAITING FOR ACCEPT ON %s:%s", from_ip, from_port);
-        
         // Accept a new connection (or wait for one to arrive)
+        log_info("waiting for connections on %s:%s (fd %d)...", from_ip, from_port, s);
         int remote_fd = tcpserver_accept(s);
         if(remote_fd<0) {
-            log_warn("failed to accept incoming TCP connection");
             continue;
         }
-        
-        log_info("(SERVER FORWARDER) ACCEPTED ON %s:%s", from_ip, from_port);
+        log_info("received connection request on %s:%s (fd %d)", from_ip, from_port, remote_fd);
 
         // Handle the connection
         connection_thread_context* ctx = calloc(1,sizeof(connection_thread_context));
@@ -195,7 +193,6 @@ int saltunnel_tcp_server_forwarder(cache* table,
                oops_warn("failed to munlock server data");
             free(ctx);
             try(close(remote_fd)) || log_warn("failed to close connection");
-            log_info("refused to handle connection");
         }
     }
     

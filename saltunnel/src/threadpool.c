@@ -10,6 +10,7 @@
 #include "threadpool_barrier.h"
 #include "stopwatch.h"
 #include <pthread.h>
+
 #include <stdlib.h>
 
 threadpool tps[2] = {0};
@@ -25,7 +26,7 @@ static void* threadpool_loop(void* ctx_void) {
     threadpool* tp = ctx->tp;
     
     if(!tp->tp_init_complete)
-        oops_fatal("assertion failed: threadpool not initialized");
+        oops_error("assertion failed: threadpool not initialized");
     
     int thread_i = ctx->thread_i;
 
@@ -33,10 +34,10 @@ static void* threadpool_loop(void* ctx_void) {
         log_debug("threadpool_loop: about to wait for 'start' signal");
         
         // Wait for start signal
-        pthread_mutex_lock(&tp->mutex)==0 || oops_fatal("failed to lock thread mutex");
+        pthread_mutex_lock(&tp->mutex)==0 || oops_error_sys("failed to lock thread mutex");
         while(!tp->started)
-            pthread_cond_wait(&tp->start, &tp->mutex)==0 || oops_fatal("failed to wait on thread condition");
-        pthread_mutex_unlock(&tp->mutex)==0 || oops_fatal("failed to unlock thread mutex");
+            pthread_cond_wait(&tp->start, &tp->mutex)==0 || oops_error_sys("failed to wait on thread condition");
+        pthread_mutex_unlock(&tp->mutex)==0 || oops_error_sys("failed to unlock thread mutex");
         
         log_debug("threadpool_loop: received 'start' signal; encrypting...");
         
@@ -62,7 +63,7 @@ void threadpool_init(threadpool* tp) {
     if(!tp->tp_init_complete) {
         tp->tp_init_complete = 1;
     } else {
-        oops_fatal("assertion failed: attempted to initialialize threadpool twice");
+        oops_error("assertion failed: attempted to initialialize threadpool twice");
     }
     
     // Check to see if we shouldn't even use threads
@@ -75,20 +76,20 @@ void threadpool_init(threadpool* tp) {
         return;
     }
     
-    pthread_mutex_init(&tp->parallel_for_mutex, NULL)==0 || oops_fatal("failed to initialize thread mutex");
+    pthread_mutex_init(&tp->parallel_for_mutex, NULL)==0 || oops_error_sys("failed to initialize thread mutex");
     
-    pthread_mutex_init(&tp->mutex, NULL)==0 || oops_fatal("failed to initialize thread mutex");
+    pthread_mutex_init(&tp->mutex, NULL)==0 || oops_error_sys("failed to initialize thread mutex");
     
-    pthread_cond_init(&tp->start, NULL)==0 || oops_fatal("failed to initialize thread mutex");
+    pthread_cond_init(&tp->start, NULL)==0 || oops_error_sys("failed to initialize thread mutex");
     
     threadpool_barrier_init(&tp->finish, NULL, THREADPOOL_THREAD_COUNT)==0
-    || oops_fatal("failed to initialize thread barrier");
+    || oops_error_sys("failed to initialize thread barrier");
     
     for(int thread_i = 0; thread_i < THREADPOOL_THREAD_COUNT-1; thread_i++) {
         tp->thread_contexts[thread_i].tp = tp;
         tp->thread_contexts[thread_i].thread_i = thread_i;
         pthread_create(&tp->threads[thread_i], NULL, threadpool_loop, (void*)&tp->thread_contexts[thread_i])==0
-        || oops_fatal("failed to created thread");
+        || oops_error_sys("failed to created thread");
     }
 }
 
@@ -100,27 +101,27 @@ void threadpool_for(int threadpool_index, threadpool_task* tasks) {
     if(THREADPOOL_POOLS==1) {
       tp = &tps[0];
     } else if(THREADPOOL_POOLS==2) {
-        if(threadpool_index<0 || threadpool_index>1) oops_fatal("assertion failed: thread index out of range");
+        if(threadpool_index<0 || threadpool_index>1) oops_error("assertion failed: thread index out of range");
         tp = &tps[threadpool_index];
     } else {
-        oops_fatal("assertion failed: THREADPOOL_POOLS must be set to either '1' or '2'");
+        oops_error("assertion failed: THREADPOOL_POOLS must be set to either '1' or '2'");
     }
     if(!tp->tp_init_complete)
-        oops_fatal("assertion failed: threadpool not initialized");
+        oops_error("assertion failed: threadpool not initialized");
     
     // Take big lock
-    pthread_mutex_lock(&tp->parallel_for_mutex)==0 || oops_fatal("failed to lock thread mutex");
+    pthread_mutex_lock(&tp->parallel_for_mutex)==0 || oops_error_sys("failed to lock thread mutex");
     
     // Point the threadpool to the provided tasks (except, skip the first task, because we'll do that in the calling thread)
     tp->tasks = &tasks[1];
     
     // Broadcast start signal
-    pthread_mutex_lock(&tp->mutex)==0 || oops_fatal("failed to lock thread mutex");
+    pthread_mutex_lock(&tp->mutex)==0 || oops_error_sys("failed to lock thread mutex");
     log_debug("threadpool_for: about to send 'start' signal");
         tp->started = 1;
-        pthread_cond_broadcast(&tp->start)==0 || oops_fatal("failed to broadcast thread condition");
+        pthread_cond_broadcast(&tp->start)==0 || oops_error_sys("failed to broadcast thread condition");
     log_debug("threadpool_for: sent 'start' signal");
-    pthread_mutex_unlock(&tp->mutex)==0 || oops_fatal("failed to unlock thread mutex");
+    pthread_mutex_unlock(&tp->mutex)==0 || oops_error_sys("failed to unlock thread mutex");
     
     // Run the first task in the calling thread
     tasks[0].action(tasks[0].param);
@@ -128,11 +129,11 @@ void threadpool_for(int threadpool_index, threadpool_task* tasks) {
     // Wait for all threads to finish
     log_debug("threadpool_for: about to wait for 'finish' barrier");
     int r = threadpool_barrier_wait(&tp->finish, &tp->started);
-    if(r<0 || r>1) oops_fatal("failed to wait for thread barrier");
+    if(r<0 || r>1) oops_error_sys("failed to wait for thread barrier");
     log_debug("threadpool_for: 'finish' barrier completed");
     
     // Release big lock
-    pthread_mutex_unlock(&tp->parallel_for_mutex)==0 || oops_fatal("failed to unlock thread mutex");
+    pthread_mutex_unlock(&tp->parallel_for_mutex)==0 || oops_error_sys("failed to unlock thread mutex");
 }
 
 void threadpool_shutdown(threadpool* tp) {
@@ -148,7 +149,7 @@ void threadpool_init_all() {
         threadpool_init(&tps[0]);
         threadpool_init(&tps[1]);
     } else {
-        oops_fatal("assertion failed: THREADPOOL_POOLS must be set to either '1' or '2'");
+        oops_error("assertion failed: THREADPOOL_POOLS must be set to either '1' or '2'");
     }
 }
 
@@ -159,7 +160,7 @@ void threadpool_shutdown_all() {
         threadpool_shutdown(&tps[0]);
         threadpool_shutdown(&tps[1]);
     } else {
-        oops_fatal("assertion failed: THREADPOOL_POOLS must be set to either '1' or '2'");
+        oops_error("assertion failed: THREADPOOL_POOLS must be set to either '1' or '2'");
     }
 }
 
