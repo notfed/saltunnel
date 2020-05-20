@@ -109,9 +109,9 @@ static void* connection_thread(void* v)
     
     // Memory-lock the plaintext buffers
     if(mlock(ingress.plaintext, sizeof(ingress.plaintext))<0)
-       oops_warn("failed to mlock client data");
+       oops_warn_sys("failed to mlock client data");
     if(mlock(egress.plaintext, sizeof(egress.plaintext))<0)
-       oops_warn("failed to mlock client data");
+       oops_warn_sys("failed to mlock client data");
     
     // Run saltunnel
     log_info("client forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
@@ -123,9 +123,9 @@ static void* connection_thread(void* v)
     
     // Un-memory-lock the plaintext buffers
     if(munlock(ingress.plaintext, sizeof(ingress.plaintext))<0)
-        oops_warn("failed to munlock client data");
+        oops_warn_sys("failed to munlock client data");
     if(munlock(egress.plaintext, sizeof(egress.plaintext))<0)
-        oops_warn("failed to munlock client data");
+        oops_warn_sys("failed to munlock client data");
     
     // Clean up
     return connection_thread_cleanup(ctx, remote_fd);
