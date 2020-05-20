@@ -227,8 +227,12 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     try(pthread_join(saltunnel_thread_1, NULL)) || oops_error("pthread_join");
     try(pthread_join(saltunnel_thread_2, NULL)) || oops_error("pthread_join");
     
+    // If more than 100k bytes, show throughput
     long elapsed = stopwatch_elapsed(&sw);
-    log_info("...took %dus (%d MBps)", (int)elapsed, (int)((from_peer1_local_str_len+from_peer2_local_str_len)/elapsed));
+    long total_bytes = from_peer1_local_str_len + from_peer2_local_str_len;
+    if(total_bytes>100000) {
+        log_info("...took %dus (%d MBps)", (int)elapsed, (int)((total_bytes)/elapsed));
+    }
 
     // Compare actual peer1 local data
     int cmp1 = memcmp(from_peer2_local_str,from_peer1_local_str_actual,from_peer2_local_str_len);
@@ -264,7 +268,7 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     close(peer2_pipe_local_output[0]); close(peer2_pipe_local_output[1]);
     close(peer2_pipe_to_peer1[0]);     close(peer2_pipe_to_peer1[1]);
 
-    log_info("...(%d,%d) passed",from_peer1_local_str_len,from_peer2_local_str_len);
+    log_info("...passed",from_peer1_local_str_len,from_peer2_local_str_len);
 }
 
 //--------------------------------------------------------
