@@ -13,6 +13,7 @@
 
 #include <stdlib.h>
 #include <sys/mman.h>
+#include <sys/socket.h>
 
 typedef struct connection_thread_context {
     packet0 tmp_pinned;
@@ -25,14 +26,22 @@ typedef struct connection_thread_context {
     const char* remote_port;
 } connection_thread_context;
 
-static void* connection_thread_cleanup(void* ctx, int fd) {
+static void* connection_thread_cleanup(void* v, int remote_fd, int force_close) {
+    connection_thread_context* ctx = (connection_thread_context*)v;
     memset(ctx,0,sizeof(connection_thread_context));
     if(munlock(ctx, sizeof(connection_thread_context))<0)
        oops_warn_sys("failed to munlock");
+
+    if(force_close) {
+        close(ctx->local_fd);
+        if(remote_fd>=0) close(remote_fd);
+    } else {
+        shutdown(ctx->local_fd, SHUT_RDWR);
+        if(remote_fd>=0) shutdown(remote_fd, SHUT_RDWR);
+    }
+    log_info("TCP connection (with 'from' endpoint) terminated (fd %d)", ctx->local_fd);
+    log_info("TCP connection (with 'to' endpoint) terminated (fd %d)", remote_fd);
     free(ctx);
-    if(fd>=0)
-        if(close(fd))
-            oops_error_sys("failed to close fd");
     return 0;
 }
 
@@ -41,55 +50,56 @@ static void* connection_thread(void* v)
     connection_thread_context* ctx = (connection_thread_context*)v;
     log_set_thread_name(" cf ");
     
-    log_info("connection thread entered");
+    log_debug("connection thread entered");
 
     // Create a TCP Client to connect to server
     tcpclient_options options = {
      .OPT_TCP_NODELAY = 1,
      .OPT_SO_SNDLOWAT = 512
     };
-    log_info("(CLIENT FORWARDER) ABOUT TO CONNECT TO %s:%s", ctx->remote_ip, ctx->remote_port);
+
+    log_debug("connecting to %s:%s", ctx->remote_ip, ctx->remote_port);
     int remote_fd = tcpclient_new(ctx->remote_ip, ctx->remote_port, options);
     if(remote_fd<0) {
-        log_warn("failed to connect to server");
-        return connection_thread_cleanup(ctx, remote_fd);
+        log_debug("failed to connect to destination port");
+        return connection_thread_cleanup(ctx, remote_fd, 1);
     }
+
+    log_info("TCP connection (with 'to' endpoint) established (fd %d)", remote_fd);
     
     // Write packet0 to server
     if(saltunnel_kx_packet0_trywrite(&ctx->tmp_pinned, ctx->long_term_shared_key, remote_fd, ctx->my_sk)<0) {
-        log_warn("failed to write packet0 to server");
-        return connection_thread_cleanup(ctx, remote_fd);
+        log_debug("connection %d: failed to write packet0 to server", remote_fd);
+        return connection_thread_cleanup(ctx, remote_fd, 1);
     }
-    log_info("(CLIENT FORWARDER) SUCCESSFULLY CONNECTED TO %s:%s", ctx->remote_ip, ctx->remote_port);
     
-    log_info("client forwarder successfully wrote packet0 to server");
+    log_debug("connection %d: client forwarder successfully wrote packet0 to server", remote_fd);
                                      
     // Read packet0
     if(saltunnel_kx_packet0_tryread(NULL, &ctx->tmp_pinned, ctx->long_term_shared_key, remote_fd, ctx->their_pk)<0) {
-        log_warn("failed to read packet0");
-        return connection_thread_cleanup(ctx, remote_fd);
+        log_debug("connection %d: failed to read packet0", remote_fd);
+        return connection_thread_cleanup(ctx, remote_fd, 1);
     }
     
-    log_info("client forwarder successfully read packet0");
+    log_debug("connection %d: client forwarder successfully read packet0", remote_fd);
     
     // Calculate shared key
     if(saltunnel_kx_calculate_shared_key(ctx->session_shared_keys, ctx->their_pk, ctx->my_sk)<0) {
-        log_warn("failed to calculate shared key");
-        return connection_thread_cleanup(ctx, remote_fd);
+        return connection_thread_cleanup(ctx, remote_fd, 1);
     }
     
-    log_info("successfully calculated shared key");
+    log_debug("connection %d: successfully calculated shared key", remote_fd);
 
     // Exchange packet1 (to prevent replay-attack from exploiting server-sends-first scenarios)
     
-    log_info("about to exchange packet1 with server");
+    log_debug("connection %d: about to exchange packet1 with server", remote_fd);
     if(saltunnel_kx_packet1_exchange(ctx->session_shared_keys, 0, remote_fd)<0) {
-        log_warn("failed to exchange packet1 with server");
-        return connection_thread_cleanup(ctx, remote_fd);
+        log_debug("failed to exchange packet1 with server");
+        return connection_thread_cleanup(ctx, remote_fd, 1);
     }
-    log_info("successfully exchanged packet1 with server");
+    log_debug("successfully exchanged packet1 with server", remote_fd);
     
-    log_info("running saltunnel");
+    log_debug("running saltunnel");
     
     // Initialize saltunnel parameters
     cryptostream ingress = {
@@ -114,7 +124,7 @@ static void* connection_thread(void* v)
        oops_warn_sys("failed to mlock client data");
     
     // Run saltunnel
-    log_info("client forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
+    log_debug("client forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
     saltunnel(&ingress, &egress);
     
     // Clear the plaintext buffers/keys
@@ -128,7 +138,7 @@ static void* connection_thread(void* v)
         oops_warn_sys("failed to munlock client data");
     
     // Clean up
-    return connection_thread_cleanup(ctx, remote_fd);
+    return connection_thread_cleanup(ctx, remote_fd, 0);
 }
 
 static pthread_t connection_thread_spawn(connection_thread_context* ctx)
@@ -167,7 +177,7 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
     log_debug("created socket %d\n", s);
     
     for(;;) {
-        log_info("waiting for connections (on %s:%s)", from_ip, from_port);
+        log_debug("waiting for connections (on %s:%s)", from_ip, from_port);
         
         // Accept a new connection (or wait for one to arrive)
         int local_fd = tcpserver_accept(s);
@@ -176,7 +186,7 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
             continue;
         }
         
-        log_info("accepted TCP connection (fd %d) ", local_fd);
+        log_info("local TCP connection established (fd %d)", local_fd);
         
         // Handle the connection
         connection_thread_context* ctx = calloc(1,sizeof(connection_thread_context));
@@ -191,7 +201,7 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
             if(munlock(ctx, sizeof(connection_thread_context))<0)
                oops_warn_sys("failed to munlock client thread context");
             free(ctx);
-            try(close(local_fd)) || log_warn("failed to close connection");
+            close(local_fd);
             log_warn("encountered error with TCP connection");
         }
     }
