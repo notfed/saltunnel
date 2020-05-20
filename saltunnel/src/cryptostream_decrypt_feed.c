@@ -65,6 +65,8 @@ int cryptostream_decrypt_feed_read(cryptostream* cs) {
         return 0;
     }
     
+    log_debug("read %d plaintext bytes (total %ld) from fd %d", bytesread, cs->debug_read_total, cs->from_fd);
+    
     // Bump vector
     int buffers_filled  = (int)vector_skip(cs->ciphertext_vector, buffer_free_start_i, buffer_free_count, bytesread);
 
@@ -123,6 +125,8 @@ int cryptostream_decrypt_feed_write(cryptostream* cs) {
     if(byteswritten<0) return oops_sys("failed to write to target");
     
     cs->debug_write_total += byteswritten;
+    
+    log_debug("wrote %d plaintext bytes (total %ld) to fd %d", byteswritten, cs->debug_write_total, cs->to_fd);
     
     // Seek the vectors so that, if we didn't write all the bytes, then, later, we can try again
     int buffers_flushed = (int)vector_skip(cs->plaintext_vector,

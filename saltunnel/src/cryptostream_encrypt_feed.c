@@ -66,7 +66,7 @@ int cryptostream_encrypt_feed_read(cryptostream* cs) {
         return 0;
     }
     
-    log_trace("cryptostream_encrypt_feed_read: got %d bytes from egress local (total %ld)",(int)bytesread,cs->debug_read_total);
+    log_debug("read %d plaintext bytes (total %ld) from fd %d", bytesread, cs->debug_read_total, cs->from_fd);
 
     //
     // Encrypt
@@ -113,7 +113,7 @@ int cryptostream_encrypt_feed_write(cryptostream* cs) {
     
     cs->debug_write_total += byteswritten;
     
-    log_trace("cryptostream_encrypt_feed_write: wrote %d bytes (total %d)", byteswritten, (int)cs->debug_write_total);
+    log_debug("wrote %d ciphertext bytes (total %ld) to fd %d", byteswritten, cs->debug_write_total, cs->to_fd);
     
     // Seek the vectors so that, if we didn't write all the bytes, then, later, we can try again
     int buffers_flushed = (int)vector_skip(cs->ciphertext_vector,
