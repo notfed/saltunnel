@@ -13,11 +13,11 @@
 
 int oops_mode = 0;
 
-int oops_should_warn() {
+void oops_should_warn() {
     oops_mode = 0;
 }
 
-int oops_should_error() {
+void oops_should_error() {
     oops_mode = 1;
 }
 
