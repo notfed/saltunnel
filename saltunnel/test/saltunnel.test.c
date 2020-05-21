@@ -32,6 +32,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+
 //-------------------
 // Test Data
 //-------------------
@@ -153,6 +154,7 @@ static int first_difference(const char* str1, const char* str2, unsigned int n) 
     return -1;
 }
 
+
 static void bidirectional_test(const char* from_peer1_local_str, unsigned int from_peer1_local_str_len,
                                const char* from_peer2_local_str, unsigned int from_peer2_local_str_len) {
     
@@ -214,18 +216,18 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     // Read "actual value" from peer1's local pipe
     log_trace("reading %d bytes from %d", from_peer2_local_str_len, peer1_pipe_local_output[0]);
     char* from_peer1_local_str_actual = calloc(from_peer2_local_str_len+1,sizeof(char));
-    try(readn(peer1_pipe_local_output[0], from_peer1_local_str_actual, from_peer2_local_str_len)) || oops_error("read");
+    try(readn(peer1_pipe_local_output[0], from_peer1_local_str_actual, from_peer2_local_str_len)) || oops_error_sys("read");
     
     // Read "actual value" from peer2's local pipe
     log_trace("reading %d bytes from %d", from_peer1_local_str_len, peer2_pipe_local_output[0]);
     char* from_peer2_local_str_actual = calloc(from_peer1_local_str_len+1,sizeof(char));
-    try(readn(peer2_pipe_local_output[0], from_peer2_local_str_actual, from_peer1_local_str_len)) || oops_error("read");
+    try(readn(peer2_pipe_local_output[0], from_peer2_local_str_actual, from_peer1_local_str_len)) || oops_error_sys("read");
     
     // Clean up threads
-    try(pthread_join(write_thread_1, NULL)) || oops_error("pthread_join");
-    try(pthread_join(write_thread_2, NULL)) || oops_error("pthread_join");
-    try(pthread_join(saltunnel_thread_1, NULL)) || oops_error("pthread_join");
-    try(pthread_join(saltunnel_thread_2, NULL)) || oops_error("pthread_join");
+    try(pthread_join(write_thread_1, NULL)) || oops_error_sys("pthread_join");
+    try(pthread_join(write_thread_2, NULL)) || oops_error_sys("pthread_join");
+    try(pthread_join(saltunnel_thread_1, NULL)) || oops_error_sys("pthread_join");
+    try(pthread_join(saltunnel_thread_2, NULL)) || oops_error_sys("pthread_join");
     
     // If more than 100k bytes, show throughput
     long elapsed = stopwatch_elapsed(&sw);
@@ -288,6 +290,19 @@ void two_packet_bidirectional_test() {
     
     char from_peer1_local_str[700];
     char from_peer2_local_str[700];
+    for(int i = 0; i < sizeof(from_peer1_local_str); i++) {
+        from_peer1_local_str[i] = i+1;
+        from_peer2_local_str[i] = i+1;
+    }
+
+    bidirectional_test(from_peer1_local_str, 1,
+                       from_peer2_local_str, sizeof(from_peer2_local_str));
+}
+
+void large_bidirectional_test() {
+    
+    static char from_peer1_local_str[14000000];
+    static char from_peer2_local_str[14000000];
     for(int i = 0; i < sizeof(from_peer1_local_str); i++) {
         from_peer1_local_str[i] = i+1;
         from_peer2_local_str[i] = i+1;

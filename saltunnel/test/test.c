@@ -32,12 +32,13 @@ static void run(void (*the_test)(void), const char *test_name) {
 void test() {
     
     log_info("test suite started");
-
+    
     run(rwn_test, "rwn tests");
     run(log_test, "log tests");
     run(saltunnel_tcp_forwarder_tests, "saltunnel tcp forwarder tests");
     run(single_packet_bidirectional_test, "single packet bidirectional tests");
     run(two_packet_bidirectional_test, "two-packet bidirectional test");
+    run(large_bidirectional_test, "large bidirectional test");
     run(edge_case_bidirectional_tests, "edge-case bidirectional tests");
     run(calculate_filled_buffers_tests,"calculate filled buffers tests");
     run(cryptostream_vector_tests,"cryptostream vector tests");
