@@ -32,8 +32,8 @@
 #include <string.h>
 
 extern int oops_mode;
-void oops_should_warn();
-void oops_should_error();
+void oops_should_warn(void);
+void oops_should_error(void);
 
 int intexit(int);
 
