@@ -23,7 +23,9 @@ int fd_unblock(int sockfd) { return fcntl(sockfd,F_SETFL,fcntl(sockfd,F_GETFL,0)
 static int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen_t addrlen, unsigned int timeout) {
     int rc = 0;
     // Set O_NONBLOCK
-    if(fcntl(sockfd,F_SETFL,fcntl(sockfd,F_GETFL,0) | O_NONBLOCK)<0) return -1;
+    int sockfd_flags_before;
+    if((sockfd_flags_before=fcntl(sockfd,F_GETFL,0)<0)) return -1;
+    if(fcntl(sockfd,F_SETFL,sockfd_flags_before | O_NONBLOCK)<0) return -1;
     // Start connecting
     if (connect(sockfd, addr, addrlen)<0) {
         // Did connect return an error? If so, fail.
@@ -43,8 +45,8 @@ static int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen
             }
         }
     }
-    // Unset O_NONBLOCK
-    if(fcntl(sockfd,F_SETFL,fcntl(sockfd,F_GETFL,0) & ~O_NONBLOCK)<0) return -1;
+    // Restore original O_NONBLOCK state
+    if(fcntl(sockfd,F_SETFL,sockfd_flags_before)<0) return -1;
     // Success
     return rc;
 }
