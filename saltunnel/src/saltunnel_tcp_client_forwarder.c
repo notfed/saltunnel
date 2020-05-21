@@ -56,7 +56,8 @@ static void* connection_thread(void* v)
     // Create a TCP Client to connect to server
     tcpclient_options options = {
      .OPT_TCP_NODELAY = 1,
-     .OPT_SO_SNDLOWAT = 512
+     .OPT_SO_SNDLOWAT = 512,
+     .OPT_CONNECT_TIMEOUT = 7000
     };
 
     log_trace("connecting to %s:%s", ctx->remote_ip, ctx->remote_port);

@@ -55,11 +55,12 @@ static void* connection_thread(void* v)
 
     // Create a TCP Client to connect to target
     tcpclient_options options = {
-     .OPT_TCP_NODELAY = 1
+        .OPT_TCP_NODELAY = 1,
+        .OPT_CONNECT_TIMEOUT = 10000
     };
     log_trace("connecting to %s:%s", ctx->to_ip, ctx->to_port);
     
-    int local_fd = tcpclient_new(ctx->to_ip, ctx->to_port, options);
+    int local_fd = tcpclient_new(ctx->to_ip, ctx->to_port, options); // TODO: Don't connect until after packet0 !!
     if(local_fd<0) {
         log_trace("failed to connect to 'to' endpoint");
         return connection_thread_cleanup(v,local_fd,1);
