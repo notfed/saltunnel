@@ -94,6 +94,8 @@ int saltunnel_kx_packet0_tryread(cache* table,
         return oops_sys("empty packet0");
     if(bytes_read<0)
         return oops_sys("read failed");
+    if(bytes_read == 0)
+        return oops("connection terminated before authentication could be completed");
     if(bytes_read != CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT)
         return oops_sys("partial packet0");
     
