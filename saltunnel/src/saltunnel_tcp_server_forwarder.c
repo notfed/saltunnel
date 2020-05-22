@@ -80,7 +80,7 @@ static void* connection_thread(void* v)
     };
     log_trace("connecting to %s:%s", ctx->to_ip, ctx->to_port);
     
-    int local_fd = tcpclient_new(ctx->to_ip, ctx->to_port, options); // TODO: Don't connect until after packet0 !!
+    int local_fd = tcpclient_new(ctx->to_ip, ctx->to_port, options);
     if(local_fd<0) {
         log_trace("failed to connect to 'to' endpoint");
         return connection_thread_cleanup(v,1);
