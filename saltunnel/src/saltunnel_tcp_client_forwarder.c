@@ -57,7 +57,7 @@ static void* connection_thread(void* v)
     tcpclient_options options = {
      .OPT_TCP_NODELAY = 1,
      .OPT_SO_SNDLOWAT = 512,
-     .OPT_CONNECT_TIMEOUT = 7000
+     .OPT_CONNECT_TIMEOUT = 10000
     };
 
     log_trace("connecting to %s:%s", ctx->remote_ip, ctx->remote_port);
@@ -172,7 +172,7 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
      .OPT_SO_REUSEADDR = 1,
      .OPT_TCP_FASTOPEN = 1
     };
-    int s = tcpserver_new(from_ip, from_port, options);
+    int s  = tcpserver_new(from_ip, from_port, options);
     if(s<0)
         return -1;
 

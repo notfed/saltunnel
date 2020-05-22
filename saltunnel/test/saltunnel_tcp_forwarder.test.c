@@ -181,6 +181,7 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
         // Create a TCP client
         tcpclient_options options = {
          .OPT_TCP_NODELAY = 1,
+         .OPT_CONNECT_TIMEOUT = 10000
 //         .OPT_TCP_FASTOPEN = 1
         };
         

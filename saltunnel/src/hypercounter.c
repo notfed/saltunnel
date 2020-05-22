@@ -34,6 +34,12 @@
 #include <stdio.h>
 #include <time.h>
 
+int hypercounter_init() {
+    unsigned char machine_boot_id_out[16];
+    unsigned char monotonic_time_out[8];
+    return hypercounter(machine_boot_id_out, monotonic_time_out);
+}
+
 #ifdef KERN_BOOTTIME
 // Get when this machine last booted (using KERN_BOOTTIME) (OS X)
 uint64_t get_boot_time() {
@@ -182,17 +188,21 @@ static int get_machine_id_from_file(unsigned char machine_id_out[16], const char
 }
 
 // Get the unique id for this machine
-// TODO: Cache this at system startup
 static int get_machine_id(unsigned char machine_id_out[16])
 {
-    if(get_machine_id_from_file(machine_id_out, "~/.saltunnel/machine-id")<0)
-      if(get_machine_id_from_file(machine_id_out, "/etc/machine-id")<0)
-        if(get_machine_id_from_mac_address(machine_id_out)<0)
-            oops_error("failed to find a unique machine-id (tried '~/.saltunnel/machine-id', '/etc/machine-id', and MAC address)");
+    static int did_cache_machine_id = 0;
+    static unsigned char cached_machine_id[16];
+    if(!did_cache_machine_id) {
+        if(get_machine_id_from_file(cached_machine_id, "~/.saltunnel/machine-id")<0)
+          if(get_machine_id_from_file(cached_machine_id, "/etc/machine-id")<0)
+            if(get_machine_id_from_mac_address(cached_machine_id)<0)
+                oops_error("failed to find a unique machine-id (tried '~/.saltunnel/machine-id', '/etc/machine-id', and MAC address)");
+        did_cache_machine_id = 1;
+    }
+    memcpy(machine_id_out, cached_machine_id, 16);
     return 0;
 }
 
-// TODO: Cache machine-id.  This gets called each time a connection is made from server.
 int hypercounter(unsigned char machine_boot_id_out[16], unsigned char monotonic_time_out[8]) {
     
     // Get the unique id for this machine

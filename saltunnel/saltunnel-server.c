@@ -4,6 +4,7 @@
 #include "src/rwn.h"
 #include "src/math.h"
 #include "src/threadpool.h"
+#include "src/hypercounter.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -80,7 +81,11 @@ int main(int argc, char * argv[])
     // Seed random bytes
     try(sodium_init())
     || oops_error("failed to initialize libsodium");
-
+    
+    // Initialize hypercounter
+    try(hypercounter_init())
+    || oops_error("failed to initialize hypercounter");
+    
     // Initialize thread pool
     threadpool_init_all();
 

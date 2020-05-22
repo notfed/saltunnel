@@ -7,6 +7,7 @@
 #include "oops.h"
 #include "threadpool.h"
 #include "sodium.h"
+#include "hypercounter.h"
 
 #include <stdio.h>
 #include <errno.h>
@@ -24,6 +25,10 @@ int main(int argc, const char * argv[]) {
     // Seed random bytes
     try(sodium_init())
     || oops_error("failed to initialize libsodium");
+    
+    // Initialize hypercounter
+    try(hypercounter_init())
+    || oops_error("failed to initialize hypercounter");
     
     // Initialize thread pool
     threadpool_init_all();

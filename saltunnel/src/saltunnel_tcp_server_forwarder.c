@@ -26,18 +26,15 @@ typedef struct connection_thread_context {
     const char* to_port;
 } connection_thread_context;
 
-static void* connection_thread_cleanup(void* v, int local_fd, int force_close) {
+static void* connection_thread_cleanup(void* v, int force_close) {
     connection_thread_context* ctx = (connection_thread_context*)v;
 
     if(force_close) {
         close(ctx->remote_fd);
-        if(local_fd>=0) close(local_fd);
     } else {
         shutdown(ctx->remote_fd, SHUT_RDWR);
-        if(local_fd>=0) shutdown(local_fd, SHUT_RDWR);
     }
     log_info("TCP connection (with 'from' endpoint) terminated (fd %d)", ctx->remote_fd);
-    log_info("TCP connection (with 'to' endpoint) terminated (fd %d)", local_fd);
 
     memset(ctx,0,sizeof(connection_thread_context));
     if(munlock(ctx, sizeof(connection_thread_context))<0)
@@ -52,7 +49,30 @@ static void* connection_thread(void* v)
     log_set_thread_name(" sf ");
     
     log_trace("connection thread entered");
+    
+    // Write packet0 to client
+    if(saltunnel_kx_packet0_trywrite(&ctx->tmp_pinned, ctx->long_term_shared_key, ctx->remote_fd, ctx->my_sk)<0) {
+        oops_warn("failed to write packet0 to client");
+        return connection_thread_cleanup(v,1);
+    }
+    
+    log_trace("server forwarder successfully wrote packet0 to client");
+    
+    // Calculate shared key
+    if(saltunnel_kx_calculate_shared_key(ctx->session_shared_keys, ctx->their_pk, ctx->my_sk)<0) {
+        oops_warn("failed to calculate shared key");
+        return connection_thread_cleanup(v,1);
+    }
 
+    // Exchange packet1 (to prevent replay-attack from exploiting server-sends-first scenarios)
+
+    log_trace("about to exchange packet1 with server");
+    if(saltunnel_kx_packet1_exchange(ctx->session_shared_keys, 1, ctx->remote_fd)<0) {
+        log_warn("failed to exchange packet1 with server");
+        return connection_thread_cleanup(ctx,1);
+    }
+    log_trace("successfully exchanged packet1 with server");
+    
     // Create a TCP Client to connect to target
     tcpclient_options options = {
         .OPT_TCP_NODELAY = 1,
@@ -63,34 +83,10 @@ static void* connection_thread(void* v)
     int local_fd = tcpclient_new(ctx->to_ip, ctx->to_port, options); // TODO: Don't connect until after packet0 !!
     if(local_fd<0) {
         log_trace("failed to connect to 'to' endpoint");
-        return connection_thread_cleanup(v,local_fd,1);
+        return connection_thread_cleanup(v,1);
     }
 
     log_info("TCP connection established (with 'to' endpoint; fd %d)", local_fd);
-    
-    // Write packet0 to client
-    if(saltunnel_kx_packet0_trywrite(&ctx->tmp_pinned, ctx->long_term_shared_key, ctx->remote_fd, ctx->my_sk)<0) {
-        oops_warn("failed to write packet0 to client");
-        return connection_thread_cleanup(v,local_fd,1);
-    }
-    
-    log_trace("server forwarder successfully wrote packet0 to client");
-    
-    // Calculate shared key
-    if(saltunnel_kx_calculate_shared_key(ctx->session_shared_keys, ctx->their_pk, ctx->my_sk)<0) {
-        oops_warn("failed to calculate shared key");
-        return connection_thread_cleanup(v,local_fd,1);
-    }
-
-    // Exchange packet1 (to prevent replay-attack from exploiting server-sends-first scenarios)
-
-    log_trace("about to exchange packet1 with server");
-    if(saltunnel_kx_packet1_exchange(ctx->session_shared_keys, 1, ctx->remote_fd)<0) {
-        log_warn("failed to exchange packet1 with server");
-        return connection_thread_cleanup(ctx, local_fd,1);
-    }
-    log_trace("successfully exchanged packet1 with server");
-    
     
     log_trace("calculated shared key");
     
@@ -120,7 +116,7 @@ static void* connection_thread(void* v)
      
      // Run saltunnel
     log_trace("server forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
-    saltunnel(&ingress, &egress);
+    saltunnel(&ingress, &egress); // TODO: What if saltunnel encounters a bad packet? I'll need to close out local_fd!!!
     
     // Clear the plaintext buffers
     memset(ingress.plaintext, 0, sizeof(ingress.plaintext));
@@ -133,7 +129,8 @@ static void* connection_thread(void* v)
         oops_warn_sys("failed to munlock server data");
     
     // Clean up
-    return connection_thread_cleanup(v,local_fd,0);
+    if(local_fd>=0) shutdown(local_fd, SHUT_RDWR);
+    return connection_thread_cleanup(v,0);
 }
 
 static pthread_t connection_thread_spawn(connection_thread_context* ctx)
@@ -177,7 +174,7 @@ int saltunnel_tcp_server_forwarder(cache* table,
      .OPT_SO_RCVLOWAT = 512
     };
     
-    int s = tcpserver_new(from_ip, from_port, options);
+    int s = tcpserver_new(from_ip, from_port, options); // TODO: Shouldn't this keep re-trying?
     if(s<0)
         return -1;
     
