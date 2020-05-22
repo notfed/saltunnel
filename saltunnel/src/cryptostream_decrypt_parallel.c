@@ -1,5 +1,5 @@
 //
-//  cryptostream_derypt_parallel.c
+//  cryptostream_decrypt_parallel.c
 //  saltunnel
 //
 
@@ -15,6 +15,7 @@
 #include "crypto_secretbox_salsa20poly1305.h"
 #include "threadpool.h"
 #include "saltunnel.h"
+
 #include <unistd.h>
 #include <stdio.h>
 

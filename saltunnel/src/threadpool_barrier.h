@@ -6,7 +6,6 @@
 #define pthread_barrier_h
 
 #include <pthread.h>
-#include <errno.h>
 
 typedef int threadpool_barrierattr_t;
 typedef struct

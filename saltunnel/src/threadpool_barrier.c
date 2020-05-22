@@ -6,6 +6,8 @@
 #include "threadpool_barrier.h"
 #include "oops.h"
 
+#include <pthread.h>
+
 int threadpool_barrier_init(threadpool_barrier_t *barrier, const threadpool_barrierattr_t *attr, unsigned int num_threads)
 {
     if(num_threads <= 0) oops_error("assertion failed: negative thread count");

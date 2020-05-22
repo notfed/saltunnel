@@ -5,10 +5,7 @@
 
 #include "oops.h"
 #include "log.h"
-#include <errno.h>
-#include <string.h>
-#include <stdio.h>
-#include <errno.h>
+
 #include <unistd.h>
 
 int oops_mode = 1;

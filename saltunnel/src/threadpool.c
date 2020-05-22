@@ -2,6 +2,10 @@
 //  threadpool.c
 //  saltunnel
 //
+//  This is a parallel task executor which retains a pool of threads.
+//  Give it a list of tasks and it will use its thread pool to execute
+//  the specified tasks.
+//
 
 #include "config.h"
 #include "cryptostream.h"

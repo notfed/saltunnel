@@ -3,10 +3,10 @@
 //  saltunnel
 //
 
+#include "crypto_secretbox_salsa20poly1305.h"
 #include "saltunnel.h"
 #include "rwn.h"
 #include "sodium.h"
-#include "crypto_secretbox_salsa20poly1305.h"
 #include "oops.h"
 #include "log.h"
 #include "saltunnel_kx.h"

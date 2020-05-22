@@ -1,5 +1,5 @@
 //
-//  saltunnel_exchange_messages_parallel.c
+//  saltunnel_mx_parallel.c
 //  saltunnel
 //
 
