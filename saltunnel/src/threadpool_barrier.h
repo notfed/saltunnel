@@ -2,8 +2,8 @@
 //  threadpool_barrier.h
 //  saltunnel
 //
-#ifndef pthread_barrier_h
-#define pthread_barrier_h
+#ifndef threadpool_barrier_h
+#define threadpool_barrier_h
 
 #include <pthread.h>
 
@@ -21,4 +21,4 @@ int threadpool_barrier_destroy(threadpool_barrier_t *barrier);
 int threadpool_barrier_init(threadpool_barrier_t *barrier, const threadpool_barrierattr_t *attr, unsigned int num_threads);
 int threadpool_barrier_wait(threadpool_barrier_t *barrier, int* started);
 
-#endif /* pthread_barrier_h */
+#endif /* threadpool_barrier_h */

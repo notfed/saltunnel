@@ -15,4 +15,4 @@ int hypercounter_init(void);
 int hypercounter(unsigned char machine_id_out[16],     // H(MAC address + last-reboot time)
                  unsigned char monotonic_time_out[8]); // monotonically-increasing nanoseconds-since-reboot
 
-#endif /* hypercounter */
+#endif /* hypercounter_h */

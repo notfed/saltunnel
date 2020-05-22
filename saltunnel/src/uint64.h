@@ -13,4 +13,4 @@ void uint64_pack_big(char *,uint64_t);
 void uint64_unpack(char *,uint64_t *);
 void uint64_unpack_big(char *,uint64_t *);
 
-#endif
+#endif  /* uint64_h */

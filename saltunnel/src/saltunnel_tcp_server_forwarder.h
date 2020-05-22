@@ -5,8 +5,8 @@
 
 #include "cache.h"
 
-#ifndef saltunnel_tcp_server_h
-#define saltunnel_tcp_server_h
+#ifndef saltunnel_tcp_server_forwarder_h
+#define saltunnel_tcp_server_forwarder_h
 
 int saltunnel_tcp_server_forwarder(
                          cache *table,
@@ -16,4 +16,4 @@ int saltunnel_tcp_server_forwarder(
                          const char* to_ip,
                          const char* to_port);
     
-#endif /* saltunnel_tcp_server.h */
+#endif /* saltunnel_tcp_server_forwarder_h */

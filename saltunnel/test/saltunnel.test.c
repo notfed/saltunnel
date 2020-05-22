@@ -230,7 +230,7 @@ static void bidirectional_test(const char* from_peer1_local_str, unsigned int fr
     try(pthread_join(saltunnel_thread_2, NULL)) || oops_error_sys("pthread_join");
     
     // If more than 100k bytes, show throughput
-    long elapsed = stopwatch_elapsed(&sw);
+    long elapsed = stopwatch_elapsed_us(&sw);
     long total_bytes = from_peer1_local_str_len + from_peer2_local_str_len;
     if(total_bytes>100000) {
         log_info("...took %dus (%d MBps)", (int)elapsed, (int)((total_bytes)/elapsed));

@@ -10,4 +10,4 @@
 
 int saltunnel(cryptostream* ingress, cryptostream* egress);
 
-#endif /* saltunnel_common_h */
+#endif /* saltunnel_h */

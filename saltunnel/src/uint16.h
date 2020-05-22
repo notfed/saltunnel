@@ -13,4 +13,4 @@ extern void uint16_pack_big(char *,uint16_t);
 extern void uint16_unpack(char *,uint16_t *);
 extern void uint16_unpack_big(char *,uint16_t *);
 
-#endif /* uint16_h */
+#endif  /* uint16_h */

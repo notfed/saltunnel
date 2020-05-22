@@ -13,4 +13,4 @@ void uint32_pack_big(char *,uint32_t);
 void uint32_unpack(char *,uint32_t *);
 void uint32_unpack_big(char *,uint32_t *);
 
-#endif
+#endif  /* uint32_h */
