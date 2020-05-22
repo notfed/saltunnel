@@ -60,7 +60,7 @@ int decrypt_one(int buffer_i, cryptostream *cs, nonce8 nonce) {
     //   - [32..]  == plaintext
     if(crypto_secretbox_salsa20poly1305_open(plaintext_buffer_ptr, ciphertext_buffer_ptr,
                               CRYPTOSTREAM_BUFFER_MAXBYTES, nonce, cs->key)<0)
-    { errno = EBADMSG; return oops("failed to decrypt"); }
+    { errno = EBADMSG; return oops("decryption failed: MAC validation failed"); }
     
     // Extract datalen
     uint16_t datalen_current = 0;

@@ -148,13 +148,13 @@ static int maybe_handle_connection(cache* table, connection_thread_context* ctx)
     
     // Read packet0
     if(saltunnel_kx_packet0_tryread(table, &ctx->tmp_pinned, ctx->long_term_shared_key, ctx->remote_fd, ctx->their_pk)<0) {
-        return oops_warn("refused connection");
+        return oops_warn("handshake failed; refused connection");
     }
     
     log_trace("server forwarder successfully read packet0");
     
     // If packet0 was good, spawn a thread to handle subsequent packets
-    log_trace("accepted connection");
+    log_info("handshake successful; initiated new session");
     pthread_t thread = connection_thread_spawn(ctx);
     if(thread==0) return -1;
     else return 1;
@@ -187,7 +187,7 @@ int saltunnel_tcp_server_forwarder(cache* table,
         if(remote_fd<0) {
             continue;
         }
-        log_info("TCP connection established (with 'from' endpoint; fd %d)", remote_fd);
+        log_info("TCP connection accepted (on 'from' endpoint; fd %d)", remote_fd);
 
         // Handle the connection (but do some DoS prevention checks first)
         connection_thread_context* ctx = calloc(1,sizeof(connection_thread_context));

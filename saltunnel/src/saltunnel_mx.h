@@ -7,6 +7,6 @@
 #define saltunnel_mx_h
 
 int exchange_messages_serial(cryptostream *ingress, cryptostream *egress);
-void exchange_messages_parallel(cryptostream *ingress, cryptostream *egress);
+int exchange_messages_parallel(cryptostream *ingress, cryptostream *egress);
 
 #endif /* saltunnel_mx_h */

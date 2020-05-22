@@ -18,8 +18,8 @@ int saltunnel(cryptostream* ingress, cryptostream* egress) {
     if(SALTUNNEL_PUMP_THREADS==1)
         return exchange_messages_serial(ingress, egress);
     else if(SALTUNNEL_PUMP_THREADS==2)
-        exchange_messages_parallel(ingress, egress);
+        return exchange_messages_parallel(ingress, egress);
     else
         oops_error("assertion failed: SALTUNNEL_PUMP_THREADS must be either '1' or '2'");
-    return 0; // TODO: Return parallel
+    return -1;
 }

@@ -188,7 +188,7 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
             continue;
         }
         
-        log_info("TCP connection established (with 'from' endpoint; fd %d)", local_fd);
+        log_info("TCP connection accepted (on 'from' endpoint; fd %d)", local_fd);
         
         // Handle the connection
         connection_thread_context* ctx = calloc(1,sizeof(connection_thread_context));
