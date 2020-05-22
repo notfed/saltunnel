@@ -124,7 +124,7 @@ int cache_delete(cache* table, unsigned char* key) {
         ep = &((*ep)->chain_next))
     {
         cache_entry* e = *ep;
-            
+        
         // If we found the key...
         if(memcmp(e->key,key,CACHE_KEY_BYTES)==0) {
             

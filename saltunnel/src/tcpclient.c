@@ -65,8 +65,7 @@ static int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen
     return rc;
 }
 
-int fd_block(int sockfd) { return fcntl(sockfd,F_SETFL,fcntl(sockfd,F_GETFL,0) & ~O_NONBLOCK); }
-int fd_unblock(int sockfd) { return fcntl(sockfd,F_SETFL,fcntl(sockfd,F_GETFL,0) | O_NONBLOCK); }
+static int fd_unblock(int sockfd) { return fcntl(sockfd,F_SETFL,fcntl(sockfd,F_GETFL,0) | O_NONBLOCK); }
 
 static int cleanup_then_oops_sys(int socket, const char* warning) {
     int e = errno;
@@ -103,12 +102,12 @@ int tcpclient_new(const char* ip, const char* port, tcpclient_options options)
     
     // Connect using the socket
     if(connect_with_timeout(s, (struct sockaddr*)&server_address, sizeof(server_address), options.OPT_CONNECT_TIMEOUT)<0)
-        return cleanup_then_oops_sys(s, "failed to connect to TCP server");
+        return cleanup_then_oops_sys(s, "failed to connect to destination address");
     
     // Make it non-blocking
     if(options.OPT_NONBLOCK) {
         if(fd_unblock(s)<0)
-            return cleanup_then_oops_sys(s, "failed to set set O_NONBLOCK on TCP client connection");
+            return cleanup_then_oops_sys(s, "failed to set set O_NONBLOCK on TCP client socket");
     }
 
     return s;

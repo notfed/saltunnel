@@ -62,14 +62,14 @@ int saltunnel_kx_packet0_trywrite(packet0* my_packet0_plaintext_pinned,
     if(crypto_secretbox_xsalsa20poly1305(my_packet0_ciphertext.prezeros,
                                           my_packet0_plaintext_pinned->prezeros,
                                           512+16-24, my_nonce, long_term_key)<0)
-    { return oops("encryption failed"); }
+    { return oops("handshake failed: encryption failed"); }
     
     // Put nonce in buffer
     memcpy(my_packet0_ciphertext.nonce, my_nonce, 24);
     
     // Send encrypted buffer
     if(writen(to_fd, (char*)&my_packet0_ciphertext, 512)<0)
-    { return oops_sys("write failed"); }
+    { return oops_sys("handshake failed: failed to write to remote connection"); }
     
     // Erase keys
     memset(my_packet0_plaintext_pinned->pk, 0, sizeof(my_packet0_plaintext_pinned->pk));

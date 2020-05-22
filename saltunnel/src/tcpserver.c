@@ -79,16 +79,16 @@ int tcpserver_new(const char* ip, const char* port, tcpserver_options options)
     if(options.OPT_SO_REUSEADDR) {
         int reuse_addr_opt = 1;
         if(setsockopt(s,SOL_SOCKET,SO_REUSEADDR,&reuse_addr_opt,sizeof(int))<0)
-            return cleanup_then_oops(s, "failed to enable SO_REUSEADDR TCP server socket");
+            return cleanup_then_oops(s, "failed to enable SO_REUSEADDR on TCP server socket");
     }
     
     // Bind to a port
     if(bind(s, (struct sockaddr*) &server_address, sizeof(server_address))<0)
-        return cleanup_then_oops(s, "failed to bind TCP server socket to address");
+        return cleanup_then_oops(s, "failed to bind socket to source address");
     
     // Start listening for connections
     if(listen(s,1000)<0)
-        return cleanup_then_oops(s, "failed to start listening for connections on TCP server socket");
+        return cleanup_then_oops(s, "failed to listen to source socket");
     
     // Set receive-low-water-mark
     if(options.OPT_SO_RCVLOWAT>0) {
@@ -113,7 +113,7 @@ int tcpserver_accept(int s) {
     socklen_t client_address_len = sizeof(client_address);
     int fd_conn = accept(s, (struct sockaddr *) &client_address, &client_address_len);
     if(fd_conn<0)
-        return oops_sys("TCP server failed to accept new connection");
+        return oops_sys("failed to accept new connection from source endpoint");
     return fd_conn;
 }
 

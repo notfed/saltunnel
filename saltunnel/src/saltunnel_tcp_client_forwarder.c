@@ -36,8 +36,8 @@ static void* connection_thread_cleanup(void* v, int remote_fd, int force_close) 
         shutdown(ctx->local_fd, SHUT_RDWR);
         if(remote_fd>=0) shutdown(remote_fd, SHUT_RDWR);
     }
-    log_info("TCP connection (with 'from' endpoint) terminated (fd %d)", ctx->local_fd);
-    log_info("TCP connection (with 'to' endpoint) terminated (fd %d)", remote_fd);
+    log_info("connection with source address terminated (fd %d)", ctx->local_fd);
+    if(remote_fd>=0) log_info("connection with destination address terminated (fd %d)", remote_fd);
 
     memset(ctx,0,sizeof(connection_thread_context));
     if(munlock(ctx, sizeof(connection_thread_context))<0)
@@ -67,7 +67,7 @@ static void* connection_thread(void* v)
         return connection_thread_cleanup(ctx, remote_fd, 1);
     }
 
-    log_info("TCP connection established with remote endpoint (fd %d)", remote_fd);
+    log_info("connection established with destination address (fd %d)", remote_fd);
     
     // Write packet0 to server
     if(saltunnel_kx_packet0_trywrite(&ctx->tmp_pinned, ctx->long_term_shared_key, remote_fd, ctx->my_sk)<0) {
@@ -174,7 +174,7 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
     log_trace("created socket %d\n", s);
     
     for(;;) {
-        log_info("waiting for TCP connections on local endpoint (socket %d)", s);
+        log_info("waiting for connections on source address (socket %d)", s);
         
         // Accept a new connection (or wait for one to arrive)
         int local_fd = tcpserver_accept(s);
@@ -183,7 +183,7 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
             continue;
         }
         
-        log_info("TCP connection accepted on local endpoint (fd %d)", local_fd);
+        log_info("connection accepted on source address (fd %d)", local_fd);
         
         // Handle the connection
         connection_thread_context* ctx = calloc(1,sizeof(connection_thread_context));

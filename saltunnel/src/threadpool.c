@@ -67,7 +67,7 @@ void threadpool_init(threadpool* tp) {
     if(!tp->tp_init_complete) {
         tp->tp_init_complete = 1;
     } else {
-        oops_error("assertion failed: attempted to initialialize threadpool twice");
+        oops_error("assertion failed: attempted to initialize threadpool twice");
     }
     
     // Check to see if we shouldn't even use threads

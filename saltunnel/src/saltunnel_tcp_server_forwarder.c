@@ -34,7 +34,7 @@ static void* connection_thread_cleanup(void* v, int force_close) {
     } else {
         shutdown(ctx->remote_fd, SHUT_RDWR);
     }
-    log_info("TCP connection (with 'from' endpoint) terminated (fd %d)", ctx->remote_fd);
+    log_info("TCP connection with destination address terminated (fd %d)", ctx->remote_fd);
 
     memset(ctx,0,sizeof(connection_thread_context));
     if(munlock(ctx, sizeof(connection_thread_context))<0)
@@ -66,12 +66,12 @@ static void* connection_thread(void* v)
 
     // Exchange packet1 (to prevent replay-attack from exploiting server-sends-first scenarios)
 
-    log_trace("about to exchange packet1 with server");
+    log_trace("about to exchange packet1");
     if(saltunnel_kx_packet1_exchange(ctx->session_shared_keys, 1, ctx->remote_fd)<0) {
         log_warn("failed to exchange packet1 with server");
         return connection_thread_cleanup(ctx,1);
     }
-    log_trace("successfully exchanged packet1 with server");
+    log_trace("successfully exchanged packet1");
     
     // Create a TCP Client to connect to target
     tcpclient_options options = {
@@ -82,11 +82,11 @@ static void* connection_thread(void* v)
     
     int local_fd = tcpclient_new(ctx->to_ip, ctx->to_port, options);
     if(local_fd<0) {
-        log_trace("failed to connect to 'to' endpoint");
+        log_trace("failed to connect to destination endpoint");
         return connection_thread_cleanup(v,1);
     }
 
-    log_info("TCP connection established (with 'to' endpoint; fd %d)", local_fd);
+    log_info("connection established with destination address (fd %d)", local_fd);
     
     log_trace("calculated shared key");
     
@@ -148,13 +148,14 @@ static int maybe_handle_connection(cache* table, connection_thread_context* ctx)
     
     // Read packet0
     if(saltunnel_kx_packet0_tryread(table, &ctx->tmp_pinned, ctx->long_term_shared_key, ctx->remote_fd, ctx->their_pk)<0) {
-        return oops_warn("handshake failed; refused connection");
+        return log_warn("authentication failed (fd %d)", ctx->remote_fd);
+        return -1;
     }
     
     log_trace("server forwarder successfully read packet0");
     
     // If packet0 was good, spawn a thread to handle subsequent packets
-    log_info("handshake successful; initiated new session");
+    log_info("authentication succeeded (fd %d)", ctx->remote_fd);
     pthread_t thread = connection_thread_spawn(ctx);
     if(thread==0) return -1;
     else return 1;
@@ -180,14 +181,14 @@ int saltunnel_tcp_server_forwarder(cache* table,
     
     oops_should_warn();
     for(;;) {
-        log_info("waiting for TCP connections (on 'from' endpoint; socket fd %d)", s);
+        log_info("waiting for connections on source address (socket %d)", s);
 
         // Accept a new connection (or wait for one to arrive)
         int remote_fd = tcpserver_accept(s);
         if(remote_fd<0) {
             continue;
         }
-        log_info("TCP connection accepted (on 'from' endpoint; fd %d)", remote_fd);
+        log_info("connection accepted (but not yet authenticated) on source address (fd %d)", remote_fd);
 
         // Handle the connection (but do some DoS prevention checks first)
         connection_thread_context* ctx = calloc(1,sizeof(connection_thread_context));
