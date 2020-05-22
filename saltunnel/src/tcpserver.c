@@ -107,11 +107,19 @@ int tcpserver_new(const char* ip, const char* port, tcpserver_options options)
     return s;
 }
 
+static int uninterruptable_accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
+    int fd_conn;
+    do {
+        fd_conn = accept(sockfd, addr, addrlen);
+    } while(fd_conn<0 && errno == EINTR);
+    return fd_conn;
+}
+
+// Accept a new connection
 int tcpserver_accept(int s) {
-    // Accept a new connection
     struct sockaddr_in client_address;
     socklen_t client_address_len = sizeof(client_address);
-    int fd_conn = accept(s, (struct sockaddr *) &client_address, &client_address_len);
+    int fd_conn = uninterruptable_accept(s, (struct sockaddr *) &client_address, &client_address_len);
     if(fd_conn<0)
         return oops_sys("failed to accept new connection from source endpoint");
     return fd_conn;
