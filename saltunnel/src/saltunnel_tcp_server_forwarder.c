@@ -34,7 +34,7 @@ static void* connection_thread_cleanup(void* v, int force_close) {
     } else {
         shutdown(ctx->remote_fd, SHUT_RDWR);
     }
-    log_info("TCP connection with destination address terminated (fd %d)", ctx->remote_fd);
+    log_info("connection with source address terminated (fd %d)", ctx->remote_fd);
 
     memset(ctx,0,sizeof(connection_thread_context));
     if(munlock(ctx, sizeof(connection_thread_context))<0)
@@ -129,7 +129,8 @@ static void* connection_thread(void* v)
         oops_warn_sys("failed to munlock server data");
     
     // Clean up
-    if(local_fd>=0) shutdown(local_fd, SHUT_RDWR);
+    if(shutdown(local_fd, SHUT_RDWR)<0) log_warn("failed to shutdown socket");
+    log_info("connection with source address terminated (fd %d)", local_fd);
     return connection_thread_cleanup(v,0);
 }
 
@@ -148,7 +149,6 @@ static int maybe_handle_connection(cache* table, connection_thread_context* ctx)
     
     // Read packet0
     if(saltunnel_kx_packet0_tryread(table, &ctx->tmp_pinned, ctx->long_term_shared_key, ctx->remote_fd, ctx->their_pk)<0) {
-        return log_warn("authentication failed (fd %d)", ctx->remote_fd);
         return -1;
     }
     
@@ -178,10 +178,11 @@ int saltunnel_tcp_server_forwarder(cache* table,
     int s = tcpserver_new(from_ip, from_port, options); // TODO: Shouldn't this keep re-trying?
     if(s<0)
         return -1;
+
+    log_info("waiting for new connections on source address (socket %d)", s);
     
     oops_should_warn();
     for(;;) {
-        log_info("waiting for connections on source address (socket %d)", s);
 
         // Accept a new connection (or wait for one to arrive)
         int remote_fd = tcpserver_accept(s);

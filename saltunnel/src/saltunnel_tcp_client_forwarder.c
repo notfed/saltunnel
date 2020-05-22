@@ -67,7 +67,7 @@ static void* connection_thread(void* v)
         return connection_thread_cleanup(ctx, remote_fd, 1);
     }
 
-    log_info("connection established with destination address (fd %d)", remote_fd);
+    log_info("connection established (but not yet authenticated) with destination address (fd %d)", remote_fd);
     
     // Write packet0 to server
     if(saltunnel_kx_packet0_trywrite(&ctx->tmp_pinned, ctx->long_term_shared_key, remote_fd, ctx->my_sk)<0) {
@@ -99,9 +99,8 @@ static void* connection_thread(void* v)
         log_trace("failed to exchange packet1 with server");
         return connection_thread_cleanup(ctx, remote_fd, 1);
     }
-    log_trace("successfully exchanged packet1 with server");
     
-    log_trace("running saltunnel");
+    log_info("authentication succeeded (fd %d)", remote_fd);
     
     // Initialize saltunnel parameters
     cryptostream ingress = {
@@ -171,10 +170,10 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
         log_error("here");
         return -1;
     }
-    log_trace("created socket %d\n", s);
+    
+    log_info("waiting for new connections on source address (socket %d)", s);
     
     for(;;) {
-        log_info("waiting for connections on source address (socket %d)", s);
         
         // Accept a new connection (or wait for one to arrive)
         int local_fd = tcpserver_accept(s);

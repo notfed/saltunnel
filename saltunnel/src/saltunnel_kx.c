@@ -62,14 +62,14 @@ int saltunnel_kx_packet0_trywrite(packet0* my_packet0_plaintext_pinned,
     if(crypto_secretbox_xsalsa20poly1305(my_packet0_ciphertext.prezeros,
                                           my_packet0_plaintext_pinned->prezeros,
                                           512+16-24, my_nonce, long_term_key)<0)
-    { return oops("handshake failed: encryption failed"); }
+    { return oops("authentication failed: encryption failed"); }
     
     // Put nonce in buffer
     memcpy(my_packet0_ciphertext.nonce, my_nonce, 24);
     
     // Send encrypted buffer
     if(writen(to_fd, (char*)&my_packet0_ciphertext, 512)<0)
-    { return oops_sys("handshake failed: failed to write to remote connection"); }
+    { return oops_sys("authentication failed: failed to write to remote connection"); }
     
     // Erase keys
     memset(my_packet0_plaintext_pinned->pk, 0, sizeof(my_packet0_plaintext_pinned->pk));
@@ -91,13 +91,13 @@ int saltunnel_kx_packet0_tryread(cache* table,
     // Receive encrypted buffer
     ssize_t bytes_read = read(from_fd, (char*)&their_buffer_ciphertext, 512);
     if(bytes_read<0 && errno==EWOULDBLOCK)
-        return oops("handshake failed: received empty packet0");
+        return oops("authentication failed: received empty packet0");
     if(bytes_read<0)
-        return oops_sys("handshake failed: failed to read packet0");
+        return oops_sys("authentication failed: failed to read packet0");
     if(bytes_read == 0)
-        return oops("handshake failed: connection was terminated");
+        return oops("authentication failed: connection was terminated");
     if(bytes_read != CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT)
-        return oops("handshake failed: received partial packet0");
+        return oops("authentication failed: received partial packet0");
     
     // Extract random nonce
     unsigned char their_nonce[24];
@@ -107,18 +107,18 @@ int saltunnel_kx_packet0_tryread(cache* table,
     if(crypto_secretbox_xsalsa20poly1305_open((unsigned char*)their_packet0_plaintext_pinned->prezeros,
                                                (unsigned char*)their_buffer_ciphertext.prezeros,
                                                512+16-24, their_buffer_ciphertext.nonce, long_term_key)<0)
-        return oops("handshake failed: received bad packet0");
+        return oops("authentication failed: received bad packet0");
     
     // Verify version
     if(sodium_compare(their_packet0_plaintext_pinned->version, version, 8) != 0)
-        return oops("handshake failed: version mismatch");
+        return oops("authentication failed: version mismatch");
     
     // Verify that their timestamp is less than an hour old
     uint64_t my_now = time(NULL);
     uint64_t their_now;
     uint64_unpack_big((char*)their_packet0_plaintext_pinned->epoch_seconds, &their_now);
     if(their_now < (my_now-3600))
-        return oops("handshake failed: received stale packet0");
+        return oops("authentication failed: received stale packet0");
     
     // DoD prevention: Ensure hypercounter is fresh (only needed on server-side)
     if(table)
@@ -132,7 +132,7 @@ int saltunnel_kx_packet0_tryread(cache* table,
         if(old_monotonic_time_ptr) {
             uint64_t old_monotonic_time = ((uint64_t)*old_monotonic_time_ptr);
             if(new_monotonic_time <= old_monotonic_time) {
-                return oops("handshake failed: received replayed packet0");
+                return oops("authentication failed: received replayed packet0");
             }
         }
         
@@ -158,7 +158,7 @@ int saltunnel_kx_calculate_shared_key(unsigned char keys_out[64],
 {
     unsigned char s[32];
     if (crypto_scalarmult_curve25519(s, sk, pk) != 0) {
-        return oops("handshake failed: failed to derive shared key");
+        return oops("authentication failed: failed to derive shared key");
     }
     
     static const unsigned char zero[16] = { 0 };
@@ -192,15 +192,15 @@ int saltunnel_kx_packet1_exchange(unsigned char session_shared_keys[64],
                                          sizeof(packet1), 
                                          packet1_nonce, 
                                          my_key)<0)
-    { return oops("handshake failed: encryption failed for packet1"); }
+    { return oops("authentication failed: encryption failed for packet1"); }
 
     // Send my packet1
     if(writen(remote_fd, (const char*)my_packet1_ciphertext.auth, 512)<0)
-        return oops_sys("handshake failed: failed to send packet1");
+        return oops_sys("authentication failed: failed to send packet1");
 
     // Read their packet1
     if(readn(remote_fd, (char*)their_packet1_ciphertext.auth, 512)<0)
-        return oops_sys("handshake failed: failed to send packet1");
+        return oops_sys("authentication failed: failed to send packet1");
 
     // Decrypt my packet1
     if(crypto_secretbox_xsalsa20poly1305_open(their_packet1_plaintext.prezeros,
@@ -208,7 +208,7 @@ int saltunnel_kx_packet1_exchange(unsigned char session_shared_keys[64],
                                               sizeof(packet1), 
                                               packet1_nonce, 
                                               their_key)<0)
-    { return oops("handshake failed: received bad packet1"); }
+    { return oops("authentication failed: received bad packet1"); }
 
     return 0;
 }
