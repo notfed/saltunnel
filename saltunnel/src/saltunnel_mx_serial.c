@@ -17,21 +17,19 @@
 #define FD_EOF   (-2)
 #define FD_READY (-1)
 
-static void fd_nonblock(int fd) {
-    int flags;
-    try((flags=fcntl(fd, F_GETFL, 0))) || oops_error_sys("failed to get file flags");
-    try(fcntl(fd, F_SETFL, flags|O_NONBLOCK)) || oops_error_sys("failed to set file descriptor as non-blocking");
+static int fd_nonblock(int fd) {
+    return fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0)|O_NONBLOCK);
 }
 
 static int fd_issocket(int fd) {
     struct stat statbuf;
-    if(fstat(fd, &statbuf)<0) oops_error_sys("failed to get file status");
+    if(fstat(fd, &statbuf)<0) return -1;
     return S_ISSOCK(statbuf.st_mode);
 }
 
-void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
+int exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
 
-    int had_error = 0;
+    int rc = 0;
     
     // Configure poll (we will poll both "readable" fds)
     struct pollfd pfds[] = {
@@ -41,25 +39,27 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
         { .fd = egress->to_fd,    .events = POLLOUT        },
     };
     
-    // Defensive Programming
-    fd_nonblock(ingress->from_fd); fd_nonblock(ingress->to_fd);
-    fd_nonblock(egress->from_fd);  fd_nonblock(egress->to_fd);
+    // Ensure all fds are non-blocking
+    if(fd_nonblock(ingress->from_fd)<0 || fd_nonblock(ingress->to_fd)<0 ||
+       fd_nonblock(egress->from_fd)<0  || fd_nonblock(egress->to_fd)<0)
+    { rc = oops_sys("failed to set file descriptor as non-blocking"); goto cleanup; }
     
     // Determine if fds are sockets
-    int ingress_to_fd_is_socket   = fd_issocket(ingress->to_fd);
-    int egress_to_fd_is_socket    = fd_issocket(egress->to_fd);
+    int ingress_to_fd_is_socket = fd_issocket(ingress->to_fd);
+    int egress_to_fd_is_socket  = fd_issocket(egress->to_fd);
+    if(ingress_to_fd_is_socket<0 || egress_to_fd_is_socket<0)
+    { rc = oops_sys("failed to set determine whether file descriptor is a socket"); goto cleanup; }
     
     // Main Loop
     while(pfds[0].fd != FD_EOF || pfds[1].fd != FD_EOF || pfds[2].fd != FD_EOF || pfds[3].fd != FD_EOF) {
         
         /* Poll */
         log_trace("poll: polling [%2d->D->%2d, %2d->E->%2d]...", pfds[0].fd, pfds[1].fd,pfds[2].fd, pfds[3].fd);
-        int rc = poll(pfds,4,-1);
-        if(rc<0 && errno == EINTR) continue;
-        if(rc<0) oops_error_sys("failed to poll");
+        int r = poll(pfds,4,-1);
+        if(r<0 && errno == EINTR) continue;
+        if(r<0) { rc = oops_sys("failed to poll file descriptor"); goto cleanup; }
         
         /* If an fd is ready, mark it as FD_READY */
-        
         if ((pfds[0].fd>=0) && (pfds[0].revents & (POLLIN|POLLHUP))) { pfds[0].fd = FD_READY; }
         if ((pfds[1].fd>=0) && (pfds[1].revents & (POLLOUT)))        { pfds[1].fd = FD_READY; }
         if ((pfds[2].fd>=0) && (pfds[2].revents & (POLLIN|POLLHUP))) { pfds[2].fd = FD_READY; }
@@ -82,13 +82,13 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
             int r = cryptostream_encrypt_feed_read(egress);
             if(r>0) { pfds[2].fd = egress->from_fd; }
             if(r==0) { pfds[2].fd = FD_EOF; }
-            if(r<0) { had_error = 1; break; }
+            if(r<0) { rc = -1; goto cleanup; }
         }
         
         // write to 'to' when: 'to' is ready, and buffers not empty
         if ((pfds[3].fd == FD_READY) && cryptostream_encrypt_feed_canwrite(egress)) {
             if(cryptostream_encrypt_feed_write(egress)<0)
-            { had_error = 1; break; }
+            { rc = -1; goto cleanup; }
             pfds[3].fd = egress->to_fd;
         }
         
@@ -96,9 +96,9 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
         if(pfds[2].fd == FD_EOF && pfds[3].fd != FD_EOF && !cryptostream_encrypt_feed_canwrite(egress)) {
             log_trace("egress is done; closing egress->to_fd (%d)", egress->to_fd);
             if(egress_to_fd_is_socket) {
-                try(shutdown(egress->to_fd, SHUT_WR)) || oops_error_sys("failed to shutdown socket");
+                if(shutdown(egress->to_fd, SHUT_WR)<0) oops_warn_sys("failed to shutdown socket");
             } else {
-                try(close(egress->to_fd)) || oops_error_sys("failed to close file descriptor");
+                if(close(egress->to_fd)<0) oops_warn_sys("failed to close file descriptor");
             }
             pfds[3].fd = FD_EOF;
         }
@@ -112,13 +112,13 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
             int r = cryptostream_decrypt_feed_read(ingress);
             if(r>0) { pfds[0].fd = ingress->from_fd; }
             if(r==0) { pfds[0].fd = FD_EOF; }
-            if(r<0) { had_error = 1; break; }
+            if(r<0) { rc = -1; goto cleanup; }
         }
         
         // write to 'to' when: 'to' is ready, and buffers not empty
         if ((pfds[1].fd == FD_READY) && cryptostream_decrypt_feed_canwrite(ingress)) {
             if(cryptostream_decrypt_feed_write(ingress)<0)
-            { had_error = 1; break; }
+            { rc = -1; goto cleanup; }
             pfds[1].fd = ingress->to_fd;
         }
         
@@ -127,21 +127,25 @@ void exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
         if(pfds[0].fd == FD_EOF && pfds[1].fd != FD_EOF && !cryptostream_decrypt_feed_canwrite(ingress)) {
             log_trace("ingress is done; closing ingress->to_fd (%d)", ingress->to_fd);
             if(ingress_to_fd_is_socket) {
-                try(shutdown(ingress->to_fd, SHUT_WR)) || oops_error_sys("failed to shutdown socket");
+                if(shutdown(ingress->to_fd, SHUT_WR)<0) oops_warn_sys("failed to shutdown socket");
             } else {
-                try(close(ingress->to_fd)) || oops_error_sys("failed to close file descriptor");
+                if(close(ingress->to_fd)<0) oops_warn_sys("failed to close file descriptor");
             }
             pfds[1].fd = FD_EOF;
         }
     }
 
     // Regardless of error or success, close all fds
-    if(had_error) {
-        close(ingress->from_fd);
-        close(egress->to_fd);
-        close(ingress->to_fd);
-        close(egress->from_fd);
-    }
+    int errno_backup;
+cleanup:
+    errno_backup = errno;
+    close(ingress->from_fd);
+    close(egress->to_fd);
+    close(ingress->to_fd);
+    close(egress->from_fd);
+    errno = errno_backup;
 
     log_trace("all fds are closed [%d,%d,%d,%d]; done polling", ingress->from_fd, ingress->to_fd, egress->from_fd, egress->to_fd);
+    
+    return rc<0 ? -1 : 0;
 }
