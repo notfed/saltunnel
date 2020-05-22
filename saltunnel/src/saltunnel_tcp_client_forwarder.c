@@ -63,11 +63,11 @@ static void* connection_thread(void* v)
     log_trace("connecting to %s:%s", ctx->remote_ip, ctx->remote_port);
     int remote_fd = tcpclient_new(ctx->remote_ip, ctx->remote_port, options);
     if(remote_fd<0) {
-        log_trace("failed to connect to 'to' endpoint");
+        log_trace("failed to connect to remote endpoint");
         return connection_thread_cleanup(ctx, remote_fd, 1);
     }
 
-    log_info("TCP connection established (with 'to' endpoint; fd %d)", remote_fd);
+    log_info("TCP connection established with remote endpoint (fd %d)", remote_fd);
     
     // Write packet0 to server
     if(saltunnel_kx_packet0_trywrite(&ctx->tmp_pinned, ctx->long_term_shared_key, remote_fd, ctx->my_sk)<0) {
@@ -143,20 +143,14 @@ static void* connection_thread(void* v)
     return connection_thread_cleanup(ctx, remote_fd, 0);
 }
 
-static pthread_t connection_thread_spawn(connection_thread_context* ctx)
+static pthread_t handle_connection(connection_thread_context* ctx)
 {
     pthread_t thread;
     if(pthread_create(&thread, NULL, connection_thread, (void*)ctx)!=0) {
-        oops_warn("failed to spawn thread");
+        oops_error_sys("failed to spawn thread");
         return 0;
     }
     return thread;
-}
-
-static int handle_connection(connection_thread_context* ctx) {
-    pthread_t thread = connection_thread_spawn(ctx);
-    if(thread==0) return -1;
-    else return 1;
 }
 
 int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
@@ -173,13 +167,14 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
      .OPT_TCP_FASTOPEN = 1
     };
     int s  = tcpserver_new(from_ip, from_port, options);
-    if(s<0)
+    if(s<0) {
+        log_error("here");
         return -1;
-
+    }
     log_trace("created socket %d\n", s);
     
     for(;;) {
-        log_info("waiting for TCP connections (on 'from' endpoint; socket fd %d)", s);
+        log_info("waiting for TCP connections on local endpoint (socket %d)", s);
         
         // Accept a new connection (or wait for one to arrive)
         int local_fd = tcpserver_accept(s);
@@ -188,7 +183,7 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
             continue;
         }
         
-        log_info("TCP connection accepted (on 'from' endpoint; fd %d)", local_fd);
+        log_info("TCP connection accepted on local endpoint (fd %d)", local_fd);
         
         // Handle the connection
         connection_thread_context* ctx = calloc(1,sizeof(connection_thread_context));
@@ -199,13 +194,7 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
         ctx->remote_port = to_port;
         memcpy(ctx->long_term_shared_key, long_term_shared_key, 32);
         
-        if(handle_connection(ctx)<0) {
-            if(munlock(ctx, sizeof(connection_thread_context))<0)
-               oops_warn_sys("failed to munlock client thread context");
-            free(ctx);
-            close(local_fd);
-            log_warn("encountered error with TCP connection");
-        }
+        handle_connection(ctx);
     }
     
     // The above loop should never exit
