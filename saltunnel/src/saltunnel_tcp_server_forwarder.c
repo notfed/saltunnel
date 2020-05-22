@@ -116,7 +116,7 @@ static void* connection_thread(void* v)
      
      // Run saltunnel
     log_trace("server forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
-    saltunnel(&ingress, &egress); // TODO: What if saltunnel encounters a bad packet? I'll need to close out local_fd!!!
+    saltunnel(&ingress, &egress);
     
     // Clear the plaintext buffers
     memset(ingress.plaintext, 0, sizeof(ingress.plaintext));
