@@ -19,7 +19,7 @@
 #include <sodium.h>
 
 static void oops_usage() {
-    fprintf(stderr, "saltunnel-server: usage: saltunnel-server -k <keyfile> <fromip>:<fromport> <toip>:<toport>\n");
+    fprintf(stderr, "saltunnel-server: usage: saltunnel-server [-m <maxconns>] -k <keyfile> <fromip>:<fromport> <toip>:<toport>\n");
     exit(2);
 }
 
@@ -27,18 +27,14 @@ static cache table = {0};
 
 int main(int argc, char * argv[])
 {
-    // Set hard upper limit on number of connections allowed
-    struct rlimit limit = { .rlim_cur=100, .rlim_max=100 };
-    if(setrlimit(RLIMIT_NOFILE, &limit))
-        oops_warn_sys("failed to limit number of file descriptors");
-    
     // Parse arguments via getopt
     int opt;
     int verbosity = 0;
     const char* keyfile = 0;
     int keyfile_provided = 0;
+    int maxconns = 100;
 
-    while ((opt = getopt(argc, argv, "vk:")) != -1) {
+    while ((opt = getopt(argc, argv, "vm:k:")) != -1) {
         switch (opt) {
         case 'v':
             verbosity++;
@@ -46,6 +42,9 @@ int main(int argc, char * argv[])
         case 'k':
             keyfile = optarg;
             keyfile_provided = 1;
+            break;
+        case 'm':
+            maxconns = atoi(optarg);
             break;
         default:
             oops_usage();
@@ -60,6 +59,11 @@ int main(int argc, char * argv[])
 
     // Set verbosity level
     log_level = 2 - MAX(0,MIN(2,verbosity));
+    
+    // Set hard upper limit on number of connections allowed (it's really just a file descriptor limit)
+    struct rlimit limit = { .rlim_cur=maxconns+4, .rlim_max=maxconns+4 };
+    if(setrlimit(RLIMIT_NOFILE, &limit))
+        oops_warn_sys("failed to limit number of file descriptors");
 
     // Parse [fromip]:[fromport]
     const char * first_arg_ptr = argv[pos_arg_i+0];
