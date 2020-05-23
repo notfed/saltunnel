@@ -29,7 +29,8 @@
 int saltunnel_kx_packet0_trywrite(packet0* my_packet0_plaintext_pinned,
                                   const unsigned char long_term_key[32],
                                   int to_fd,
-                                  unsigned char my_sk_out[32]) {
+                                  unsigned char my_sk_out[32],
+                                  int writeToSourceOrDestination) {
     
     packet0 my_packet0_ciphertext = {0};
     memset(my_packet0_plaintext_pinned, 0, sizeof(packet0));
@@ -69,7 +70,9 @@ int saltunnel_kx_packet0_trywrite(packet0* my_packet0_plaintext_pinned,
     
     // Send encrypted buffer
     if(writen(to_fd, (char*)&my_packet0_ciphertext, 512)<0)
-    { return oops_sys("authentication failed: failed to write to remote connection"); }
+    { return writeToSourceOrDestination
+        ? oops_sys("authentication failed: failed to write to destination address")
+        : oops_sys("authentication failed: failed to write to source address"); }
     
     // Erase keys
     memset(my_packet0_plaintext_pinned->pk, 0, sizeof(my_packet0_plaintext_pinned->pk));

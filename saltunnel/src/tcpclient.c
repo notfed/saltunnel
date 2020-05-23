@@ -18,6 +18,26 @@
 #include <poll.h>
 #include <time.h>
 
+int socket_connected1(int s)
+{
+  struct sockaddr_in sa;
+  char ch;
+  unsigned int dummy = sizeof(sa);
+  if (getpeername(s,(struct sockaddr *)&sa,&dummy) == -1) {
+    read(s,&ch,1); /* sets errno */
+    return 0;
+  }
+  return 1;
+}
+
+int socket_connected2(int s) {
+    int error = 0;
+    socklen_t len = sizeof (error);
+    int retval = getsockopt(s, SOL_SOCKET, SO_ERROR, &error, &len);
+    if(retval==0) errno = error;
+    return retval==0 && error==0;
+}
+
 static int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen_t addrlen, unsigned int timeout_ms) {
     int rc = 0;
     // Set O_NONBLOCK
@@ -46,8 +66,12 @@ static int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen
                                                   + (deadline.tv_nsec - now.tv_nsec)/1000000l);
                     if(ms_until_deadline<0) { rc=0; break; }
                     // Wait for connect to complete (or for the timeout deadline)
-                    struct pollfd pfds[] = { { .fd = sockfd, .events = POLLOUT } };
+                    struct pollfd pfds[] = { { .fd = sockfd, .events = POLLOUT|POLLERR } };
                     rc = poll(pfds, 1, ms_until_deadline);
+                    // If the connection failed, mark it as such.
+                    if(!socket_connected1(sockfd)) {
+                        rc = -1;
+                    }
                 }
                 // If poll was interrupted, try again.
                 while(rc==-1 && errno==EINTR);
@@ -101,7 +125,9 @@ int tcpclient_new(const char* ip, const char* port, tcpclient_options options)
     }
     
     // Connect using the socket
-    if(connect_with_timeout(s, (struct sockaddr*)&server_address, sizeof(server_address), options.OPT_CONNECT_TIMEOUT)<0)
+    // TODO: Timeout
+//    if(connect_with_timeout(s, (struct sockaddr*)&server_address, sizeof(server_address), options.OPT_CONNECT_TIMEOUT)<0)
+    if(connect(s, (struct sockaddr*)&server_address, sizeof(server_address))<0)
         return cleanup_then_oops_sys(s, "failed to connect to destination address");
     
     // Make it non-blocking

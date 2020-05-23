@@ -39,7 +39,8 @@ typedef struct packet1 {
 int saltunnel_kx_packet0_trywrite(packet0* tmp_pinned,
                                   const unsigned char long_term_key[32],
                                   int to_fd,
-                                  unsigned char my_sk_out[32]);
+                                  unsigned char my_sk_out[32],
+                                  int writeToSourceOrDestination);
 
 int saltunnel_kx_packet0_tryread(cache* table,
                                  packet0* tmp_pinned,

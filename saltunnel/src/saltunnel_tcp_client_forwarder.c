@@ -70,7 +70,7 @@ static void* connection_thread(void* v)
     log_info("connection established (but not yet authenticated) with destination address (fd %d)", remote_fd);
     
     // Write packet0 to server
-    if(saltunnel_kx_packet0_trywrite(&ctx->tmp_pinned, ctx->long_term_shared_key, remote_fd, ctx->my_sk)<0) {
+    if(saltunnel_kx_packet0_trywrite(&ctx->tmp_pinned, ctx->long_term_shared_key, remote_fd, ctx->my_sk, 1)<0) {
         log_trace("connection %d: failed to write packet0 to server", remote_fd);
         return connection_thread_cleanup(ctx, remote_fd, 1);
     }
@@ -182,7 +182,7 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
             continue;
         }
         
-        log_info("connection accepted on source address (fd %d)", local_fd);
+        log_info("connection accepted from source address (fd %d)", local_fd);
         
         // Handle the connection
         connection_thread_context* ctx = calloc(1,sizeof(connection_thread_context));

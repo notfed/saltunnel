@@ -27,6 +27,11 @@ static cache table = {0};
 
 int main(int argc, char * argv[])
 {
+    // Set hard upper limit on number of connections allowed
+    struct rlimit limit = { .rlim_cur=100, .rlim_max=100 };
+    if(setrlimit(RLIMIT_NOFILE, &limit))
+        oops_warn_sys("failed to limit number of file descriptors");
+    
     // Parse arguments via getopt
     int opt;
     int verbosity = 0;

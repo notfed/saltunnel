@@ -25,6 +25,10 @@ static void oops_usage() {
 
 int main(int argc, char * argv[])
 {
+    // Set hard upper limit on number of connections allowed
+    struct rlimit limit = { .rlim_cur=500, .rlim_max=500 };
+    if(setrlimit(RLIMIT_NOFILE, &limit))
+        oops_warn_sys("failed to limit number of file descriptors");
     
     // Parse arguments via getopt
     int opt;

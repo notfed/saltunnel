@@ -1,15 +1,18 @@
 //
-//  test.c
+//  saltunnel-test.c
 //  saltunnel
 //
-#include "cryptostream_vector.test.h"
-#include "oops.h"
-#include "rwn.test.h"
-#include "saltunnel_tcp_forwarder.test.h"
-#include "saltunnel.test.h"
-#include "log.test.h"
-#include "cache.test.h"
-#include "nonce.test.h"
+#include "src/oops.h"
+
+#include "test/cryptostream_vector.test.h"
+#include "test/rwn.test.h"
+#include "test/saltunnel_tcp_forwarder.test.h"
+#include "test/saltunnel.test.h"
+#include "test/log.test.h"
+#include "test/cache.test.h"
+#include "test/nonce.test.h"
+#include "test/tcp.test.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -29,10 +32,12 @@ static void run(void (*the_test)(void), const char *test_name) {
     log_info("---- %s: succeeded ----", test_name);
 }
 
+// Rename this into saltunnel-test.c
 void test() {
     
     log_info("test suite started");
     
+    run(tcp_tests, "tcp tests");
     run(rwn_test, "rwn tests");
     run(log_test, "log tests");
     run(saltunnel_tcp_forwarder_tests, "saltunnel tcp forwarder tests");

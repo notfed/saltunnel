@@ -51,7 +51,7 @@ static void* connection_thread(void* v)
     log_trace("connection thread entered");
     
     // Write packet0 to client
-    if(saltunnel_kx_packet0_trywrite(&ctx->tmp_pinned, ctx->long_term_shared_key, ctx->remote_fd, ctx->my_sk)<0) {
+    if(saltunnel_kx_packet0_trywrite(&ctx->tmp_pinned, ctx->long_term_shared_key, ctx->remote_fd, ctx->my_sk, 0)<0) {
         oops_warn("failed to write packet0 to client");
         return connection_thread_cleanup(v,1);
     }
@@ -74,7 +74,7 @@ static void* connection_thread(void* v)
     // Create a TCP Client to connect to target
     tcpclient_options options = {
         .OPT_TCP_NODELAY = 1,
-        .OPT_CONNECT_TIMEOUT = 10000
+        .OPT_CONNECT_TIMEOUT = 100000
     };
     log_trace("connecting to %s:%s", ctx->to_ip, ctx->to_port);
     
@@ -113,7 +113,16 @@ static void* connection_thread(void* v)
      
      // Run saltunnel
     log_trace("server forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
-    saltunnel(&ingress, &egress); 
+    log_debug("entering saltunnel (dest fd %d)", local_fd); // TODO
+    if(saltunnel(&ingress, &egress)<0) {
+        if(close(local_fd)<0) oops_warn_sys("failed to shutdown socket");
+        log_debug("destination closed (fd %d)", local_fd); // TODO
+    }
+    else {
+        if(shutdown(local_fd, SHUT_RDWR)<0) oops_warn_sys("failed to shutdown socket");
+        log_debug("destination shutdown (fd %d)", local_fd); // TODO
+    }
+    log_info("connection with destination address terminated (fd %d)", local_fd);
     
     // Clear the plaintext buffers
     memset(ingress.plaintext, 0, sizeof(ingress.plaintext));
@@ -126,8 +135,6 @@ static void* connection_thread(void* v)
         oops_warn_sys("failed to munlock server data");
     
     // Clean up
-    if(shutdown(local_fd, SHUT_RDWR)<0) oops_warn_sys("failed to shutdown socket");
-    log_info("connection with source address terminated (fd %d)", local_fd);
     return connection_thread_cleanup(v,0);
 }
 
@@ -173,8 +180,9 @@ int saltunnel_tcp_server_forwarder(cache* table,
     int s = tcpserver_new(from_ip, from_port, options); // TODO: Shouldn't this keep re-trying?
     if(s<0)
         return -1;
-
+    
     log_info("waiting for new connections on source address (socket %d)", s);
+    
     
     oops_should_warn();
     for(;;) {
@@ -184,7 +192,7 @@ int saltunnel_tcp_server_forwarder(cache* table,
         if(remote_fd<0) {
             continue;
         }
-        log_info("connection accepted (but not yet authenticated) on source address (fd %d)", remote_fd);
+        log_info("connection accepted (but not yet authenticated) from source address (fd %d)", remote_fd);
 
         // Handle the connection (but do some DoS prevention checks first)
         connection_thread_context* ctx = calloc(1,sizeof(connection_thread_context));
@@ -200,6 +208,7 @@ int saltunnel_tcp_server_forwarder(cache* table,
                oops_warn_sys("failed to munlock server data");
             free(ctx);
             close(remote_fd);
+            log_info("connection with source address terminated (fd %d)", remote_fd);
         }
     }
     

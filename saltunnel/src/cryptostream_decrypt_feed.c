@@ -66,7 +66,7 @@ int cryptostream_decrypt_feed_read(cryptostream* cs) {
         return 0;
     }
     
-    log_debug("read %d plaintext bytes (total %ld) from fd %d", bytesread, cs->debug_read_total, cs->from_fd);
+    log_debug("read %d ciphertext bytes (total %ld) from fd %d", bytesread, cs->debug_read_total, cs->from_fd);
     
     // Bump vector
     int buffers_filled  = (int)vector_skip(cs->ciphertext_vector, buffer_free_start_i, buffer_free_count, bytesread);
