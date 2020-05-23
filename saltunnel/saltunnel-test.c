@@ -3,6 +3,8 @@
 //  saltunnel
 //
 #include "src/oops.h"
+#include "src/hypercounter.h"
+#include "src/threadpool.h"
 
 #include "test/cryptostream_vector.test.h"
 #include "test/rwn.test.h"
@@ -13,6 +15,7 @@
 #include "test/nonce.test.h"
 #include "test/tcp.test.h"
 
+#include <sodium.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -38,9 +41,9 @@ void test() {
     log_info("test suite started");
     
     run(tcp_tests, "tcp tests");
+    run(saltunnel_tcp_forwarder_tests, "saltunnel tcp forwarder tests");
     run(rwn_test, "rwn tests");
     run(log_test, "log tests");
-    run(saltunnel_tcp_forwarder_tests, "saltunnel tcp forwarder tests");
     run(single_packet_bidirectional_test, "single packet bidirectional tests");
     run(two_packet_bidirectional_test, "two-packet bidirectional test");
     run(large_bidirectional_test, "large bidirectional test");
@@ -51,4 +54,32 @@ void test() {
     run(nonce_tests, "nonce tests");
     
     log_info("all tests passed");
+}
+
+int main(int argc, const char * argv[]) {
+    
+    errno = 0;
+
+    // Set log level
+    log_level = 1;
+    if(argc==2 && strcmp(argv[1],"-vv")==0)
+        log_level = 0;
+    
+    // Seed random bytes
+    try(sodium_init())
+    || oops_error("failed to initialize libsodium");
+    
+    // Initialize hypercounter
+    try(hypercounter_init())
+    || oops_error("failed to initialize hypercounter");
+    
+    // Initialize thread pool
+    threadpool_init_all();
+    
+    // Seed random bytes
+    test();
+    
+    // Shutdown thread pool
+    threadpool_shutdown_all();
+    return 0;
 }

@@ -86,8 +86,7 @@ static pthread_t saltunnel_forwarder_thread(int client_or_server,
 }
 
 typedef struct tcpstub_server_write_context {
-    const char* ip;
-    const char* port;
+    int server_socket;
     const char *writemsg;
     const char *readmsg;
 } tcpstub_server_write_context;
@@ -95,24 +94,13 @@ typedef struct tcpstub_server_write_context {
 static void* tcpstub_server_write_inner(void* v)
 {
     tcpstub_server_write_context* c = (tcpstub_server_write_context*)v;
-    const char* ip = c->ip;
-    const char* port = c->port;
+    int server_socket = c->server_socket;
     const char *writemsg = c->writemsg;
     const char *readmsg = c->readmsg;
     
-    // Create a TCP server
-    tcpserver_options options = {
-     .OPT_TCP_NODELAY = 1,
-     .OPT_SO_REUSEADDR = 1,
-     .OPT_TCP_FASTOPEN = 1
-    };
-    int tcpserver = tcpserver_new(ip, port, options);
-    if(tcpserver<0)
-        oops_error("failed to create TCP server");
-    
     // Accept a connection
     log_trace("TCP stub server: waiting for accept on %s:%s", ip, port);
-    int fd_conn = tcpserver_accept(tcpserver);
+    int fd_conn = tcpserver_accept(server_socket);
     if(fd_conn<0)
         oops_error("failed to establish TCP connection");
     log_trace("TCP stub server: accepted on %s:%s", ip, port);
@@ -144,7 +132,6 @@ static void* tcpstub_server_write_inner(void* v)
     
     // Clean up
     try(close(fd_conn)) || oops_error("failed to close TCP connection");
-    try(close(tcpserver)) || oops_error("failed to close TCP server");
     
     // Assert that what we read is valid
     if(strcmp(actual_readmsg,readmsg)==0)
@@ -156,14 +143,12 @@ static void* tcpstub_server_write_inner(void* v)
     return 0;
 }
 
-static pthread_t tcpstub_server_writer_reader(const char* ip,
-                                      const char* port,
+static pthread_t tcpstub_server_writer_reader(int server_socket,
                                       const char *writemsg,
                                       const char *readmsg)
 {
     tcpstub_server_write_context* c = calloc(1,sizeof(tcpstub_server_write_context));
-    c->ip = ip;
-    c->port = port;
+    c->server_socket = server_socket;
     c->readmsg = readmsg;
     c->writemsg = writemsg;
     pthread_t thread;
@@ -183,15 +168,17 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
         tcpclient_options options = {
          .OPT_TCP_NODELAY = 1,
          .OPT_CONNECT_TIMEOUT = 10000
-//         .OPT_TCP_FASTOPEN = 1
         };
         
+        oops_should_warn();
         int tcpclient = tcpclient_new(ip, port, options);
+        oops_should_error();
         
         // If connection was refused, try to connect again
         if(tcpclient<0 && errno == ECONNREFUSED) {
-            log_trace("TCP stub client: connection refused (to %s:%s), trying again...", ip, port);
-            usleep(50000); errno = 0;
+            log_info("connection refused (to %s:%s), trying again...", ip, port);
+            while(usleep(50000)<0 && errno==EINTR) ;
+            errno = 0;
             continue;
         }
         // Any other error is test failure
@@ -237,7 +224,7 @@ static void tcpstub_client_writer_reader(const char* ip, const char* port, const
     else
         oops_error("TCP stub client: readmsg differed from expected");
 
-    usleep(1000); // TODO: Wait synchronously for TCP threads to finish
+    while(usleep(1000)<0 && errno==EINTR) ; // TODO: Wait synchronously for TCP threads to finish
 }
 
 // TCP Server test
@@ -245,8 +232,17 @@ void saltunnel_tcp_forwarder_tests() {
     
     // Arrange  Threads
     
+    // Create a TCP server
+    tcpserver_options options = {
+     .OPT_TCP_NODELAY = 1,
+     .OPT_SO_REUSEADDR = 1
+    };
+    int server_writer_socket = tcpserver_new("127.0.0.1", "3270", options);
+    if(server_writer_socket<0)
+        oops_error("failed to create TCP server");
+    
     // Server Writer-Reader Thread:
-    pthread_t thread1 = tcpstub_server_writer_reader("127.0.0.1", "3270",
+    pthread_t thread1 = tcpstub_server_writer_reader(server_writer_socket,
                           "this string from TCP server stub to client stub.",
                           "this string from TCP client stub to server stub");
     
@@ -265,4 +261,6 @@ void saltunnel_tcp_forwarder_tests() {
     pthread_kill(thread1, 0);
     pthread_kill(thread2, 0);
     pthread_kill(thread3, 0);
+    
+    if(close(server_writer_socket)<0) oops_error_sys("failed to close socket");
 }
