@@ -75,13 +75,29 @@ static void tcp_test_happy_path() {
 }
 
 
-static void tcp_test_unused_port() {
-
+static void tcp_test_connect_to_unused_port() {
+    // Create TCP client
+    tcpclient_options client_options = { .OPT_TCP_NODELAY = 1, .OPT_CONNECT_TIMEOUT = 500 };
+    oops_should_warn();
+    int client_socket = tcpclient_new("127.0.0.1", "11625", client_options);
+    oops_should_error();
+    if( !(client_socket<0 && errno==ECONNREFUSED) ) oops_error("expected 'Connection refused'");
+    else log_warn("(the above warning is normal and expected during this test)");
 }
 
+static void tcp_test_connect_to_bad_ip() {
+    // Create TCP client
+    tcpclient_options client_options = { .OPT_TCP_NODELAY = 1, .OPT_CONNECT_TIMEOUT = 500 };
+    oops_should_warn();
+    int client_socket = tcpclient_new("192.0.2.0", "11625", client_options);
+    oops_should_error();
+    if( !(client_socket<0 && errno==ETIMEDOUT) ) oops_error("expected 'Operation timed out'");
+    else log_warn("(the above warning is normal and expected during this test)");
+}
 
 void tcp_tests() {
     tcp_test_happy_path();
-    tcp_test_unused_port();
+    tcp_test_connect_to_unused_port();
+    tcp_test_connect_to_bad_ip();
 }
     
