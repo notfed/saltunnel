@@ -62,7 +62,7 @@ static void tcp_test_happy_path() {
     pthread_create(&serverthread, NULL, tcpserver_test_thread, &server_socket)==0 || oops_error_sys("pthread_create failed");
     
     // Create TCP client
-    tcpclient_options client_options = { .OPT_TCP_NODELAY = 1, .OPT_CONNECT_TIMEOUT = 500 };
+    tcpclient_options client_options = { .OPT_TCP_NODELAY = 1, .OPT_CONNECT_TIMEOUT = 25 };
     int client_socket = tcpclient_new("127.0.0.1", "11625", client_options);
     if(client_socket<0) oops_error_sys("failed to listen to connect to 127.0.0.1:11625");
     
@@ -77,7 +77,7 @@ static void tcp_test_happy_path() {
 
 static void tcp_test_connect_to_unused_port() {
     // Create TCP client
-    tcpclient_options client_options = { .OPT_TCP_NODELAY = 1, .OPT_CONNECT_TIMEOUT = 500 };
+    tcpclient_options client_options = { .OPT_TCP_NODELAY = 1, .OPT_CONNECT_TIMEOUT = 25 };
     oops_should_warn();
     int client_socket = tcpclient_new("127.0.0.1", "11625", client_options);
     oops_should_error();
@@ -87,7 +87,7 @@ static void tcp_test_connect_to_unused_port() {
 
 static void tcp_test_connect_to_bad_ip() {
     // Create TCP client
-    tcpclient_options client_options = { .OPT_TCP_NODELAY = 1, .OPT_CONNECT_TIMEOUT = 500 };
+    tcpclient_options client_options = { .OPT_TCP_NODELAY = 1, .OPT_CONNECT_TIMEOUT = 25 };
     oops_should_warn();
     int client_socket = tcpclient_new("192.0.2.0", "11625", client_options);
     oops_should_error();

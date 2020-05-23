@@ -7,7 +7,7 @@
 #define config_h
 
 #ifndef SALTUNNEL_PUMP_THREADS
-#define SALTUNNEL_PUMP_THREADS 2
+#define SALTUNNEL_PUMP_THREADS 1
 #endif
 
 #ifndef THREADPOOL_POOLS
