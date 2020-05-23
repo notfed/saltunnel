@@ -115,11 +115,11 @@ static void* connection_thread(void* v)
     log_trace("server forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
     log_debug("entering saltunnel (dest fd %d)", local_fd); // TODO
     if(saltunnel(&ingress, &egress)<0) {
-        if(close(local_fd)<0) oops_warn_sys("failed to shutdown connection");
+        if(close(local_fd)<0) oops_warn_sys("failed to close connection");
         log_debug("destination closed (fd %d)", local_fd); // TODO
     }
     else {
-        if(shutdown(local_fd, SHUT_RDWR)<0) oops_warn_sys("failed to shutdown connection");
+        shutdown(local_fd, SHUT_RDWR);
         log_debug("destination shutdown (fd %d)", local_fd); // TODO
     }
     log_info("connection with destination address terminated (fd %d)", local_fd);

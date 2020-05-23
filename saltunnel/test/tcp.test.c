@@ -21,7 +21,7 @@ static void exchange_server(int server_conn) {
     if(readn(server_conn, &tmp, 1)<0) oops_error_sys("failed to read a byte from server_conn");
     if(tmp!='c') oops_error_sys("read wrong byte from server_conn");
     // Close
-    if(shutdown(server_conn, SHUT_WR)<0) oops_error_sys("failed to close server_conn");
+    if(shutdown(server_conn, SHUT_WR)<0) oops_error_sys("failed to shutdown server_conn");
     // Read EOF marker
     if(read(server_conn, &tmp, 1)!=0) oops_error_sys("failed to read EOF from server_conn");
 }
@@ -34,7 +34,7 @@ static void exchange_client(int client_conn) {
     if(readn(client_conn, &tmp, 1)<0) oops_error_sys("failed to read a byte from client_conn");
     if(tmp!='s') oops_error_sys("read wrong byte from client_conn");
     // Close
-    if(shutdown(client_conn, SHUT_WR)<0) oops_error_sys("failed to close client_conn");
+    if(shutdown(client_conn, SHUT_WR)<0) oops_error_sys("failed to shutdown client_conn");
     // Read EOF marker
     if(read(client_conn, &tmp, 1)!=0) oops_error_sys("failed to read EOF from client_conn");
 }

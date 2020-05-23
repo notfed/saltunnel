@@ -34,7 +34,8 @@ static void* connection_thread_cleanup(void* v, int remote_fd, int force_close) 
         if(remote_fd>=0) close(remote_fd);
     } else {
         shutdown(ctx->local_fd, SHUT_RDWR);
-        if(remote_fd>=0) shutdown(remote_fd, SHUT_RDWR);
+        if(remote_fd>=0)
+            shutdown(remote_fd, SHUT_RDWR);
     }
     log_info("connection with source address terminated (fd %d)", ctx->local_fd);
     if(remote_fd>=0) log_info("connection with destination address terminated (fd %d)", remote_fd);

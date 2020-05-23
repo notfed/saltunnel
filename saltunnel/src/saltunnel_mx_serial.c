@@ -97,7 +97,7 @@ int exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
         if(pfds[2].fd == FD_EOF && pfds[3].fd != FD_EOF && !cryptostream_encrypt_feed_canwrite(egress)) {
             log_trace("egress is done; closing egress->to_fd (%d)", egress->to_fd);
             if(egress_to_fd_is_socket) {
-                if(shutdown(egress->to_fd, SHUT_WR)<0) oops_warn_sys("failed to shutdown connection");
+                shutdown(egress->to_fd, SHUT_WR);
             } else {
                 if(close(egress->to_fd)<0) oops_warn_sys("failed to close file descriptor");
             }
@@ -128,7 +128,7 @@ int exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
         if(pfds[0].fd == FD_EOF && pfds[1].fd != FD_EOF && !cryptostream_decrypt_feed_canwrite(ingress)) {
             log_trace("ingress is done; closing ingress->to_fd (%d)", ingress->to_fd);
             if(ingress_to_fd_is_socket) {
-                if(shutdown(ingress->to_fd, SHUT_WR)<0) oops_warn_sys("failed to shutdown connection");
+                shutdown(ingress->to_fd, SHUT_WR);
             } else {
                 if(close(ingress->to_fd)<0) oops_warn_sys("failed to close file descriptor");
             }
