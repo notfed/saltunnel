@@ -60,7 +60,6 @@ static void* connection_thread(void* v)
     
     // Calculate shared key
     if(saltunnel_kx_calculate_shared_key(ctx->session_shared_keys, ctx->their_pk, ctx->my_sk)<0) {
-        oops_warn("failed to calculate shared key");
         return connection_thread_cleanup(v,1);
     }
 
@@ -68,7 +67,6 @@ static void* connection_thread(void* v)
 
     log_trace("about to exchange packet1");
     if(saltunnel_kx_packet1_exchange(ctx->session_shared_keys, 1, ctx->remote_fd)<0) {
-        log_warn("failed to exchange packet1 with server");
         return connection_thread_cleanup(ctx,1);
     }
     log_trace("successfully exchanged packet1");
@@ -82,7 +80,6 @@ static void* connection_thread(void* v)
     
     int local_fd = tcpclient_new(ctx->to_ip, ctx->to_port, options);
     if(local_fd<0) {
-        log_trace("failed to connect to destination endpoint");
         return connection_thread_cleanup(v,1);
     }
 
@@ -129,7 +126,7 @@ static void* connection_thread(void* v)
         oops_warn_sys("failed to munlock server data");
     
     // Clean up
-    if(shutdown(local_fd, SHUT_RDWR)<0) log_warn("failed to shutdown socket");
+    if(shutdown(local_fd, SHUT_RDWR)<0) oops_warn_sys("failed to shutdown socket");
     log_info("connection with source address terminated (fd %d)", local_fd);
     return connection_thread_cleanup(v,0);
 }
@@ -137,10 +134,8 @@ static void* connection_thread(void* v)
 static pthread_t connection_thread_spawn(connection_thread_context* ctx)
 {
     pthread_t thread;
-    if(pthread_create(&thread, NULL, connection_thread, (void*)ctx)!=0) {
-        oops_warn("failed to spawn thread");
-        return 0;
-    }
+    if(pthread_create(&thread, NULL, connection_thread, (void*)ctx)!=0)
+        oops_error_sys("failed to spawn thread");
     return thread;
 }
 

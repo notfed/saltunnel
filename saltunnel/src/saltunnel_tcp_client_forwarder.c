@@ -167,12 +167,12 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
     };
     int s  = tcpserver_new(from_ip, from_port, options);
     if(s<0) {
-        log_error("here");
         return -1;
     }
     
     log_info("waiting for new connections on source address (socket %d)", s);
     
+    oops_should_warn();
     for(;;) {
         
         // Accept a new connection (or wait for one to arrive)

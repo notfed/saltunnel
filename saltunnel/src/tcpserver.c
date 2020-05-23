@@ -43,7 +43,7 @@ int tcpserver_new(const char* ip, const char* port, tcpserver_options options)
 {
     // Ignore SIGPIPE
     if(ignore_sigpipe()<0)
-        return oops_warn("failed to set signal handler to ignore SIGPIPE");
+        return oops_sys("failed to set signal handler to ignore SIGPIPE");
     
     // Resolve address
     struct sockaddr_in server_address;
@@ -54,7 +54,7 @@ int tcpserver_new(const char* ip, const char* port, tcpserver_options options)
     // Open a socket
     int s = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (s == -1)
-        return oops_warn("failed to create TCP server socket");
+        return oops_sys("failed to create TCP server socket");
     
     // Enable O_NONBLOCK
     if(options.OPT_NONBLOCK) {
