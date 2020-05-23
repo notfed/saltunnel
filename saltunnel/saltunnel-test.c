@@ -14,6 +14,7 @@
 #include "test/cache.test.h"
 #include "test/nonce.test.h"
 #include "test/tcp.test.h"
+#include "test/hypercounter.test.h"
 
 #include <sodium.h>
 #include <stdio.h>
@@ -40,6 +41,7 @@ void test() {
     
     log_info("test suite started");
     
+    run(hypercounter_tests, "hypercounter tests");
     run(tcp_tests, "tcp tests");
     run(saltunnel_tcp_forwarder_tests, "saltunnel tcp forwarder tests");
     run(rwn_test, "rwn tests");
@@ -83,3 +85,4 @@ int main(int argc, const char * argv[]) {
     threadpool_shutdown_all();
     return 0;
 }
+
