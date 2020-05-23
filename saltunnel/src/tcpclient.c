@@ -72,9 +72,10 @@ static int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen
 
 static int fd_unblock(int sockfd) { return fcntl(sockfd,F_SETFL,fcntl(sockfd,F_GETFL,0) | O_NONBLOCK); }
 
-static int cleanup_then_oops_sys(int socket, const char* warning) {
+static int cleanup_then_oops_sys(int socket, const char* warning, struct addrinfo* server_address) {
     int e = errno;
     close(socket);
+    freeaddrinfo(server_address);
     errno = e;
     return oops_sys(warning);
 }
@@ -82,20 +83,22 @@ static int cleanup_then_oops_sys(int socket, const char* warning) {
 int tcpclient_new(const char* ip, const char* port, tcpclient_options options)
 {
     // Resolve address
-    struct sockaddr_in server_address;
-    server_address.sin_family = AF_INET;
-    server_address.sin_addr.s_addr = inet_addr(ip);
-    server_address.sin_port = htons(atoi(port));
+    struct addrinfo* server_address;
+    struct addrinfo hints = { .ai_socktype = SOCK_STREAM, .ai_flags = AI_CANONNAME };
+    if (getaddrinfo(ip, port, &hints, &server_address)!=0) {
+        errno = EHOSTUNREACH; // Why is there no 'Unknown host' errno?
+        return oops("failed to resolve ip address of hostname");
+    }
     
     // Open a socket
     int s = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (s<0) return cleanup_then_oops_sys(s, "failed to create TCP client socket");
+    if (s<0) return cleanup_then_oops_sys(s, "failed to create TCP client socket", server_address);
     
     // Enable TCP_NODELAY
     if(options.OPT_TCP_NODELAY) {
         int historical_api_flag = 1;
         if(setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &historical_api_flag, sizeof(int))<0)
-            return cleanup_then_oops_sys(s, "failed to enable TCP_NODELAY on TCP client socket");
+            return cleanup_then_oops_sys(s, "failed to enable TCP_NODELAY on TCP client socket", server_address);
     }
     
     // Set SO_SNDLOWAT
@@ -107,17 +110,21 @@ int tcpclient_new(const char* ip, const char* port, tcpclient_options options)
     
     // Connect using the socket
     if(options.OPT_CONNECT_TIMEOUT>0) {
-        if(connect_with_timeout(s, (struct sockaddr*)&server_address, sizeof(server_address), options.OPT_CONNECT_TIMEOUT)<0)
-            return cleanup_then_oops_sys(s, "failed to connect to destination address");
+        if(connect_with_timeout(s, server_address->ai_addr, server_address->ai_addrlen, options.OPT_CONNECT_TIMEOUT)<0)
+            return cleanup_then_oops_sys(s, "failed to connect to destination address", server_address);
     } else {
-        if(connect(s, (struct sockaddr*)&server_address, sizeof(server_address))<0)
-            return cleanup_then_oops_sys(s, "failed to connect to destination address");
+        if(connect(s, server_address->ai_addr, server_address->ai_addrlen)<0) {
+            return cleanup_then_oops_sys(s, "failed to connect to destination address", server_address);
+        }
     }
+    
+    // Free the address
+    freeaddrinfo(server_address);
     
     // Make it non-blocking
     if(options.OPT_NONBLOCK) {
         if(fd_unblock(s)<0)
-            return cleanup_then_oops_sys(s, "failed to set set O_NONBLOCK on TCP client socket");
+            return cleanup_then_oops_sys(s, "failed to set set O_NONBLOCK on TCP client socket", server_address);
     }
 
     return s;

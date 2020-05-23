@@ -41,19 +41,19 @@ void test() {
     
     log_info("test suite started");
     
-    run(hypercounter_tests, "hypercounter tests");
     run(tcp_tests, "tcp tests");
-    run(saltunnel_tcp_forwarder_tests, "saltunnel tcp forwarder tests");
-    run(rwn_test, "rwn tests");
-    run(log_test, "log tests");
-    run(single_packet_bidirectional_test, "single packet bidirectional tests");
-    run(two_packet_bidirectional_test, "two-packet bidirectional test");
-    run(large_bidirectional_test, "large bidirectional test");
-    run(edge_case_bidirectional_tests, "edge-case bidirectional tests");
-    run(calculate_filled_buffers_tests,"calculate filled buffers tests");
-    run(cryptostream_vector_tests,"cryptostream vector tests");
-    run(cache_test, "cache tests");
-    run(nonce_tests, "nonce tests");
+//    run(hypercounter_tests, "hypercounter tests");
+//    run(saltunnel_tcp_forwarder_tests, "saltunnel tcp forwarder tests");
+//    run(rwn_test, "rwn tests");
+//    run(log_test, "log tests");
+//    run(single_packet_bidirectional_test, "single packet bidirectional tests");
+//    run(two_packet_bidirectional_test, "two-packet bidirectional test");
+//    run(large_bidirectional_test, "large bidirectional test");
+//    run(edge_case_bidirectional_tests, "edge-case bidirectional tests");
+//    run(calculate_filled_buffers_tests,"calculate filled buffers tests");
+//    run(cryptostream_vector_tests,"cryptostream vector tests");
+//    run(cache_test, "cache tests");
+//    run(nonce_tests, "nonce tests");
     
     log_info("all tests passed");
 }
