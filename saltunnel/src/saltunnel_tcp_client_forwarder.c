@@ -130,6 +130,8 @@ static void* connection_thread(void* v)
     saltunnel(&ingress, &egress);
     
     // Clear the plaintext buffers/keys
+    memset(ingress.key, 0, 32);
+    memset(egress.key, 0, 32);
     memset(ingress.plaintext, 0, sizeof(ingress.plaintext));
     memset(egress.plaintext, 0, sizeof(egress.plaintext));
     

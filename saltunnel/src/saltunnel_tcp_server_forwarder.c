@@ -122,6 +122,8 @@ static void* connection_thread(void* v)
     log_info("connection with destination address terminated (fd %d)", local_fd);
     
     // Clear the plaintext buffers
+    memset(ingress.key, 0, 32);
+    memset(egress.key, 0, 32);
     memset(ingress.plaintext, 0, sizeof(ingress.plaintext));
     memset(egress.plaintext, 0, sizeof(egress.plaintext));
     
