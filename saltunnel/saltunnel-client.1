@@ -94,23 +94,59 @@ If invalid arguments are given, \fBsaltunnel-client\fP exits with \fB2\fP.
 If an error occurs, \fBsaltunnel-client\fP exits with \fB1\fP.
 .SH CRYPTOGRAPHY
 .PP
-The protocol used by \fBsaltunnel\fP provides the following features:
+The \fBsaltunnel\fP programs and the protocol used by \fBsaltunnel\fP provide the following features:
 
 .IP \[bu] 2
-Confidentiality
-.IP \[bu]
-Integrity
-.IP \[bu]
-Post-Quantum Security
-.IP \[bu]
-Steganography
-.IP \[bu]
-Forward Secrecy
+Confidentiality and Integrity
+
+.RS 8
+The \fBsaltunnel\fP protocol uses salsa20+poly1305 as its primary symmetric cipher, which provides confidentiality and integrity. 
+.RE
+
 .IP \[bu]
 Denial-of-Service Protection
 
-.PP
-The \fBsaltunnel\fP protocol uses salsa20+poly1305 as its primary symmetric cipher, which provides confidentiality and integrity. The protocol is also immune to quantum computing attacks, assuming the key is shared securely between parties (again due to the reliance on a symmetric cipher).  Additionally, it is steganographic, in that the entire protocol is indistinguishable from random: if someone attempts to eavesdrop on the conversation, they will be unable to detect any (for example) protocol header magic bytes or patterns in the data (apart from traffic analysis). Forward secrecy is also ensured: after a TCP connection terminates, it is impossible for even owners of the original shared key to decrypt it. Finally, \fBsaltunnel\fP offers considerable denial-of-service protection: an attacker attempting to overload a \fBsaltunnel-server\fP instance will find that his/her most cost-effective attacks are (probably) the well-known shortcomings of TCP itself.
+.RS 8
+Additionally, it has considerable denial-of-service protection: an attacker attempting to overload a \fBsaltunnel-server\fP instance will find that his/her most cost-effective attacks are (probably) reduced to exploiting the well-known shortcomings of TCP itself.
+.RE
+
+.IP \[bu]
+Forward Secrecy
+
+.RS 8
+Forward secrecy is also ensured: after a TCP connection terminates, the ephemeral keys which were used to encrypt that connection are permanently erased. This means it is impossible for even owners of the original shared key to retroactively decrypt it. 
+.RE
+
+.IP \[bu]
+Message-Length Quantization
+
+.RS 8
+Data is sent over the network in chunks of 512 bytes. If one computer sends, for example, 7 bytes, it will arrive as a 512-byte chunk on the other computer. This greatly reduces the amount of information which can be inferred from network analysis.
+.RE
+
+.IP \[bu]
+Steganography
+
+.RS 8
+The protocol is steganographic-by-randomness, in that the entire protocol is indistinguishable from random: if someone attempts to eavesdrop on the conversation, they will be unable to detect any (for example) protocol header magic bytes or patterns in the data (apart from traffic analysis). 
+.RE
+
+.IP \[bu]
+Post-Quantum Security
+
+.RS 8
+The protocol is also immune to quantum computing attacks, because its security relies on symmetric cryptography. The catch is, however, that a prerequisite is that the key must be shared securely between parties--a process which is historically difficult to do in a post-quantum-secure way.
+.RE
+
+.IP \[bu]
+Key/Data Safety
+
+.RS 8
+Both programs use \fBmlock\fP to pin all keys and plaintext to memory, so that they are never swapped to disk. Additionally, as soon as each connection is closed, that connection's keys and plaintext are immediately erased from memory (except when the program is terminated via interrupt, unfortunately). This (almost) provides forward secrecy even in the face of disk forensics (assuming your \fBRLIMIT_MEMLOCK\fP is not too low) or cold-boot attacks (assuming you don't enter sleep mode while a connection is active).
+.RE
+
+For more information, see <https://identity.pub/saltunnel>.
+
 
 .SH AUTHOR
 Jay Sullivan <jay@identity.pub>
