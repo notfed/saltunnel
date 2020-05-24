@@ -27,6 +27,12 @@ static cache table = {0};
 
 int main(int argc, char * argv[])
 {
+    // If version was requested, simply print it and exit
+    if(argc>=2 && strcmp("--version",argv[1])==0) {
+        printf("1.0.0\n");
+        return 0;
+    }
+    
     // Parse arguments via getopt
     int opt;
     int verbosity = 0;

@@ -6,15 +6,20 @@
 
 .SH SYNOPSIS
 .PP
-.B saltunnel-client [-t <timeout>] [-m <maxconns>] -k <keyfile> <fromip>:<fromport> <toip>:<toport>
+.B saltunnel-client [--version] [-t <timeout>] [-m <maxconns>] -k <keyfile> <fromip>:<fromport> <toip>:<toport>
 .PP
-.B saltunnel-server [-t <timeout>] [-m <maxconns>] -k <keyfile> <fromip>:<fromport> <toip>:<toport>
+.B saltunnel-server [--version] [-t <timeout>] [-m <maxconns>] -k <keyfile> <fromip>:<fromport> <toip>:<toport>
 
 .SH DESCRIPTION
 .PP
 The \fBsaltunnel-client\fP and \fBsaltunnel-server\fP programs are used in conjunction to establish a cryptographically secure, difficult-to-censor, TCP tunnel using symmetric key cryptography.  This allows one to augment a normally-insecure TCP session with state-of-the-art security, with minimal hassle and minimal impact on performance. 
 
 The following options are available:
+
+    \fB--version\fP 
+.RS 12
+Display version information.
+.RE
 
     \fB-t <timeout>\fP 
 .RS 12
