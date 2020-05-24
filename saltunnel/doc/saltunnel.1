@@ -1,0 +1,151 @@
+.TH saltunnel-client 1 "May 2020" "saltunnel" "saltunnel"
+
+.SH NAME
+.PP
+\fBsaltunnel-client\fP, \fBsaltunnel-server\fP  - establish a cryptographically secure TCP tunnel
+
+.SH SYNOPSIS
+.PP
+saltunnel-client [\fB--version\fP] [\fB-t\fP <\fItimeout\fP>] [\fB-m\fP <\fImaxconns\fP>] \fB-k\fP <\fIkeyfile\fP> <\fIfromip\fP>:<\fIfromport\fP> <\fItoip\fP>:<\fItoport\fP>
+
+saltunnel-server [\fB--version\fP] [\fB-t\fP <\fItimeout\fP>] [\fB-m\fP <\fImaxconns\fP>] \fB-k\fP <\fIkeyfile\fP> <\fIfromip\fP>:<\fIfromport\fP> <\fItoip\fP>:<\fItoport\fP>
+
+.SH DESCRIPTION
+.PP
+The \fBsaltunnel-client\fP and \fBsaltunnel-server\fP programs are used in conjunction to establish a cryptographically secure, difficult-to-censor, TCP tunnel using symmetric key cryptography.  This allows one to augment a normally-insecure TCP session with state-of-the-art security, with minimal hassle and minimal impact on performance. 
+
+The following options are available:
+
+    \fB--version\fP 
+.RS 12
+Display version information.
+.RE
+
+    \fB-t\fP <\fItimeout\fP> 
+.RS 12
+Set a connection timeout (in seconds) for all outgoing TCP connections. (Optional; defaults to system default.)
+.RE
+
+    \fB-m\fP <\fImaxconns\fP>
+.RS 12
+Set a limit on the maximum number of concurrent TCP connections. (Optional; defaults to 100.)
+.RE
+
+    \fB-k\fP <\fIkeyfile\fP>
+.RS 12
+Specify the path to the shared key file. This file must be 32-bytes, and should be derived from a cryptographic random number generator.
+.RE
+
+    <\fIfromip\fP>:<\fIfromport\fP>
+.RS 12
+The \fBip:port\fP pair identifying the source address to listen for incoming TCP connections. (For \fBsaltunnel-client\fP this is data arrives unencrypted; for \fBsaltunnel-server\fP it arrives encrypted.)
+.RE
+
+    <\fItoip\fP>:<\fItoport\fP>
+.RS 12
+The \fIip:port\fP pair identifying the destination address to connect to for outgoing (encrypted) TCP connections. (For \fBsaltunnel-client\fP this is data is sent unencrypted; for \fBsaltunnel-server\fP it is sent encrypted.)
+.RE
+
+
+.SH EXAMPLES
+
+Imagine that you have two computers on two different continents--ComputerA and ComputerB--and would like for some program on ComputerA to establish a TCP session with some port ComputerB, but the protocol which this program uses is too insecure to use comfortably over a network. You can use \fBsaltunnel\fP to easily solve this problem. Going further, imagine both of the countries your computers are in have border firewalls which detect and block common encryption protocols: \fBsaltunnel\fP would help here, too, as the \fBsaltunnel\fP protocol is difficult to detect.
+
+First, you will need to generate a shared key and (somehow) copy it to both computers; \fBsaltunnel\fP requires 32-byte keys, which should be generated from a cryptographically secure source. 
+
+So, on ComputerA, generate a key:
+
+.RS 8
+mkdir ~/.saltunnel
+cat /dev/urandom | head -c 32 > ~/.saltunnel/k
+.RE
+
+You'll then need to securely copy this to ComputerB.  (Doing this step securely is critical, but \fBsaltunnel\fP isn't designed to help with this step, so we will hand-wave this step. Fortunately, you'll only need to do this once.)
+
+Next, you can set up the client-side of a tunnel. On ComputerA, you run:
+
+.RS 8
+saltunnel-client -k ~/.saltunnel/k 127.0.0.1:8080 computer-a:30000
+.RE
+
+(Where 'computer-a' is the hostname or IP address of ComputerA.)
+
+After running this, any TCP connections made from ComputerA to IP address 127.0.0.1, port 7000, will be encrypted and forwarded to ComputerA's port 7000.
+
+But, you'll still need to set up the server-side of the tunnel.  On ComputerB, you run:
+
+.RS 8
+saltunnel-server -k ~/.saltunnel/k 0.0.0.0:30000 127.0.0.1:8080
+.RE
+
+After running this, any TCP connections incoming to ComputerB on port 8080 will be decrypted and forwarded to IP address 127.0.0.1, port 8080.
+
+Now that both ends of the tunnel are initialized, ComputerA can securely communicate with ComputerB. If ComputerA now makes a TCP connection to its own port 8080, the behavior should be as if it is connecting directly to ComputerB's local port 8080.
+
+.PP
+The \fIsecretkeyfile\fP should point to a file with the secret key.
+.SH EXIT CODE
+.PP
+Normally, \fBsaltunnel-client\fP and \fBsaltunnel-server\fP do not exit. (They will both continue to listen for connections until terminated.)
+.PP
+If invalid arguments are given, \fBsaltunnel-client\fP and \fBsaltunnel-server\fP will with \fB2\fP.
+.PP
+If an error occurs, \fBsaltunnel-client\fP and \fBsaltunnel-server\fP will exit with \fB1\fP.
+.SH CRYPTOGRAPHY
+.PP
+The \fBsaltunnel\fP programs and the protocol used by \fBsaltunnel\fP provide the following features:
+
+.IP \[bu] 2
+Confidentiality and Integrity
+
+.RS 8
+The \fBsaltunnel\fP protocol uses salsa20+poly1305 as its primary symmetric cipher, which provides confidentiality and integrity. 
+.RE
+
+.IP \[bu]
+Denial-of-Service Protection
+
+.RS 8
+Additionally, it has considerable denial-of-service protection: an attacker attempting to overload a \fBsaltunnel-server\fP instance will find that his/her most cost-effective attacks are (probably) reduced to exploiting the well-known shortcomings of TCP itself.
+.RE
+
+.IP \[bu]
+Forward Secrecy
+
+.RS 8
+Forward secrecy is also ensured: after a TCP connection terminates, the ephemeral keys which were used to encrypt that connection are permanently erased. This means it is impossible for even owners of the original shared key to retroactively decrypt it. 
+.RE
+
+.IP \[bu]
+Message-Length Quantization
+
+.RS 8
+Data is sent over the network in chunks of 512 bytes. If one computer sends, for example, 7 bytes, it will arrive as a 512-byte chunk on the other computer. This greatly reduces the amount of information which can be inferred from network analysis.
+.RE
+
+.IP \[bu]
+Steganography
+
+.RS 8
+The protocol is steganographic-by-randomness, in that the entire protocol is indistinguishable from random: if someone attempts to eavesdrop on the conversation, they will be unable to detect any (for example) protocol header magic bytes or patterns in the data (apart from traffic analysis). 
+.RE
+
+.IP \[bu]
+Post-Quantum Security
+
+.RS 8
+The protocol is also immune to quantum computing attacks, because its security relies on symmetric cryptography. The catch is, however, that a prerequisite is that the key must be shared securely between parties--a process which is historically difficult to do in a post-quantum-secure way.
+.RE
+
+.IP \[bu]
+Key/Data Safety
+
+.RS 8
+Both programs use \fBmlock\fP to pin all keys and plaintext to memory, so that they are never swapped to disk. Additionally, as soon as each connection is closed, that connection's keys and plaintext are immediately erased from memory (except when the program is terminated via interrupt, unfortunately). This (almost) provides forward secrecy even in the face of disk forensics (assuming your \fBRLIMIT_MEMLOCK\fP is not too low) or cold-boot attacks (assuming you don't terminate the program or enter sleep mode while a connection is active).
+.RE
+
+For more information, see <https://identity.pub/saltunnel>.
+
+
+.SH AUTHOR
+Jay Sullivan <jay@identity.pub>
