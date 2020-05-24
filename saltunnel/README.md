@@ -6,7 +6,7 @@ For more information, see https://identity.pub/saltunnel.
 
 # Installation
 
-As a prerequisite, you must first have `libsodium` installed.  
+As a prerequisite, you must first have [libsodium|https://github.com/jedisct1/libsodium] installed.  
 
 To compile and install `saltunnel` from source:
 
