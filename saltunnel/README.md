@@ -1,6 +1,8 @@
 # Overview
 
-This project builds the saltunnel-client and saltunnel-server programs, whic are used in conjunction to establish a cryptographically secure, difficult-to-censor, TCP tunnel using symmetric key cryptography.  This allows one to augment a normally-insecure TCP session with state-of-the-art security, with minimal hassle and minimal impact on performance.
+`saltunnel` is a cryptographically secure, difficult-to-censor, TCP tunnel.  It allows one to augment a normally-insecure TCP session with state-of-the-art security, with minimal hassle and minimal impact on performance.
+
+For more information, see [https://identity.pub/saltunnel|https://identity.pub/saltunnel].
 
 # Installation
 
@@ -19,4 +21,4 @@ sudo make install
 
 # Documentation
 
-See `saltunnel(1)` for complete documentation.
+See `saltunnel(1)` or [https://identity.pub/saltunnel|https://identity.pub/saltunnel] for complete documentation.
