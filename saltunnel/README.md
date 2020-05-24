@@ -6,7 +6,7 @@
 
 For more information, see https://identity.pub/saltunnel.
 
-# How do I install it?
+## How do I install it?
 
 As a prerequisite, you must first have [libsodium](https://github.com/jedisct1/libsodium) installed.  
 
@@ -21,6 +21,6 @@ make
 sudo make install
 ```
 
-# How do I use it?
+## How do I use it?
 
 See or https://identity.pub/saltunnel or `saltunnel(1)` for complete documentation.
