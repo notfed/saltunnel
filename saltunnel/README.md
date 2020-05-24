@@ -21,4 +21,4 @@ sudo make install
 
 # Documentation
 
-See `saltunnel(1)` or [https://identity.pub/saltunnel|https://identity.pub/saltunnel] for complete documentation.
+See or https://identity.pub/saltunnel or `saltunnel(1)` for complete documentation.
