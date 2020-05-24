@@ -6,9 +6,9 @@
 
 .SH SYNOPSIS
 .PP
-.B saltunnel-client [--version] [-t <timeout>] [-m <maxconns>] -k <keyfile> <fromip>:<fromport> <toip>:<toport>
+saltunnel-client [\fB--version\fP] [\fB-t\fP <\fItimeout\fP>] [\fB-m\fP <\fImaxconns\fP>] \fB-k\fP <\fIkeyfile\fP> <\fIfromip\fP>:<\fIfromport\fP> <\fItoip\fP>:<\fItoport\fP>
 
-.B saltunnel-server [--version] [-t <timeout>] [-m <maxconns>] -k <keyfile> <fromip>:<fromport> <toip>:<toport>
+saltunnel-server [\fB--version\fP] [\fB-t\fP <\fItimeout\fP>] [\fB-m\fP <\fImaxconns\fP>] \fB-k\fP <\fIkeyfile\fP> <\fIfromip\fP>:<\fIfromport\fP> <\fItoip\fP>:<\fItoport\fP>
 
 .SH DESCRIPTION
 .PP
@@ -21,29 +21,29 @@ The following options are available:
 Display version information.
 .RE
 
-    \fB-t <timeout>\fP 
+    \fB-t\fP <\fItimeout\fP> 
 .RS 12
 Set a connection timeout (in seconds) for all outgoing TCP connections. (Optional; defaults to system default.)
 .RE
 
-    \fB-m <maxconns>\fP 
+    \fB-m\fP <\fImaxconns\fP>
 .RS 12
 Set a limit on the maximum number of concurrent TCP connections. (Optional; defaults to 100.)
 .RE
 
-    \fB-k <keyfile>\fP 
+    \fB-k\fP <\fIkeyfile\fP>
 .RS 12
 Specify the path to the shared key file. This file must be 32-bytes, and should be derived from a cryptographic random number generator.
 .RE
 
-    \fB<fromip>:<fromport>\fP 
+    <\fIfromip\fP>:<\fIfromport\fP>
 .RS 12
 The \fBip:port\fP pair identifying the source address to listen for incoming TCP connections. (For \fBsaltunnel-client\fP this is data arrives unencrypted; for \fBsaltunnel-server\fP it arrives encrypted.)
 .RE
 
-    \fB<toip>:<toport>\fP 
+    <\fItoip\fP>:<\fItoport\fP>
 .RS 12
-CRAP The \fBip:port\fP pair identifying the destination address to connect to for outgoing (encrypted) TCP connections. (For \fBsaltunnel-client\fP this is data is sent unencrypted; for \fBsaltunnel-server\fP it is sent encrypted.)
+The \fIip:port\fP pair identifying the destination address to connect to for outgoing (encrypted) TCP connections. (For \fBsaltunnel-client\fP this is data is sent unencrypted; for \fBsaltunnel-server\fP it is sent encrypted.)
 .RE
 
 
@@ -56,7 +56,6 @@ First, you will need to generate a shared key and (somehow) copy it to both comp
 So, on ComputerA, generate a key:
 
 .RS 8
-\fB<fromip>:<fromport>\fP 
 mkdir ~/.saltunnel
 cat /dev/urandom | head -c 32 > ~/.saltunnel/k
 .RE
@@ -87,11 +86,11 @@ Now that both ends of the tunnel are initialized, ComputerA can securely communi
 The \fIsecretkeyfile\fP should point to a file with the secret key.
 .SH EXIT CODE
 .PP
-Normally, \fBsaltunnel-client\fP does not exit. (It will continue to listen for connections until terminated.)
+Normally, \fBsaltunnel-client\fP and \fBsaltunnel-server\fP do not exit. (They will both continue to listen for connections until terminated.)
 .PP
-If invalid arguments are given, \fBsaltunnel-client\fP exits with \fB2\fP.
+If invalid arguments are given, \fBsaltunnel-client\fP and \fBsaltunnel-server\fP will with \fB2\fP.
 .PP
-If an error occurs, \fBsaltunnel-client\fP exits with \fB1\fP.
+If an error occurs, \fBsaltunnel-client\fP and \fBsaltunnel-server\fP will exit with \fB1\fP.
 .SH CRYPTOGRAPHY
 .PP
 The \fBsaltunnel\fP programs and the protocol used by \fBsaltunnel\fP provide the following features:
