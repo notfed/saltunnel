@@ -74,7 +74,7 @@ static void* connection_thread(void* v)
     // Create a TCP Client to connect to target
     tcpclient_options options = {
         .OPT_TCP_NODELAY = 1,
-        .OPT_CONNECT_TIMEOUT = 10000
+        .OPT_CONNECT_TIMEOUT = config_connection_timeout_ms
     };
     log_trace("connecting to %s:%s", ctx->to_ip, ctx->to_port);
     

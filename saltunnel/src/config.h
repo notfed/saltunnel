@@ -18,4 +18,6 @@
 #define THREADPOOL_THREAD_COUNT 4
 #endif
 
+extern int config_connection_timeout_ms;
+
 #endif /* config_h */

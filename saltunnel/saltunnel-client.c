@@ -10,6 +10,7 @@
 #include "src/math.h"
 #include "src/threadpool.h"
 #include "src/hypercounter.h"
+#include "src/config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,7 +20,7 @@
 #include <sodium.h>
 
 static void oops_usage() {
-    fprintf(stderr, "saltunnel-client: usage: saltunnel-client [-m <maxconns>] -k <keyfile> <fromip>:<fromport> <toip>:<toport>\n");
+    fprintf(stderr, "saltunnel-client: usage: saltunnel-client [-t <timeout>] [-m <maxconns>] -k <keyfile> <fromip>:<fromport> <toip>:<toport>\n");
     exit(2);
 }
 
@@ -32,7 +33,7 @@ int main(int argc, char * argv[])
     int keyfile_provided = 0;
     int maxconns = 100;
 
-    while ((opt = getopt(argc, argv, "vm:k:")) != -1) {
+    while ((opt = getopt(argc, argv, "vt:m:k:")) != -1) {
         switch (opt) {
         case 'v':
             verbosity++;
@@ -44,6 +45,13 @@ int main(int argc, char * argv[])
         case 'm':
             maxconns = atoi(optarg);
             break;
+        case 't': {
+            float connection_timeout_s ;
+            if(sscanf(optarg, "%f", &connection_timeout_s)>=0 && connection_timeout_s>=0) {
+                config_connection_timeout_ms = (int)(connection_timeout_s*1000);
+            }
+            break;
+        }
         default:
             oops_usage();
         }

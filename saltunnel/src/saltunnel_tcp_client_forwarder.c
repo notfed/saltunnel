@@ -58,7 +58,7 @@ static void* connection_thread(void* v)
     tcpclient_options options = {
      .OPT_TCP_NODELAY = 1,
      .OPT_SO_SNDLOWAT = 512,
-     .OPT_CONNECT_TIMEOUT = 10000
+     .OPT_CONNECT_TIMEOUT = config_connection_timeout_ms
     };
 
     log_trace("connecting to %s:%s", ctx->remote_ip, ctx->remote_port);
