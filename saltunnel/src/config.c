@@ -5,4 +5,4 @@
 
 #include "config.h"
 
-int config_connection_timeout_ms = -1;
+int config_connection_timeout_ms = 0;
