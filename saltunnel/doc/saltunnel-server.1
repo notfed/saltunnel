@@ -141,7 +141,7 @@ The protocol is also immune to quantum computing attacks, because its security r
 Key/Data Safety
 
 .RS 8
-Both programs use \fBmlock\fP to pin all keys and plaintext to memory, so that they are never swapped to disk. Additionally, as soon as each connection is closed, that connection's keys and plaintext are immediately erased from memory (except when the program is terminated via interrupt, unfortunately). This (almost) provides forward secrecy even in the face of disk forensics (assuming your \fBRLIMIT_MEMLOCK\fP is not too low) or cold-boot attacks (assuming you don't enter sleep mode while a connection is active).
+Both programs use \fBmlock\fP to pin all keys and plaintext to memory, so that they are never swapped to disk. Additionally, as soon as each connection is closed, that connection's keys and plaintext are immediately erased from memory (except when the program is terminated via interrupt, unfortunately). This (almost) provides forward secrecy even in the face of disk forensics (assuming your \fBRLIMIT_MEMLOCK\fP is not too low) or cold-boot attacks (assuming you don't terminate the program or enter sleep mode while a connection is active).
 .RE
 
 For more information, see <https://identity.pub/saltunnel>.
