@@ -11,7 +11,7 @@ testdir = .
 test_PROGRAMS = saltunnel-test
 TESTS = saltunnel-test
 
-man1_MANS = saltunnel-client.1 saltunnel-server.1
+man1_MANS = doc/saltunnel-client.1 doc/saltunnel-server.1
 
 AM_LDFLAGS = -lpthread
 LDADD = /usr/local/lib/libsodium.a
