@@ -40,7 +40,7 @@ int saltunnel_kx_packet0_trywrite(packet0* my_packet0_plaintext_pinned,
     // Create an ephemeral keypair
     //-----------------------
     
-    crypto_box_curve25519xsalsa20poly1305_keypair(my_packet0_plaintext_pinned->pk, my_sk_out);
+    crypto_box_curve25519xsalsa20poly1305_keypair(my_packet0_plaintext_pinned->public_key, my_sk_out);
     
     //-----------------------
     // Send packet0
@@ -51,10 +51,10 @@ int saltunnel_kx_packet0_trywrite(packet0* my_packet0_plaintext_pinned,
     randombytes(my_nonce, 24);
     
     // Put the epoch time (in seconds) in the packet
-    uint64_pack_big((char*)&my_packet0_plaintext_pinned->epoch_seconds, time(NULL));
+    uint64_pack_big((char*)&my_packet0_plaintext_pinned->timestamp, time(NULL));
     
     // Place this machine's machine_id and current monotonic_time into the packet
-    if(hypercounter(my_packet0_plaintext_pinned->machine_id, my_packet0_plaintext_pinned->monotonic_time)<0)
+    if(hypercounter(my_packet0_plaintext_pinned->machine_id, my_packet0_plaintext_pinned->machine_counter)<0)
         return -1;
     
     // Put version in buffer
@@ -76,7 +76,7 @@ int saltunnel_kx_packet0_trywrite(packet0* my_packet0_plaintext_pinned,
         : oops_sys("authentication failed: failed to write to source address"); }
     
     // Erase keys
-    memset(my_packet0_plaintext_pinned->pk, 0, sizeof(my_packet0_plaintext_pinned->pk));
+    memset(my_packet0_plaintext_pinned->public_key, 0, sizeof(my_packet0_plaintext_pinned->public_key));
     
     return 0;
 }
@@ -120,7 +120,7 @@ int saltunnel_kx_packet0_tryread(cache* table,
     // Verify that their timestamp is less than an hour old
     uint64_t my_now = time(NULL);
     uint64_t their_now;
-    uint64_unpack_big((char*)their_packet0_plaintext_pinned->epoch_seconds, &their_now);
+    uint64_unpack_big((char*)their_packet0_plaintext_pinned->timestamp, &their_now);
     if(their_now < (my_now-3600))
         return oops("authentication failed: received stale packet0");
     
@@ -129,7 +129,7 @@ int saltunnel_kx_packet0_tryread(cache* table,
     {
         // DoS prevention: Unpack hypercounter timestamp
         uint64_t new_monotonic_time;
-        uint64_unpack((char*)their_packet0_plaintext_pinned->monotonic_time, &new_monotonic_time);
+        uint64_unpack((char*)their_packet0_plaintext_pinned->machine_counter, &new_monotonic_time);
         
         // DoS prevention: If we've seen this machine before, ensure timestamp is fresh
         unsigned char* old_monotonic_time_ptr = cache_get(table, their_packet0_plaintext_pinned->machine_id);
@@ -141,15 +141,15 @@ int saltunnel_kx_packet0_tryread(cache* table,
         }
         
         // DoS prevention: Passed. Update cache table
-        if(cache_insert(table, their_packet0_plaintext_pinned->machine_id, their_packet0_plaintext_pinned->monotonic_time)<0)
+        if(cache_insert(table, their_packet0_plaintext_pinned->machine_id, their_packet0_plaintext_pinned->machine_counter)<0)
             return -1;
     }
     
     // Copy their_pk to output
-    memcpy(their_pk_out, their_packet0_plaintext_pinned->pk, sizeof(their_packet0_plaintext_pinned->pk));
+    memcpy(their_pk_out, their_packet0_plaintext_pinned->public_key, sizeof(their_packet0_plaintext_pinned->public_key));
     
     // Erase local copy of their_pk
-    memset(their_packet0_plaintext_pinned->pk, 0, sizeof(their_packet0_plaintext_pinned->pk));
+    memset(their_packet0_plaintext_pinned->public_key, 0, sizeof(their_packet0_plaintext_pinned->public_key));
     
     // Success
     errno = 0;

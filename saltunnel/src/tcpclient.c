@@ -18,6 +18,7 @@
 #include <poll.h>
 #include <time.h>
 
+// TODO: Accept an extra "cancellation_fd" which we'll also watch for POLLHUP
 static int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen_t addrlen, unsigned int timeout_ms) {
     int rc = 0;
     // Set O_NONBLOCK
