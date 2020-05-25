@@ -124,14 +124,14 @@ int saltunnel_kx_packet0_tryread(cache* table,
     if(their_now < (my_now-3600))
         return oops("authentication failed: received stale packet0");
     
-    // DoD prevention: Ensure hypercounter is fresh (only needed on server-side)
+    // DoS prevention: Ensure hypercounter is fresh (only needed on server-side)
     if(table)
     {
-        // DoD prevention: Unpack hypercounter timestamp
+        // DoS prevention: Unpack hypercounter timestamp
         uint64_t new_monotonic_time;
         uint64_unpack((char*)their_packet0_plaintext_pinned->monotonic_time, &new_monotonic_time);
         
-        // DoD prevention: If we've seen this machine before, ensure timestamp is fresh
+        // DoS prevention: If we've seen this machine before, ensure timestamp is fresh
         unsigned char* old_monotonic_time_ptr = cache_get(table, their_packet0_plaintext_pinned->machine_id);
         if(old_monotonic_time_ptr) {
             uint64_t old_monotonic_time = ((uint64_t)*old_monotonic_time_ptr);
@@ -140,7 +140,7 @@ int saltunnel_kx_packet0_tryread(cache* table,
             }
         }
         
-        // DoD prevention: Passed. Update cache table
+        // DoS prevention: Passed. Update cache table
         if(cache_insert(table, their_packet0_plaintext_pinned->machine_id, their_packet0_plaintext_pinned->monotonic_time)<0)
             return -1;
     }
