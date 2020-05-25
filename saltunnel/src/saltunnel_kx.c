@@ -259,7 +259,7 @@ int saltunnel_kx_serverhi_tryread(serverhi* serverhi_plaintext_pinned,
           ^ session_shared_keys_pinned[32+i] ^ session_shared_keys_pinned[48+i];
     }
     if(sodium_compare(expected_proof, serverhi_plaintext_pinned->proof, 16)!=0)
-        return oops_error("authentication failed: proof failed verification");
+        return oops_error("authentication failed: proof was invalid");
     
     // Copy their_pk to output
     memcpy(their_pk_out_pinned, serverhi_plaintext_pinned->public_key, 32);
