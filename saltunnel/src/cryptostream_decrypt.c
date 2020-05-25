@@ -65,6 +65,8 @@ int decrypt_one(int buffer_i, cryptostream *cs, nonce8 nonce) {
     // Extract datalen
     uint16_t datalen_current = 0;
     uint16_unpack((char*)plaintext_buffer_ptr + 32, &datalen_current);
+    if(datalen_current>494)
+    { errno = EBADMSG; return oops("decryption failed: invalid length"); }
     
     // Update vector length
     vector_buffer_set_len(cs->plaintext_vector, buffer_i, datalen_current);
