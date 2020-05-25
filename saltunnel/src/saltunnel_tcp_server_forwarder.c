@@ -16,7 +16,8 @@
 #include <sys/socket.h>
 
 typedef struct connection_thread_context {
-    packet0 tmp_pinned;
+    clienthi clienthi_plaintext_pinned;
+    serverhi serverhi_plaintext_pinned;
     unsigned char long_term_shared_key[32];
     unsigned char my_sk[32];
     unsigned char their_pk[32];
@@ -33,6 +34,7 @@ static void* connection_thread_cleanup(void* v, int force_close) {
         close(ctx->remote_fd);
     } else {
         shutdown(ctx->remote_fd, SHUT_RDWR);
+//        close(ctx->remote_fd); // TODO: Shouldn't we close here?
     }
     log_info("connection with source address terminated (fd %d)", ctx->remote_fd);
 
@@ -50,8 +52,10 @@ static void* connection_thread(void* v)
     
     log_trace("connection thread entered");
     
-    // Write packet0 to client
-    if(saltunnel_kx_packet0_trywrite(&ctx->tmp_pinned, ctx->long_term_shared_key, ctx->remote_fd, ctx->my_sk, 0)<0) {
+    // (Already received clienthi)
+    
+    // Write serverhi
+    if(saltunnel_kx_serverhi_trywrite(&ctx->serverhi_plaintext_pinned, ctx->long_term_shared_key, ctx->remote_fd, ctx->my_sk)<0) {
         oops_warn("failed to write packet0 to client");
         return connection_thread_cleanup(v,1);
     }
@@ -63,10 +67,9 @@ static void* connection_thread(void* v)
         return connection_thread_cleanup(v,1);
     }
 
-    // Exchange packet1 (to prevent replay-attack from exploiting server-sends-first scenarios)
-
+    // Read message0  (TODO: Update saltunnel to not read from server's local fd until receiving at least one packet, making this step unneeded.)
     log_trace("about to exchange packet1");
-    if(saltunnel_kx_packet1_exchange(ctx->session_shared_keys, 1, ctx->remote_fd)<0) {
+    if(saltunnel_kx_message0_tryread(ctx->session_shared_keys, ctx->remote_fd)<0) {
         return connection_thread_cleanup(ctx,1);
     }
     log_trace("successfully exchanged packet1");
@@ -148,8 +151,8 @@ static pthread_t connection_thread_spawn(connection_thread_context* ctx)
 static int maybe_handle_connection(cache* table, connection_thread_context* ctx) {
     log_trace("maybe handling connection");
     
-    // Read packet0
-    if(saltunnel_kx_packet0_tryread(table, &ctx->tmp_pinned, ctx->long_term_shared_key, ctx->remote_fd, ctx->their_pk)<0) {
+    // Read clienthi (to get the client's public key)
+    if(saltunnel_kx_clienthi_tryread(table, &ctx->clienthi_plaintext_pinned, ctx->long_term_shared_key, ctx->remote_fd, ctx->their_pk)<0) {
         return -1;
     }
     

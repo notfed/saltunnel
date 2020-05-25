@@ -16,7 +16,8 @@
 #include <sys/socket.h>
 
 typedef struct connection_thread_context {
-    packet0 tmp_pinned;
+    clienthi clienthi_plaintext_pinned;
+    serverhi serverhi_plaintext_pinned;
     unsigned char long_term_shared_key[32];
     unsigned char my_sk[32];
     unsigned char their_pk[32];
@@ -36,6 +37,7 @@ static void* connection_thread_cleanup(void* v, int remote_fd, int force_close) 
         shutdown(ctx->local_fd, SHUT_RDWR);
         if(remote_fd>=0)
             shutdown(remote_fd, SHUT_RDWR);
+        //        close(ctx->remote_fd); // TODO: Shouldn't we close here?
     }
     log_info("connection with source address terminated (fd %d)", ctx->local_fd);
     if(remote_fd>=0) log_info("connection with destination address terminated (fd %d)", remote_fd);
@@ -70,16 +72,18 @@ static void* connection_thread(void* v)
 
     log_info("connection established (but not yet authenticated) with destination address (fd %d)", remote_fd);
     
-    // Write packet0 to server
-    if(saltunnel_kx_packet0_trywrite(&ctx->tmp_pinned, ctx->long_term_shared_key, remote_fd, ctx->my_sk, 1)<0) {
+    // Write clienthi to server
+    if(saltunnel_kx_clienthi_trywrite(&ctx->clienthi_plaintext_pinned, ctx->long_term_shared_key, remote_fd, ctx->my_sk)<0) {
         log_trace("connection %d: failed to write packet0 to server", remote_fd);
         return connection_thread_cleanup(ctx, remote_fd, 1);
     }
     
     log_trace("connection %d: client forwarder successfully wrote packet0 to server", remote_fd);
-                                     
-    // Read packet0
-    if(saltunnel_kx_packet0_tryread(NULL, &ctx->tmp_pinned, ctx->long_term_shared_key, remote_fd, ctx->their_pk)<0) {
+
+        
+    
+    // Read serverhi (to get a public key)
+    if(saltunnel_kx_serverhi_tryread(&ctx->serverhi_plaintext_pinned, ctx->long_term_shared_key, remote_fd, ctx->their_pk)<0) {
         log_trace("connection %d: failed to read packet0", remote_fd);
         return connection_thread_cleanup(ctx, remote_fd, 1);
     }
@@ -93,10 +97,9 @@ static void* connection_thread(void* v)
     
     log_trace("connection %d: successfully calculated shared key", remote_fd);
 
-    // Exchange packet1 (to prevent replay-attack from exploiting server-sends-first scenarios)
-    
+    // Send message0 (TODO: Detect whether data is available on ctx->local_fd, in which case this is unnecessary.)
     log_trace("connection %d: about to exchange packet1 with server", remote_fd);
-    if(saltunnel_kx_packet1_exchange(ctx->session_shared_keys, 0, remote_fd)<0) {
+    if(saltunnel_kx_message0_trywrite(ctx->session_shared_keys, remote_fd)<0) {
         log_trace("failed to exchange packet1 with server");
         return connection_thread_cleanup(ctx, remote_fd, 1);
     }

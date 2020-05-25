@@ -27,73 +27,67 @@
 #include <string.h>
 #include <time.h>
 
-int saltunnel_kx_packet0_trywrite(packet0* my_packet0_plaintext_pinned,
-                                  const unsigned char long_term_key[32],
+int saltunnel_kx_clienthi_trywrite(clienthi* clienthi_plaintext_pinned,
+                                  const unsigned char long_term_key_pinned[32],
                                   int to_fd,
-                                  unsigned char my_sk_out[32],
-                                  int writeToSourceOrDestination) {
+                                  unsigned char secret_key_out_pinned[32]) {
     
-    packet0 my_packet0_ciphertext = {0};
-    memset(my_packet0_plaintext_pinned, 0, sizeof(packet0));
+    // Start with a ciphertext and zeroed-out plaintext
+    clienthi clienthi_ciphertext;
+    memset(clienthi_plaintext_pinned, 0, sizeof(clienthi));
     
-    //-----------------------
-    // Create an ephemeral keypair
-    //-----------------------
+    // Set version
+    memcpy(clienthi_plaintext_pinned->version, version, 8);
     
-    crypto_box_curve25519xsalsa20poly1305_keypair(my_packet0_plaintext_pinned->public_key, my_sk_out);
+    // Create ephemeral keypair
+    crypto_box_curve25519xsalsa20poly1305_keypair(clienthi_plaintext_pinned->public_key, secret_key_out_pinned);
     
-    //-----------------------
-    // Send packet0
-    //-----------------------
-    
-    // Generate a nonce
+    // Generate nonce
     unsigned char my_nonce[24];
     randombytes(my_nonce, 24);
     
-    // Put the epoch time (in seconds) in the packet
-    uint64_pack_big((char*)&my_packet0_plaintext_pinned->timestamp, time(NULL));
+    // Generate timestamp
+    struct timespec time_now;
+    if(clock_gettime(CLOCK_REALTIME, &time_now)<0) return oops("failed to get time");
+    uint64_pack_big((char*)&clienthi_plaintext_pinned->timestamp, time_now.tv_sec);
     
-    // Place this machine's machine_id and current monotonic_time into the packet
-    if(hypercounter(my_packet0_plaintext_pinned->machine_id, my_packet0_plaintext_pinned->machine_counter)<0)
+    // Generate machine_id and machine_counter
+    if(hypercounter(clienthi_plaintext_pinned->machine_id, clienthi_plaintext_pinned->machine_counter)<0)
         return -1;
     
-    // Put version in buffer
-    memcpy(my_packet0_plaintext_pinned->version, version, 8);
-    
-    // Encrypt buffer
-    if(crypto_secretbox_xsalsa20poly1305(my_packet0_ciphertext.prezeros,
-                                          my_packet0_plaintext_pinned->prezeros,
-                                          512+16-24, my_nonce, long_term_key)<0)
+    // Encrypt clienthi
+    memset(clienthi_ciphertext.prezeros, 0, 32);
+    if(crypto_secretbox_xsalsa20poly1305(clienthi_ciphertext.prezeros,
+                                          clienthi_plaintext_pinned->prezeros,
+                                          512+16-24, my_nonce, long_term_key_pinned)<0)
     { return oops("authentication failed: encryption failed"); }
     
-    // Put nonce in buffer
-    memcpy(my_packet0_ciphertext.nonce, my_nonce, 24);
+    // Put the nonce at the head of clienthi_ciphertext
+    memcpy(clienthi_ciphertext.nonce, my_nonce, 24);
     
-    // Send encrypted buffer
-    if(writen(to_fd, (char*)&my_packet0_ciphertext, 512)<0)
-    { return writeToSourceOrDestination
-        ? oops_sys("authentication failed: failed to write to destination address")
-        : oops_sys("authentication failed: failed to write to source address"); }
+    // Send clienthi_ciphertext
+    if(writen(to_fd, (char*)&clienthi_ciphertext, 512)<0)
+    { return oops_sys("authentication failed: failed to write to destination connection"); }
     
-    // Erase keys
-    memset(my_packet0_plaintext_pinned->public_key, 0, sizeof(my_packet0_plaintext_pinned->public_key));
+    // Erase public key (no longer needed)
+    memset(clienthi_plaintext_pinned->public_key, 0, sizeof(clienthi_plaintext_pinned->public_key));
     
     return 0;
 }
 
-int saltunnel_kx_packet0_tryread(cache* table,
-                                 packet0* their_packet0_plaintext_pinned,
-                                 const unsigned char long_term_key[32],
+int saltunnel_kx_clienthi_tryread(cache* table,
+                                 clienthi* clienthi_plaintext_pinned,
+                                 const unsigned char long_term_key_pinned[32],
                                  int from_fd,
-                                 unsigned char their_pk_out[32]) {
-    errno = EBADMSG;
-    log_trace("starting key exchange (with fd %d)", from_fd);
+                                 unsigned char their_pk_out_pinned[32]) {
+    errno = EBADMSG; // TODO: Do we need this?
     
-    packet0 their_buffer_ciphertext = {0};
-    memset(their_packet0_plaintext_pinned, 0, sizeof(packet0));
+    // Start with a ciphertext and zeroed-out plaintext
+    clienthi clienthi_ciphertext;
+    memset(clienthi_plaintext_pinned, 0, sizeof(clienthi));
     
     // Receive encrypted buffer
-    ssize_t bytes_read = read(from_fd, (char*)&their_buffer_ciphertext, 512);
+    ssize_t bytes_read = read(from_fd, (char*)&clienthi_ciphertext, 512);
     if(bytes_read<0 && errno==EWOULDBLOCK)
         return oops("authentication failed: received empty packet0");
     if(bytes_read<0)
@@ -104,35 +98,40 @@ int saltunnel_kx_packet0_tryread(cache* table,
         return oops("authentication failed: received partial packet0");
     
     // Extract random nonce
-    unsigned char their_nonce[24];
-    memcpy(their_nonce, their_buffer_ciphertext.nonce, 24);
+    unsigned char my_nonce[24];
+    memcpy(my_nonce, clienthi_ciphertext.nonce, 24);
     
     // Decrypt encrypted buffer
-    if(crypto_secretbox_xsalsa20poly1305_open((unsigned char*)their_packet0_plaintext_pinned->prezeros,
-                                               (unsigned char*)their_buffer_ciphertext.prezeros,
-                                               512+16-24, their_buffer_ciphertext.nonce, long_term_key)<0)
-        return oops("authentication failed: received bad packet0");
+    memset(clienthi_ciphertext.prezeros, 0, 16);
+    if(crypto_secretbox_xsalsa20poly1305_open((unsigned char*)clienthi_plaintext_pinned->prezeros,
+                                               (unsigned char*)clienthi_ciphertext.prezeros,
+                                               512+16-24, my_nonce, long_term_key_pinned)<0)
+    { return oops("authentication failed: received bad packet0"); }
     
     // Verify version
-    if(sodium_compare(their_packet0_plaintext_pinned->version, version, 8) != 0)
+    if(sodium_compare(clienthi_plaintext_pinned->version, version, 8) != 0)
         return oops("authentication failed: version mismatch");
     
+    // Generate timestamp
+    struct timespec my_now;
+    if(clock_gettime(CLOCK_REALTIME, &my_now)<0) return oops("failed to get time");
+    uint64_t my_now_seconds = my_now.tv_sec;
+    
     // Verify that their timestamp is less than an hour old
-    uint64_t my_now = time(NULL);
-    uint64_t their_now;
-    uint64_unpack_big((char*)their_packet0_plaintext_pinned->timestamp, &their_now);
-    if(their_now < (my_now-3600))
+    uint64_t their_now_seconds;
+    uint64_unpack_big((char*)clienthi_plaintext_pinned->timestamp, &their_now_seconds);
+    if(their_now_seconds < (my_now_seconds-3600))
         return oops("authentication failed: received stale packet0");
     
-    // DoS prevention: Ensure hypercounter is fresh (only needed on server-side)
+    // DoS prevention: Ensure hypercounter is fresh
     if(table)
     {
         // DoS prevention: Unpack hypercounter timestamp
         uint64_t new_monotonic_time;
-        uint64_unpack((char*)their_packet0_plaintext_pinned->machine_counter, &new_monotonic_time);
+        uint64_unpack((char*)clienthi_plaintext_pinned->machine_counter, &new_monotonic_time);
         
         // DoS prevention: If we've seen this machine before, ensure timestamp is fresh
-        unsigned char* old_monotonic_time_ptr = cache_get(table, their_packet0_plaintext_pinned->machine_id);
+        unsigned char* old_monotonic_time_ptr = cache_get(table, clienthi_plaintext_pinned->machine_id);
         if(old_monotonic_time_ptr) {
             uint64_t old_monotonic_time = ((uint64_t)*old_monotonic_time_ptr);
             if(new_monotonic_time <= old_monotonic_time) {
@@ -141,78 +140,178 @@ int saltunnel_kx_packet0_tryread(cache* table,
         }
         
         // DoS prevention: Passed. Update cache table
-        if(cache_insert(table, their_packet0_plaintext_pinned->machine_id, their_packet0_plaintext_pinned->machine_counter)<0)
+        if(cache_insert(table, clienthi_plaintext_pinned->machine_id, clienthi_plaintext_pinned->machine_counter)<0)
             return -1;
     }
     
     // Copy their_pk to output
-    memcpy(their_pk_out, their_packet0_plaintext_pinned->public_key, sizeof(their_packet0_plaintext_pinned->public_key));
+    memcpy(their_pk_out_pinned, clienthi_plaintext_pinned->public_key, sizeof(clienthi_plaintext_pinned->public_key));
     
     // Erase local copy of their_pk
-    memset(their_packet0_plaintext_pinned->public_key, 0, sizeof(their_packet0_plaintext_pinned->public_key));
+    memset(clienthi_plaintext_pinned->public_key, 0, sizeof(clienthi_plaintext_pinned->public_key));
     
-    // Success
     errno = 0;
     return 0;
 }
 
-int saltunnel_kx_calculate_shared_key(unsigned char keys_out[64],
-                                      const unsigned char pk[32],
-                                      const unsigned char sk[32])
+int saltunnel_kx_serverhi_trywrite(serverhi* serverhi_plaintext_pinned,
+                                   const unsigned char long_term_key[32],
+                                   int to_fd,
+                                   unsigned char secret_key_out_pinned[32])
 {
-    unsigned char s[32];
-    if (crypto_scalarmult_curve25519(s, sk, pk) != 0) {
-        return oops("authentication failed: failed to derive shared key");
-    }
     
-    static const unsigned char zero[16] = { 0 };
-    crypto_core_salsa20(keys_out, zero, s, NULL);
+    // Start with a ciphertext and zeroed-out plaintext
+    serverhi serverhi_ciphertext;
+    memset(serverhi_plaintext_pinned, 0, sizeof(serverhi));
+    
+    // Set version
+    memcpy(serverhi_plaintext_pinned->version, version, 8);
+    
+    // Create ephemeral keypair
+    crypto_box_curve25519xsalsa20poly1305_keypair(serverhi_plaintext_pinned->public_key, secret_key_out_pinned);
+    
+    // Generate nonce
+    unsigned char my_nonce[24];
+    randombytes(my_nonce, 24);
+    
+    // TODO: Generate proof
+    
+    // Encrypt clienthi
+    memset(serverhi_ciphertext.prezeros, 0, 32);
+    if(crypto_secretbox_xsalsa20poly1305(serverhi_ciphertext.prezeros,
+                                          serverhi_plaintext_pinned->prezeros,
+                                          512+16-24, my_nonce, long_term_key)<0)
+    { return oops("authentication failed: encryption failed"); }
+    
+    // Put the nonce at the head of serverhi_ciphertext
+    memcpy(serverhi_ciphertext.nonce, my_nonce, 24);
+    
+    // Send serverhi_ciphertext
+    if(writen(to_fd, (char*)&serverhi_ciphertext, 512)<0)
+    { return oops_sys("authentication failed: failed to write to source connection"); }
+    
+    // Erase public key (no longer needed)
+    memset(serverhi_plaintext_pinned->public_key, 0, 32);
     
     return 0;
 }
 
-static const unsigned char packet1_nonce[24] = {0};
-static const packet1 my_packet1_plaintext = {0};
-int saltunnel_kx_packet1_exchange(unsigned char session_shared_keys[64],
-                                  int client_or_server,
-                                  int remote_fd)
+int saltunnel_kx_serverhi_tryread(serverhi* serverhi_plaintext_pinned,
+                                  const unsigned char long_term_key_pinned[32],
+                                  int from_fd,
+                                  unsigned char their_pk_out_pinned[32])
 {
-    // Initialize packets
-    packet1 my_packet1_ciphertext;
-    packet1 their_packet1_plaintext;
-    packet1 their_packet1_ciphertext;
+    errno = EBADMSG; // TODO: Do we need this?
+    
+    // Start with a ciphertext and zeroed-out plaintext
+    serverhi serverhi_ciphertext;
+    memset(serverhi_plaintext_pinned, 0, sizeof(serverhi));
+    
+    // Receive encrypted buffer
+    ssize_t bytes_read = read(from_fd, (char*)&serverhi_ciphertext, 512);
+    if(bytes_read<0 && errno==EWOULDBLOCK)
+        return oops("authentication failed: received empty packet0");
+    if(bytes_read<0)
+        return oops_sys("authentication failed: failed to read packet0");
+    if(bytes_read == 0)
+        return oops("authentication failed: connection was terminated");
+    if(bytes_read != CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT)
+        return oops("authentication failed: received partial packet0");
+    
+    // Extract random nonce
+    unsigned char nonce[24];
+    memcpy(nonce, serverhi_ciphertext.nonce, 24);
+    
+    // Decrypt encrypted buffer
+    memset(serverhi_ciphertext.prezeros, 0, 16);
+    if(crypto_secretbox_xsalsa20poly1305_open((unsigned char*)serverhi_plaintext_pinned->prezeros,
+                                               (unsigned char*)serverhi_ciphertext.prezeros,
+                                               512+16-24, nonce, long_term_key_pinned)<0)
+    { return oops("authentication failed: received bad packet0"); }
+    
+    // Verify version
+    if(sodium_compare(serverhi_plaintext_pinned->version, version, 8) != 0)
+        return oops("authentication failed: version mismatch");
+    
+    // Copy their_pk to output
+    memcpy(their_pk_out_pinned, serverhi_plaintext_pinned->public_key, 32);
+    
+    // Erase local copy of their_pk
+    memset(serverhi_plaintext_pinned->public_key, 0, 32);
+    
+    errno = 0;
+    return 0;
+}
 
-    memset(&my_packet1_ciphertext, 0, 32);
-    memset(&their_packet1_plaintext, 0, 32);
-    memset(&their_packet1_ciphertext, 0, 32);
 
+static const unsigned char zero_16[16] = {0};
+
+int saltunnel_kx_calculate_shared_key(unsigned char keys_out_pinned[64],
+                                      const unsigned char pk_pinned[32],
+                                      const unsigned char sk_pinned[32])
+{
+    unsigned char s[32]; // TODO: Pin this
+    if (crypto_scalarmult_curve25519(s, sk_pinned, pk_pinned) != 0) {
+        return oops("authentication failed: failed to derive shared key");
+    }
+    crypto_core_salsa20(keys_out_pinned, zero_16, s, NULL);
+    memset(s, 0, 32);
+    return 0;
+}
+
+static const unsigned char nonce24_zero[24] = {0};
+
+static const message0 message0_zero = {0};
+
+int saltunnel_kx_message0_trywrite(unsigned char session_shared_keys[64],  int to_fd)
+{
+    // Initialize message
+    message0 message0_ciphertext;
+    
+    memset(message0_ciphertext.prezeros, 0, 32);
+    
     // Clarify keys
-    unsigned char* my_key = &session_shared_keys[32*client_or_server];
-    unsigned char* their_key = &session_shared_keys[32*!client_or_server];
-
+    unsigned char* client_session_key = &session_shared_keys[0];
+    
     // Encrypt my packet1
-    if(crypto_secretbox_xsalsa20poly1305(my_packet1_ciphertext.prezeros,
-                                         my_packet1_plaintext.prezeros,
-                                         sizeof(packet1), 
-                                         packet1_nonce, 
-                                         my_key)<0)
+    if(crypto_secretbox_xsalsa20poly1305(message0_ciphertext.prezeros,
+                                         message0_zero.prezeros,
+                                         sizeof(message0),
+                                         nonce24_zero,
+                                         client_session_key)<0)
     { return oops("authentication failed: encryption failed for packet1"); }
 
     // Send my packet1
-    if(writen(remote_fd, (const char*)my_packet1_ciphertext.auth, 512)<0)
+    if(writen(to_fd, (const char*)message0_ciphertext.auth, 512)<0)
         return oops_sys("authentication failed: failed to send packet1");
 
+    return 0;
+}
+
+
+int saltunnel_kx_message0_tryread(unsigned char session_shared_keys[64], int from_fd)
+{
+    // Initialize message
+    message0 message0_ciphertext;
+    message0 message0_plaintext;
+    
+    memset(message0_ciphertext.prezeros, 0, 32);
+    memset(message0_plaintext.prezeros, 0, 32);
+    
+    // Clarify keys
+    unsigned char* client_session_key = &session_shared_keys[0];
+    
     // Read their packet1
-    if(readn(remote_fd, (char*)their_packet1_ciphertext.auth, 512)<0)
+    if(readn(from_fd, (char*)message0_ciphertext.auth, 512)<0)
         return oops_sys("authentication failed: failed to send packet1");
 
     // Decrypt my packet1
-    if(crypto_secretbox_xsalsa20poly1305_open(their_packet1_plaintext.prezeros,
-                                              their_packet1_ciphertext.prezeros,
-                                              sizeof(packet1), 
-                                              packet1_nonce, 
-                                              their_key)<0)
-    { return oops("authentication failed: received bad packet1"); }
+    if(crypto_secretbox_xsalsa20poly1305_open(message0_plaintext.prezeros,
+                                              message0_ciphertext.prezeros,
+                                              sizeof(message0),
+                                              nonce24_zero,
+                                              client_session_key)<0)
+    { return oops("authentication failed: received bad message0"); }
 
     return 0;
 }
