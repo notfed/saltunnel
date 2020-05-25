@@ -2,6 +2,9 @@
 //  saltunnel_mx_serial.c
 //  saltunnel
 //
+//  1. Read from  egress->from_fd, encrypt, write to  egress->to_fd
+//  2. Read from ingress->from_fd, decrypt, write to ingress->from_fd
+//
 
 #include "saltunnel.h"
 #include "cryptostream.h"
@@ -59,7 +62,7 @@ int exchange_messages_serial(cryptostream *ingress, cryptostream *egress) {
         int r = poll(pfds,4,-1);
         if(r<0 && errno == EINTR) continue;
         if(r<0) { rc = oops_sys("failed to poll file descriptor"); goto cleanup; }
-        
+
         /* If an fd is ready, mark it as FD_READY */
         if ((pfds[0].fd>=0) && (pfds[0].revents & (POLLIN|POLLHUP))) { pfds[0].fd = FD_READY; }
         if ((pfds[1].fd>=0) && (pfds[1].revents & (POLLOUT)))        { pfds[1].fd = FD_READY; }

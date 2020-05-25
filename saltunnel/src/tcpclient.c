@@ -47,7 +47,7 @@ static int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen
                     if(ms_until_deadline<0) { rc=0; break; }
                     // Wait for connect to complete (or for the timeout deadline)
                     struct pollfd pfds[] = { { .fd = sockfd, .events = POLLOUT } };
-                    rc = poll(pfds, 1, ms_until_deadline);
+                    rc = poll(pfds, 1, ms_until_deadline); // TODO: Need to interrupt when client disconnects
                     // Find out whether the connection failed or succeeded.
                     int error = 0; socklen_t len = sizeof(error);
                     int retval = getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &error, &len);

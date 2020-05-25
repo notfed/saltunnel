@@ -2,6 +2,7 @@
 //  saltunnel_kx.c
 //  saltunnel
 //
+// TODO: Calculate session_key_auth=poly1305(0,session_key)
 
 #include "crypto_secretbox_salsa20poly1305.h"
 #include "saltunnel.h"

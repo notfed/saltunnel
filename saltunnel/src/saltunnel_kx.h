@@ -2,6 +2,7 @@
 //  saltunnel_kx.h
 //  saltunnel
 //
+// TODO: Put a time limit when server is waiting for the exchange to complete.
 
 #ifndef saltunnel_exchange_key_h
 #define saltunnel_exchange_key_h
@@ -26,8 +27,9 @@ typedef struct packet0 {
     unsigned char epoch_seconds[8];
     unsigned char machine_id[16];
     unsigned char monotonic_time[8];
-    unsigned char zeros[408];
-} packet0;
+    unsigned char server_auth[16]; // TODO: Use this instead of wasting extra bytes sending packet1 from server
+    unsigned char zeros[384]; // TODO: Verify that these are all zero. This enables future features (like open routing) w/ same versionId.
+} packet0; // 24+16+8+32+8+16+8
 
 typedef struct packet1 {
     unsigned char prezeros[16];
