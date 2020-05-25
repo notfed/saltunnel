@@ -55,17 +55,13 @@ static void* connection_thread(void* v)
     // (Already received clienthi)
     
     // Write serverhi
-    if(saltunnel_kx_serverhi_trywrite(&ctx->serverhi_plaintext_pinned, ctx->long_term_shared_key, ctx->remote_fd, ctx->my_sk)<0) {
+    if(saltunnel_kx_serverhi_trywrite(&ctx->serverhi_plaintext_pinned, ctx->long_term_shared_key, ctx->remote_fd,
+                                      ctx->my_sk, ctx->their_pk, ctx->session_shared_keys)<0) {
         oops_warn("failed to write packet0 to client");
         return connection_thread_cleanup(v,1);
     }
     
     log_trace("server forwarder successfully wrote packet0 to client");
-    
-    // Calculate shared key
-    if(saltunnel_kx_calculate_shared_key(ctx->session_shared_keys, ctx->their_pk, ctx->my_sk)<0) {
-        return connection_thread_cleanup(v,1);
-    }
 
     // Read message0  (TODO: Update saltunnel to not read from server's local fd until receiving at least one packet, making this step unneeded.)
     log_trace("about to exchange packet1");

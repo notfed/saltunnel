@@ -67,12 +67,16 @@ int saltunnel_kx_clienthi_tryread(cache* table,
 int saltunnel_kx_serverhi_trywrite(serverhi* serverhi_plaintext_pinned,
                                   const unsigned char long_term_key[32],
                                   int to_fd,
-                                  unsigned char secret_key_out_pinned[32]);
+                                  unsigned char secret_key_out_pinned[32],
+                                  unsigned char their_public_key_pinned[32],
+                                  unsigned char session_shared_keys_pinned[64]);
 
 int saltunnel_kx_serverhi_tryread(serverhi* serverhi_plaintext_pinned,
                                   const unsigned char long_term_key[32],
                                   int from_fd,
-                                  unsigned char their_pk_out_pinned[32]);
+                                  unsigned char their_pk_out_pinned[32],
+                                  unsigned char my_sk[32],
+                                  unsigned char session_shared_keys_pinned[64]);
 
 int saltunnel_kx_calculate_shared_key(unsigned char keys_out[64],
                                       const unsigned char pk[32],

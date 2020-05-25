@@ -157,7 +157,9 @@ int saltunnel_kx_clienthi_tryread(cache* table,
 int saltunnel_kx_serverhi_trywrite(serverhi* serverhi_plaintext_pinned,
                                    const unsigned char long_term_key[32],
                                    int to_fd,
-                                   unsigned char secret_key_out_pinned[32])
+                                   unsigned char secret_key_out_pinned[32],
+                                   unsigned char their_public_key_pinned[32],
+                                   unsigned char session_shared_keys_pinned[64])
 {
     
     // Start with a ciphertext and zeroed-out plaintext
@@ -168,13 +170,23 @@ int saltunnel_kx_serverhi_trywrite(serverhi* serverhi_plaintext_pinned,
     memcpy(serverhi_plaintext_pinned->version, version, 8);
     
     // Create ephemeral keypair
-    crypto_box_curve25519xsalsa20poly1305_keypair(serverhi_plaintext_pinned->public_key, secret_key_out_pinned);
+    if(crypto_box_curve25519xsalsa20poly1305_keypair(serverhi_plaintext_pinned->public_key, secret_key_out_pinned)!=0)
+        return oops("failed to create ephemeral keypair");
+    
+    // Calculate shared session keys
+    if(saltunnel_kx_calculate_shared_key(session_shared_keys_pinned, their_public_key_pinned, secret_key_out_pinned)<0)
+        return -1;
     
     // Generate nonce
     unsigned char my_nonce[24];
     randombytes(my_nonce, 24);
     
-    // TODO: Generate proof
+    // Generate proof that we know both session keys
+    for(int i = 0; i<16; i++) {
+        serverhi_plaintext_pinned->proof[i] =
+          session_shared_keys_pinned[0+i]  ^ session_shared_keys_pinned[16+i]
+        ^ session_shared_keys_pinned[32+i] ^ session_shared_keys_pinned[48+i];
+    }
     
     // Encrypt clienthi
     memset(serverhi_ciphertext.prezeros, 0, 32);
@@ -199,7 +211,9 @@ int saltunnel_kx_serverhi_trywrite(serverhi* serverhi_plaintext_pinned,
 int saltunnel_kx_serverhi_tryread(serverhi* serverhi_plaintext_pinned,
                                   const unsigned char long_term_key_pinned[32],
                                   int from_fd,
-                                  unsigned char their_pk_out_pinned[32])
+                                  unsigned char their_pk_out_pinned[32],
+                                  unsigned char my_sk[32],
+                                  unsigned char session_shared_keys_pinned[64])
 {
     errno = EBADMSG; // TODO: Do we need this?
     
@@ -233,11 +247,28 @@ int saltunnel_kx_serverhi_tryread(serverhi* serverhi_plaintext_pinned,
     if(sodium_compare(serverhi_plaintext_pinned->version, version, 8) != 0)
         return oops("authentication failed: version mismatch");
     
+    // Calculate shared key
+    if(saltunnel_kx_calculate_shared_key(session_shared_keys_pinned, serverhi_plaintext_pinned->public_key, my_sk)<0)
+        return -1;
+    
+    // Verify proof
+    unsigned char expected_proof[16];
+    for(int i = 0; i<16; i++) {
+        expected_proof[i] =
+            session_shared_keys_pinned[0+i]  ^ session_shared_keys_pinned[16+i]
+          ^ session_shared_keys_pinned[32+i] ^ session_shared_keys_pinned[48+i];
+    }
+    if(sodium_compare(expected_proof, serverhi_plaintext_pinned->proof, 16)!=0)
+        return oops_error("authentication failed: proof failed verification");
+    
     // Copy their_pk to output
     memcpy(their_pk_out_pinned, serverhi_plaintext_pinned->public_key, 32);
     
     // Erase local copy of their_pk
     memset(serverhi_plaintext_pinned->public_key, 0, 32);
+    
+    
+    log_trace("connection %d: client forwarder successfully read packet0", remote_fd);
     
     errno = 0;
     return 0;
@@ -265,15 +296,14 @@ static const message0 message0_zero = {0};
 
 int saltunnel_kx_message0_trywrite(unsigned char session_shared_keys[64],  int to_fd)
 {
-    // Initialize message
+    // Initialize a ciphertext
     message0 message0_ciphertext;
-    
-    memset(message0_ciphertext.prezeros, 0, 32);
+    memset(message0_ciphertext.prezeros, 0, 16);
     
     // Clarify keys
     unsigned char* client_session_key = &session_shared_keys[0];
     
-    // Encrypt my packet1
+    // Encrypt an empty message0
     if(crypto_secretbox_xsalsa20poly1305(message0_ciphertext.prezeros,
                                          message0_zero.prezeros,
                                          sizeof(message0),
@@ -281,7 +311,7 @@ int saltunnel_kx_message0_trywrite(unsigned char session_shared_keys[64],  int t
                                          client_session_key)<0)
     { return oops("authentication failed: encryption failed for packet1"); }
 
-    // Send my packet1
+    // Send message0_ciphertext
     if(writen(to_fd, (const char*)message0_ciphertext.auth, 512)<0)
         return oops_sys("authentication failed: failed to send packet1");
 

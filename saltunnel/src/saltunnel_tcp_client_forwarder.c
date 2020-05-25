@@ -72,7 +72,7 @@ static void* connection_thread(void* v)
 
     log_info("connection established (but not yet authenticated) with destination address (fd %d)", remote_fd);
     
-    // Write clienthi to server
+    // Write clienthi to server (also generate a keypair)
     if(saltunnel_kx_clienthi_trywrite(&ctx->clienthi_plaintext_pinned, ctx->long_term_shared_key, remote_fd, ctx->my_sk)<0) {
         log_trace("connection %d: failed to write packet0 to server", remote_fd);
         return connection_thread_cleanup(ctx, remote_fd, 1);
@@ -80,18 +80,9 @@ static void* connection_thread(void* v)
     
     log_trace("connection %d: client forwarder successfully wrote packet0 to server", remote_fd);
 
-        
-    
-    // Read serverhi (to get a public key)
-    if(saltunnel_kx_serverhi_tryread(&ctx->serverhi_plaintext_pinned, ctx->long_term_shared_key, remote_fd, ctx->their_pk)<0) {
+    // Read serverhi (also get server's public key and calculate shared session keys)
+    if(saltunnel_kx_serverhi_tryread(&ctx->serverhi_plaintext_pinned, ctx->long_term_shared_key, remote_fd, ctx->their_pk, ctx->my_sk, ctx->session_shared_keys)<0) {
         log_trace("connection %d: failed to read packet0", remote_fd);
-        return connection_thread_cleanup(ctx, remote_fd, 1);
-    }
-    
-    log_trace("connection %d: client forwarder successfully read packet0", remote_fd);
-    
-    // Calculate shared key
-    if(saltunnel_kx_calculate_shared_key(ctx->session_shared_keys, ctx->their_pk, ctx->my_sk)<0) {
         return connection_thread_cleanup(ctx, remote_fd, 1);
     }
     
