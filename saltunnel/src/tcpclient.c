@@ -50,10 +50,12 @@ static int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen
                     struct pollfd pfds[] = { { .fd = sockfd, .events = POLLOUT } };
                     rc = poll(pfds, 1, ms_until_deadline); // TODO: Need to interrupt when client disconnects
                     // Find out whether the connection failed or succeeded.
-                    int error = 0; socklen_t len = sizeof(error);
-                    int retval = getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &error, &len);
-                    if(retval==0) errno = error;
-                    if(error!=0) rc=-1;
+                    if(rc>0) {
+                        int error = 0; socklen_t len = sizeof(error);
+                        int retval = getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &error, &len);
+                        if(retval==0) errno = error;
+                        if(error!=0) rc=-1;
+                    }
                 }
                 // If poll was interrupted, try again.
                 while(rc==-1 && errno==EINTR);
