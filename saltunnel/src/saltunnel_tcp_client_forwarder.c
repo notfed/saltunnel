@@ -18,7 +18,7 @@
 typedef struct connection_thread_context {
     clienthi clienthi_plaintext_pinned;
     serverhi serverhi_plaintext_pinned;
-    unsigned char long_term_shared_key[32];
+    unsigned char long_term_key[32];
     unsigned char my_sk[32];
     unsigned char their_pk[32];
     unsigned char session_shared_keys[64]; // Client = [0..32), Server = [32..64)
@@ -73,7 +73,7 @@ static void* connection_thread(void* v)
     log_info("connection established (but not yet authenticated) with destination address (fd %d)", remote_fd);
     
     // Write clienthi to server (also generate a keypair)
-    if(saltunnel_kx_clienthi_trywrite(&ctx->clienthi_plaintext_pinned, ctx->long_term_shared_key, remote_fd, ctx->my_sk)<0) {
+    if(saltunnel_kx_clienthi_trywrite(&ctx->clienthi_plaintext_pinned, ctx->long_term_key, remote_fd, ctx->my_sk)<0) {
         log_trace("connection %d: failed to write clienthi to server", remote_fd);
         return connection_thread_cleanup(ctx, remote_fd, 1);
     }
@@ -81,7 +81,7 @@ static void* connection_thread(void* v)
     log_trace("connection %d: client forwarder successfully wrote clienthi to server", remote_fd);
 
     // Read serverhi (also get server's public key and calculate shared session keys)
-    if(saltunnel_kx_serverhi_tryread(&ctx->serverhi_plaintext_pinned, ctx->long_term_shared_key, remote_fd, ctx->their_pk, ctx->my_sk, ctx->session_shared_keys)<0) {
+    if(saltunnel_kx_serverhi_tryread(&ctx->serverhi_plaintext_pinned, ctx->long_term_key, remote_fd, ctx->their_pk, ctx->my_sk, ctx->session_shared_keys)<0) {
         log_trace("connection %d: failed to read serverhi", remote_fd);
         return connection_thread_cleanup(ctx, remote_fd, 1);
     }
@@ -108,9 +108,8 @@ static void* connection_thread(void* v)
         .to_fd = remote_fd,
         .key = &ctx->session_shared_keys[0]
     };
-
-    // Nonces should start at 1
-    nonce8_increment(ingress.nonce, ingress.nonce);
+    
+    // Client already sent message0, so client nonce should start at 1
     nonce8_increment(egress.nonce, egress.nonce);
     
     // Memory-lock the plaintext buffers
@@ -188,7 +187,7 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
         ctx->local_fd = local_fd;
         ctx->remote_ip = to_ip;
         ctx->remote_port = to_port;
-        memcpy(ctx->long_term_shared_key, long_term_shared_key, 32);
+        memcpy(ctx->long_term_key, long_term_shared_key, 32);
         
         handle_connection(ctx);
     }

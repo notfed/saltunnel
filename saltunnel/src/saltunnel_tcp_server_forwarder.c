@@ -18,7 +18,7 @@
 typedef struct connection_thread_context {
     clienthi clienthi_plaintext_pinned;
     serverhi serverhi_plaintext_pinned;
-    unsigned char long_term_shared_key[32];
+    unsigned char long_term_key[32];
     unsigned char my_sk[32];
     unsigned char their_pk[32];
     unsigned char session_shared_keys[64]; // Client = [0..32), Server = [32..64)
@@ -55,7 +55,7 @@ static void* connection_thread(void* v)
     // (Already received clienthi)
     
     // Write serverhi
-    if(saltunnel_kx_serverhi_trywrite(&ctx->serverhi_plaintext_pinned, ctx->long_term_shared_key, ctx->remote_fd,
+    if(saltunnel_kx_serverhi_trywrite(&ctx->serverhi_plaintext_pinned, ctx->long_term_key, ctx->remote_fd,
                                       ctx->my_sk, ctx->their_pk, ctx->session_shared_keys)<0) {
         return connection_thread_cleanup(v,1);
     }
@@ -99,9 +99,8 @@ static void* connection_thread(void* v)
         .key = &ctx->session_shared_keys[32]
     };
 
-    // Nonces should start at 1
+    // Client already sent message0, so client nonce should start at 1
     nonce8_increment(ingress.nonce, ingress.nonce);
-    nonce8_increment(egress.nonce, egress.nonce);
 
     // Memory-lock the plaintext buffers
     if(mlock(ingress.plaintext, sizeof(ingress.plaintext))<0)
@@ -148,14 +147,13 @@ static int maybe_handle_connection(cache* table, connection_thread_context* ctx)
     log_trace("maybe handling connection");
     
     // Read clienthi (to get the client's public key)
-    if(saltunnel_kx_clienthi_tryread(table, &ctx->clienthi_plaintext_pinned, ctx->long_term_shared_key, ctx->remote_fd, ctx->their_pk)<0) {
+    if(saltunnel_kx_clienthi_tryread(table, &ctx->clienthi_plaintext_pinned, ctx->long_term_key, ctx->remote_fd, ctx->their_pk)<0) {
         return -1;
     }
     
-    log_trace("server forwarder successfully read clienthi");
+    log_trace("successfully received clienthi");
     
     // If clienthi was good, spawn a thread to handle subsequent packets
-    log_info("authentication succeeded (fd %d)", ctx->remote_fd);
     pthread_t thread = connection_thread_spawn(ctx);
     if(thread==0) return -1;
     else return 1;
@@ -199,7 +197,7 @@ int saltunnel_tcp_server_forwarder(cache* table,
         ctx->remote_fd = remote_fd;
         ctx->to_ip = to_ip;
         ctx->to_port = to_port;
-        memcpy(ctx->long_term_shared_key, long_term_shared_key, 32);
+        memcpy(ctx->long_term_key, long_term_shared_key, 32);
         
         if(maybe_handle_connection(table, ctx)<0) {
             if(munlock(ctx, sizeof(connection_thread_context))<0)
