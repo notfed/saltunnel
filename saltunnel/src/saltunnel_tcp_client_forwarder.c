@@ -74,24 +74,24 @@ static void* connection_thread(void* v)
     
     // Write clienthi to server (also generate a keypair)
     if(saltunnel_kx_clienthi_trywrite(&ctx->clienthi_plaintext_pinned, ctx->long_term_shared_key, remote_fd, ctx->my_sk)<0) {
-        log_trace("connection %d: failed to write packet0 to server", remote_fd);
+        log_trace("connection %d: failed to write clienthi to server", remote_fd);
         return connection_thread_cleanup(ctx, remote_fd, 1);
     }
     
-    log_trace("connection %d: client forwarder successfully wrote packet0 to server", remote_fd);
+    log_trace("connection %d: client forwarder successfully wrote clienthi to server", remote_fd);
 
     // Read serverhi (also get server's public key and calculate shared session keys)
     if(saltunnel_kx_serverhi_tryread(&ctx->serverhi_plaintext_pinned, ctx->long_term_shared_key, remote_fd, ctx->their_pk, ctx->my_sk, ctx->session_shared_keys)<0) {
-        log_trace("connection %d: failed to read packet0", remote_fd);
+        log_trace("connection %d: failed to read serverhi", remote_fd);
         return connection_thread_cleanup(ctx, remote_fd, 1);
     }
     
     log_trace("connection %d: successfully calculated shared key", remote_fd);
 
     // Send message0 (TODO: Detect whether data is available on ctx->local_fd, in which case this is unnecessary.)
-    log_trace("connection %d: about to exchange packet1 with server", remote_fd);
+    log_trace("connection %d: about to send first message to server", remote_fd);
     if(saltunnel_kx_message0_trywrite(ctx->session_shared_keys, remote_fd)<0) {
-        log_trace("failed to exchange packet1 with server");
+        log_trace("failed to send first message to server");
         return connection_thread_cleanup(ctx, remote_fd, 1);
     }
     

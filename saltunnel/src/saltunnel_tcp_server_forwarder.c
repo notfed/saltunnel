@@ -57,24 +57,25 @@ static void* connection_thread(void* v)
     // Write serverhi
     if(saltunnel_kx_serverhi_trywrite(&ctx->serverhi_plaintext_pinned, ctx->long_term_shared_key, ctx->remote_fd,
                                       ctx->my_sk, ctx->their_pk, ctx->session_shared_keys)<0) {
-        oops_warn("failed to write packet0 to client");
         return connection_thread_cleanup(v,1);
     }
     
-    log_trace("server forwarder successfully wrote packet0 to client");
+    log_trace("successfully sent serverhi");
 
-    // Read message0  (TODO: Update saltunnel to not read from server's local fd until receiving at least one packet, making this step unneeded.)
-    log_trace("about to exchange packet1");
+    // Read message0
+    // TODO: Update saltunnel to not read from server's local fd until receiving at least one packet, making this step unnecessary.
     if(saltunnel_kx_message0_tryread(ctx->session_shared_keys, ctx->remote_fd)<0) {
         return connection_thread_cleanup(ctx,1);
     }
-    log_trace("successfully exchanged packet1");
+    
+    log_trace("successfully received message0");
     
     // Create a TCP Client to connect to target
     tcpclient_options options = {
         .OPT_TCP_NODELAY = 1,
         .OPT_CONNECT_TIMEOUT = config_connection_timeout_ms
     };
+    
     log_trace("connecting to %s:%s", ctx->to_ip, ctx->to_port);
     
     int local_fd = tcpclient_new(ctx->to_ip, ctx->to_port, options);
@@ -83,8 +84,6 @@ static void* connection_thread(void* v)
     }
 
     log_info("connection established with destination address (fd %d)", local_fd);
-    
-    log_trace("calculated shared key");
     
     log_trace("running saltunnel");
     
@@ -117,6 +116,7 @@ static void* connection_thread(void* v)
     }
     else {
         shutdown(local_fd, SHUT_RDWR);
+        // close(local_fd) TODO: Shouldn't we close here?
     }
     log_info("connection with destination address terminated (fd %d)", local_fd);
     
@@ -152,9 +152,9 @@ static int maybe_handle_connection(cache* table, connection_thread_context* ctx)
         return -1;
     }
     
-    log_trace("server forwarder successfully read packet0");
+    log_trace("server forwarder successfully read clienthi");
     
-    // If packet0 was good, spawn a thread to handle subsequent packets
+    // If clienthi was good, spawn a thread to handle subsequent packets
     log_info("authentication succeeded (fd %d)", ctx->remote_fd);
     pthread_t thread = connection_thread_spawn(ctx);
     if(thread==0) return -1;

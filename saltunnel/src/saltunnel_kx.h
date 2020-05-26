@@ -10,7 +10,7 @@
 
 static const unsigned char version[] = { 0x06,0x05,0x28,0x84,0x9a,0x61,0x08,0xc7 }; // saltunnel-1.0.0 (0x060528849a6108c7)
 
-typedef struct clienthi { // TODO: Rename to clienthi
+typedef struct clienthi {
     union {
         struct {
             unsigned char nonce[24];
@@ -42,7 +42,7 @@ typedef struct serverhi {
     unsigned char auth[16];
     unsigned char version[8];
     unsigned char public_key[32];
-    unsigned char proof[16];          // TODO: Use this instead of wasting extra bytes sending packet1 from server
+    unsigned char proof[16]; 
     unsigned char zeros[416];         // TODO: Verify that these are all zero. This allows new features (like open routing) w/ same versionId.
 } serverhi;
 

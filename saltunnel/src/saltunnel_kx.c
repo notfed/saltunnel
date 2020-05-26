@@ -2,7 +2,6 @@
 //  saltunnel_kx.c
 //  saltunnel
 //
-// TODO: Calculate session_key_auth=poly1305(0,session_key)
 
 #include "crypto_secretbox_salsa20poly1305.h"
 #include "saltunnel.h"
@@ -80,7 +79,6 @@ int saltunnel_kx_clienthi_tryread(cache* table,
                                  const unsigned char long_term_key_pinned[32],
                                  int from_fd,
                                  unsigned char their_pk_out_pinned[32]) {
-    errno = EBADMSG; // TODO: Do we need this?
     
     // Start with a ciphertext and zeroed-out plaintext
     clienthi clienthi_ciphertext;
@@ -89,13 +87,13 @@ int saltunnel_kx_clienthi_tryread(cache* table,
     // Receive encrypted buffer
     ssize_t bytes_read = read(from_fd, (char*)&clienthi_ciphertext, 512);
     if(bytes_read<0 && errno==EWOULDBLOCK)
-        return oops("authentication failed: received empty packet0");
+        return oops("authentication failed: received empty clienthi");
     if(bytes_read<0)
-        return oops_sys("authentication failed: failed to read packet0");
+        return oops_sys("authentication failed: failed to read clienthi");
     if(bytes_read == 0)
         return oops("authentication failed: connection was terminated");
     if(bytes_read != CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT)
-        return oops("authentication failed: received partial packet0");
+        return oops("authentication failed: received partial clienthi");
     
     // Extract random nonce
     unsigned char my_nonce[24];
@@ -106,7 +104,7 @@ int saltunnel_kx_clienthi_tryread(cache* table,
     if(crypto_secretbox_xsalsa20poly1305_open((unsigned char*)clienthi_plaintext_pinned->prezeros,
                                                (unsigned char*)clienthi_ciphertext.prezeros,
                                                512+16-24, my_nonce, long_term_key_pinned)<0)
-    { return oops("authentication failed: received bad packet0"); }
+    { return oops("authentication failed: received bad clienthi"); }
     
     // Verify version
     if(sodium_compare(clienthi_plaintext_pinned->version, version, 8) != 0)
@@ -121,7 +119,7 @@ int saltunnel_kx_clienthi_tryread(cache* table,
     uint64_t their_now_seconds;
     uint64_unpack_big((char*)clienthi_plaintext_pinned->timestamp, &their_now_seconds);
     if(their_now_seconds < (my_now_seconds-3600))
-        return oops("authentication failed: received stale packet0");
+        return oops("authentication failed: received stale clienthi");
     
     // DoS prevention: Ensure hypercounter is fresh
     if(table)
@@ -135,7 +133,7 @@ int saltunnel_kx_clienthi_tryread(cache* table,
         if(old_monotonic_time_ptr) {
             uint64_t old_monotonic_time = ((uint64_t)*old_monotonic_time_ptr);
             if(new_monotonic_time <= old_monotonic_time) {
-                return oops("authentication failed: received replayed packet0");
+                return oops("authentication failed: received replayed clienthi");
             }
         }
         
@@ -222,13 +220,13 @@ int saltunnel_kx_serverhi_tryread(serverhi* serverhi_plaintext_pinned,
     // Receive encrypted buffer
     ssize_t bytes_read = read(from_fd, (char*)&serverhi_ciphertext, 512);
     if(bytes_read<0 && errno==EWOULDBLOCK)
-        return oops("authentication failed: received empty packet0");
+        return oops("authentication failed: received empty serverhi");
     if(bytes_read<0)
-        return oops_sys("authentication failed: failed to read packet0");
+        return oops_sys("authentication failed: failed to read serverhi");
     if(bytes_read == 0)
         return oops("authentication failed: connection was terminated");
     if(bytes_read != CRYPTOSTREAM_BUFFER_MAXBYTES_CIPHERTEXT)
-        return oops("authentication failed: received partial packet0");
+        return oops("authentication failed: received partial serverhi");
     
     // Extract random nonce
     unsigned char nonce[24];
@@ -239,7 +237,7 @@ int saltunnel_kx_serverhi_tryread(serverhi* serverhi_plaintext_pinned,
     if(crypto_secretbox_xsalsa20poly1305_open((unsigned char*)serverhi_plaintext_pinned->prezeros,
                                                (unsigned char*)serverhi_ciphertext.prezeros,
                                                512+16-24, nonce, long_term_key_pinned)<0)
-    { return oops("authentication failed: received bad packet0"); }
+    { return oops("authentication failed: received bad serverhi"); }
     
     // Verify version
     if(sodium_compare(serverhi_plaintext_pinned->version, version, 8) != 0)
@@ -264,7 +262,7 @@ int saltunnel_kx_serverhi_tryread(serverhi* serverhi_plaintext_pinned,
     memset(serverhi_plaintext_pinned->public_key, 0, 32);
     
     
-    log_trace("connection %d: client forwarder successfully read packet0", remote_fd);
+    log_trace("connection %d: client forwarder successfully read serverhi", remote_fd);
     
     errno = 0;
     return 0;
@@ -305,11 +303,11 @@ int saltunnel_kx_message0_trywrite(unsigned char session_shared_keys[64],  int t
                                          sizeof(message0),
                                          nonce24_zero,
                                          client_session_key)<0)
-    { return oops("authentication failed: encryption failed for packet1"); }
+    { return oops("authentication failed: encryption failed"); }
 
     // Send message0_ciphertext
     if(writen(to_fd, (const char*)message0_ciphertext.auth, 512)<0)
-        return oops_sys("authentication failed: failed to send packet1");
+        return oops_sys("authentication failed: failed to write to connection");
 
     return 0;
 }
@@ -327,17 +325,17 @@ int saltunnel_kx_message0_tryread(unsigned char session_shared_keys[64], int fro
     // Clarify keys
     unsigned char* client_session_key = &session_shared_keys[0];
     
-    // Read their packet1
+    // Read their message0
     if(readn(from_fd, (char*)message0_ciphertext.auth, 512)<0)
-        return oops_sys("authentication failed: failed to send packet1");
+        return oops_sys("authentication failed: failed to read from connection");
 
-    // Decrypt my packet1
+    // Decrypt my message0
     if(crypto_secretbox_xsalsa20poly1305_open(message0_plaintext.prezeros,
                                               message0_ciphertext.prezeros,
                                               sizeof(message0),
                                               nonce24_zero,
                                               client_session_key)<0)
-    { return oops("authentication failed: received bad message0"); }
+    { return oops("authentication failed: received bad message"); }
 
     return 0;
 }
