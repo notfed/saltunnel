@@ -34,7 +34,7 @@ static void* connection_thread_cleanup(void* v, int force_close) {
         close(ctx->remote_fd);
     } else {
         shutdown(ctx->remote_fd, SHUT_RDWR);
-//        close(ctx->remote_fd); // TODO: Shouldn't we close here?
+        close(ctx->remote_fd);
     }
     log_info("connection with source address terminated (fd %d)", ctx->remote_fd);
 
@@ -111,11 +111,11 @@ static void* connection_thread(void* v)
      // Run saltunnel
     log_trace("server forwarder [%2d->D->%2d, %2d->E->%2d]...", ingress.from_fd, ingress.to_fd, egress.from_fd, egress.to_fd);
     if(saltunnel(&ingress, &egress)<0) {
-        if(close(local_fd)<0) oops_warn_sys("failed to close connection");
+        close(local_fd);
     }
     else {
         shutdown(local_fd, SHUT_RDWR);
-        // close(local_fd) TODO: Shouldn't we close here?
+        close(local_fd);
     }
     log_info("connection with destination address terminated (fd %d)", local_fd);
     
@@ -173,7 +173,7 @@ int saltunnel_tcp_server_forwarder(cache* table,
      .OPT_SO_RCVLOWAT = 512
     };
     
-    int s = tcpserver_new(from_ip, from_port, options); // TODO: Shouldn't this keep re-trying?
+    int s = tcpserver_new(from_ip, from_port, options);
     if(s<0)
         return -1;
     
