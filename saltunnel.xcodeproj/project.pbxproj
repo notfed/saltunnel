@@ -7,142 +7,131 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		94011EF3242322D8005AD00A /* nonce.test.c in Sources */ = {isa = PBXBuildFile; fileRef = 94011EF2242322D8005AD00A /* nonce.test.c */; };
-		9415876424136BB200CA793A /* hypercounter.c in Sources */ = {isa = PBXBuildFile; fileRef = 9415876324136BB200CA793A /* hypercounter.c */; };
-		9415876924186F2800CA793A /* uint64.c in Sources */ = {isa = PBXBuildFile; fileRef = 9415876624186F2700CA793A /* uint64.c */; };
-		9415876D2418880C00CA793A /* cache.c in Sources */ = {isa = PBXBuildFile; fileRef = 9415876C2418880C00CA793A /* cache.c */; };
-		9415877224188B5D00CA793A /* uint32.c in Sources */ = {isa = PBXBuildFile; fileRef = 9415876E24188B5C00CA793A /* uint32.c */; };
-		9415877324188B5D00CA793A /* uint32.c in Sources */ = {isa = PBXBuildFile; fileRef = 9415876E24188B5C00CA793A /* uint32.c */; };
-		9415877424188B5D00CA793A /* uint32.c in Sources */ = {isa = PBXBuildFile; fileRef = 9415876E24188B5C00CA793A /* uint32.c */; };
-		941587792419B6A300CA793A /* cache.test.c in Sources */ = {isa = PBXBuildFile; fileRef = 941587782419B6A300CA793A /* cache.test.c */; };
-		9490E22F246F98BF0012A652 /* rwn.test.c in Sources */ = {isa = PBXBuildFile; fileRef = 9490E22E246F98BF0012A652 /* rwn.test.c */; };
-		9490E232246F9A1D0012A652 /* log.test.c in Sources */ = {isa = PBXBuildFile; fileRef = 9490E231246F9A1D0012A652 /* log.test.c */; };
-		9490E235246FA08D0012A652 /* saltunnel_tcp_forwarder.test.c in Sources */ = {isa = PBXBuildFile; fileRef = 9490E234246FA08D0012A652 /* saltunnel_tcp_forwarder.test.c */; };
-		9490E238246FA4620012A652 /* cryptostream_vector.test.c in Sources */ = {isa = PBXBuildFile; fileRef = 9490E237246FA4620012A652 /* cryptostream_vector.test.c */; };
-		9490E23B246FA5AD0012A652 /* test.c in Sources */ = {isa = PBXBuildFile; fileRef = 9490E23A246FA5AD0012A652 /* test.c */; };
-		9490E240246FACB40012A652 /* saltunnel_server_main.c in Sources */ = {isa = PBXBuildFile; fileRef = 94D2234D243A44CC00EED0E8 /* saltunnel_server_main.c */; };
-		94D2234C243A44C400EED0E8 /* saltunnel_client_main.c in Sources */ = {isa = PBXBuildFile; fileRef = 94D2234B243A44C400EED0E8 /* saltunnel_client_main.c */; };
-		94D2234F243A4EAD00EED0E8 /* hypercounter.h in Sources */ = {isa = PBXBuildFile; fileRef = 9415876224136BB200CA793A /* hypercounter.h */; };
-		94D22350243A4EB300EED0E8 /* hypercounter.c in Sources */ = {isa = PBXBuildFile; fileRef = 9415876324136BB200CA793A /* hypercounter.c */; };
-		94D22351243A4ECE00EED0E8 /* uint64.c in Sources */ = {isa = PBXBuildFile; fileRef = 9415876624186F2700CA793A /* uint64.c */; };
-		94D22352243A4ECE00EED0E8 /* uint64.h in Sources */ = {isa = PBXBuildFile; fileRef = 9415876724186F2800CA793A /* uint64.h */; };
-		94D22353243A66A500EED0E8 /* hypercounter.h in Sources */ = {isa = PBXBuildFile; fileRef = 9415876224136BB200CA793A /* hypercounter.h */; };
-		94D22354243A66A500EED0E8 /* hypercounter.c in Sources */ = {isa = PBXBuildFile; fileRef = 9415876324136BB200CA793A /* hypercounter.c */; };
-		94D22355243A66B400EED0E8 /* uint64.c in Sources */ = {isa = PBXBuildFile; fileRef = 9415876624186F2700CA793A /* uint64.c */; };
-		94D22356243A66B400EED0E8 /* uint64.h in Sources */ = {isa = PBXBuildFile; fileRef = 9415876724186F2800CA793A /* uint64.h */; };
-		94DC1EFF24707EB80026A53D /* crypto_secretbox_salsa20poly1305.c in Sources */ = {isa = PBXBuildFile; fileRef = 94DC1EFE24707EB80026A53D /* crypto_secretbox_salsa20poly1305.c */; };
-		94DC1F0024707EB80026A53D /* crypto_secretbox_salsa20poly1305.c in Sources */ = {isa = PBXBuildFile; fileRef = 94DC1EFE24707EB80026A53D /* crypto_secretbox_salsa20poly1305.c */; };
-		94DC1F0124707EB80026A53D /* crypto_secretbox_salsa20poly1305.c in Sources */ = {isa = PBXBuildFile; fileRef = 94DC1EFE24707EB80026A53D /* crypto_secretbox_salsa20poly1305.c */; };
-		94ED038C240CB08A0093920F /* config.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971A12401895000DAC1E2 /* config.h */; };
-		94ED0395240CB08A0093920F /* cryptostream_decrypt_feed.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971C22401895100DAC1E2 /* cryptostream_decrypt_feed.c */; };
-		94ED0396240CB08A0093920F /* cryptostream_decrypt_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971B12401895000DAC1E2 /* cryptostream_decrypt_parallel.c */; };
-		94ED0397240CB08A0093920F /* cryptostream_decrypt.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971A82401895000DAC1E2 /* cryptostream_decrypt.c */; };
-		94ED0398240CB08A0093920F /* cryptostream_encrypt_feed.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971C12401895100DAC1E2 /* cryptostream_encrypt_feed.c */; };
-		94ED0399240CB08A0093920F /* cryptostream_encrypt_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 9429719A2401894F00DAC1E2 /* cryptostream_encrypt_parallel.c */; };
-		94ED039A240CB08A0093920F /* cryptostream_encrypt.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971AB2401895000DAC1E2 /* cryptostream_encrypt.c */; };
-		94ED039B240CB08A0093920F /* cryptostream_vector.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971B32401895000DAC1E2 /* cryptostream_vector.c */; };
-		94ED039C240CB08A0093920F /* cryptostream.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971BB2401895100DAC1E2 /* cryptostream.h */; };
-		94ED039D240CB08A0093920F /* log.c in Sources */ = {isa = PBXBuildFile; fileRef = 9429719B2401894F00DAC1E2 /* log.c */; };
-		94ED039E240CB08A0093920F /* log.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971BA2401895100DAC1E2 /* log.h */; };
-		94ED03A0240CB08A0093920F /* math.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971A32401895000DAC1E2 /* math.h */; };
-		94ED03A1240CB08A0093920F /* nonce.c in Sources */ = {isa = PBXBuildFile; fileRef = 9429719C2401894F00DAC1E2 /* nonce.c */; };
-		94ED03A2240CB08A0093920F /* nonce.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971A42401895000DAC1E2 /* nonce.h */; };
-		94ED03A3240CB08A0093920F /* oops.c in Sources */ = {isa = PBXBuildFile; fileRef = 9429719D2401895000DAC1E2 /* oops.c */; };
-		94ED03A4240CB08A0093920F /* oops.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971BC2401895100DAC1E2 /* oops.h */; };
-		94ED03A7240CB08A0093920F /* saltunnel_kx.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971972401894F00DAC1E2 /* saltunnel_kx.c */; };
-		94ED03A8240CB08A0093920F /* saltunnel_kx.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971A62401895000DAC1E2 /* saltunnel_kx.h */; };
-		94ED03A9240CB08A0093920F /* saltunnel_mx_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971932401894F00DAC1E2 /* saltunnel_mx_parallel.c */; };
-		94ED03AA240CB08A0093920F /* saltunnel_mx_serial.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971A22401895000DAC1E2 /* saltunnel_mx_serial.c */; };
-		94ED03AB240CB08A0093920F /* saltunnel_mx.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971C42401895100DAC1E2 /* saltunnel_mx.h */; };
-		94ED03AC240CB08B0093920F /* saltunnel_tcp_client_forwarder.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971B72401895000DAC1E2 /* saltunnel_tcp_client_forwarder.c */; };
-		94ED03AD240CB08B0093920F /* saltunnel_tcp_client_forwarder.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971952401894F00DAC1E2 /* saltunnel_tcp_client_forwarder.h */; };
-		94ED03AE240CB08B0093920F /* saltunnel_tcp_server_forwarder.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971C52401895100DAC1E2 /* saltunnel_tcp_server_forwarder.c */; };
-		94ED03AF240CB08B0093920F /* saltunnel_tcp_server_forwarder.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971C02401895100DAC1E2 /* saltunnel_tcp_server_forwarder.h */; };
-		94ED03B0240CB08B0093920F /* saltunnel.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971AC2401895000DAC1E2 /* saltunnel.c */; };
-		94ED03B1240CB08B0093920F /* saltunnel.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971C62401895100DAC1E2 /* saltunnel.h */; };
-		94ED03B2240CB08B0093920F /* stopwatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971A92401895000DAC1E2 /* stopwatch.c */; };
-		94ED03B3240CB08B0093920F /* stopwatch.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971AD2401895000DAC1E2 /* stopwatch.h */; };
-		94ED03B4240CB08B0093920F /* tcpclient.c in Sources */ = {isa = PBXBuildFile; fileRef = 9429719F2401895000DAC1E2 /* tcpclient.c */; };
-		94ED03B5240CB08B0093920F /* tcpclient.h in Sources */ = {isa = PBXBuildFile; fileRef = 9429719E2401895000DAC1E2 /* tcpclient.h */; };
-		94ED03B6240CB08B0093920F /* tcpserver.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971B42401895000DAC1E2 /* tcpserver.c */; };
-		94ED03B7240CB08B0093920F /* tcpserver.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971B92401895000DAC1E2 /* tcpserver.h */; };
-		94ED03BA240CB08B0093920F /* threadpool_barrier.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971B62401895000DAC1E2 /* threadpool_barrier.c */; };
-		94ED03BB240CB08B0093920F /* threadpool_barrier.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971942401894F00DAC1E2 /* threadpool_barrier.h */; };
-		94ED03BC240CB08B0093920F /* threadpool.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971C72401895100DAC1E2 /* threadpool.c */; };
-		94ED03BD240CB08B0093920F /* threadpool.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971C82401895100DAC1E2 /* threadpool.h */; };
-		94ED03BE240CB08B0093920F /* uint16.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971B22401895000DAC1E2 /* uint16.c */; };
-		94ED03BF240CB08B0093920F /* uint16.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971B82401895000DAC1E2 /* uint16.h */; };
-		94ED03C0240CB08B0093920F /* rwn.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971BE2401895100DAC1E2 /* rwn.c */; };
-		94ED03C1240CB08B0093920F /* rwn.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971B52401895000DAC1E2 /* rwn.h */; };
-		94ED03D2240CB23C0093920F /* cryptostream_decrypt_feed.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971C22401895100DAC1E2 /* cryptostream_decrypt_feed.c */; };
-		94ED03D3240CB23C0093920F /* cryptostream_decrypt_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971B12401895000DAC1E2 /* cryptostream_decrypt_parallel.c */; };
-		94ED03D4240CB23C0093920F /* cryptostream_decrypt.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971A82401895000DAC1E2 /* cryptostream_decrypt.c */; };
-		94ED03D5240CB23C0093920F /* cryptostream_encrypt_feed.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971C12401895100DAC1E2 /* cryptostream_encrypt_feed.c */; };
-		94ED03D6240CB23C0093920F /* cryptostream_encrypt_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 9429719A2401894F00DAC1E2 /* cryptostream_encrypt_parallel.c */; };
-		94ED03D7240CB23C0093920F /* cryptostream_encrypt.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971AB2401895000DAC1E2 /* cryptostream_encrypt.c */; };
-		94ED03D8240CB23C0093920F /* cryptostream_vector.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971B32401895000DAC1E2 /* cryptostream_vector.c */; };
-		94ED03D9240CB23C0093920F /* log.c in Sources */ = {isa = PBXBuildFile; fileRef = 9429719B2401894F00DAC1E2 /* log.c */; };
-		94ED03DB240CB23C0093920F /* nonce.c in Sources */ = {isa = PBXBuildFile; fileRef = 9429719C2401894F00DAC1E2 /* nonce.c */; };
-		94ED03DC240CB23C0093920F /* oops.c in Sources */ = {isa = PBXBuildFile; fileRef = 9429719D2401895000DAC1E2 /* oops.c */; };
-		94ED03DE240CB23C0093920F /* saltunnel_kx.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971972401894F00DAC1E2 /* saltunnel_kx.c */; };
-		94ED03DF240CB23C0093920F /* saltunnel_mx_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971932401894F00DAC1E2 /* saltunnel_mx_parallel.c */; };
-		94ED03E0240CB23C0093920F /* saltunnel_mx_serial.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971A22401895000DAC1E2 /* saltunnel_mx_serial.c */; };
-		94ED03E1240CB23C0093920F /* saltunnel_tcp_client_forwarder.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971B72401895000DAC1E2 /* saltunnel_tcp_client_forwarder.c */; };
-		94ED03E2240CB23C0093920F /* saltunnel_tcp_server_forwarder.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971C52401895100DAC1E2 /* saltunnel_tcp_server_forwarder.c */; };
-		94ED03E3240CB23C0093920F /* saltunnel.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971AC2401895000DAC1E2 /* saltunnel.c */; };
-		94ED03E4240CB23C0093920F /* stopwatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971A92401895000DAC1E2 /* stopwatch.c */; };
-		94ED03E5240CB23C0093920F /* tcpclient.c in Sources */ = {isa = PBXBuildFile; fileRef = 9429719F2401895000DAC1E2 /* tcpclient.c */; };
-		94ED03E6240CB23C0093920F /* tcpserver.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971B42401895000DAC1E2 /* tcpserver.c */; };
-		94ED03E7240CB23C0093920F /* threadpool_barrier.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971B62401895000DAC1E2 /* threadpool_barrier.c */; };
-		94ED03E8240CB23C0093920F /* threadpool.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971C72401895100DAC1E2 /* threadpool.c */; };
-		94ED03E9240CB23C0093920F /* uint16.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971B22401895000DAC1E2 /* uint16.c */; };
-		94ED03EA240CB23C0093920F /* rwn.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971BE2401895100DAC1E2 /* rwn.c */; };
-		94ED03EB240CB82D0093920F /* chaos.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971C32401895100DAC1E2 /* chaos.c */; };
-		94ED03EC240CB82D0093920F /* chaos.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971AF2401895000DAC1E2 /* chaos.h */; };
-		94ED03ED240CB82D0093920F /* config.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971A12401895000DAC1E2 /* config.h */; };
-		94ED03F6240CB82D0093920F /* cryptostream_decrypt_feed.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971C22401895100DAC1E2 /* cryptostream_decrypt_feed.c */; };
-		94ED03F7240CB82D0093920F /* cryptostream_decrypt_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971B12401895000DAC1E2 /* cryptostream_decrypt_parallel.c */; };
-		94ED03F8240CB82D0093920F /* cryptostream_decrypt.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971A82401895000DAC1E2 /* cryptostream_decrypt.c */; };
-		94ED03F9240CB82D0093920F /* cryptostream_encrypt_feed.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971C12401895100DAC1E2 /* cryptostream_encrypt_feed.c */; };
-		94ED03FA240CB82D0093920F /* cryptostream_encrypt_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 9429719A2401894F00DAC1E2 /* cryptostream_encrypt_parallel.c */; };
-		94ED03FB240CB82D0093920F /* cryptostream_encrypt.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971AB2401895000DAC1E2 /* cryptostream_encrypt.c */; };
-		94ED03FC240CB82D0093920F /* cryptostream_vector.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971B32401895000DAC1E2 /* cryptostream_vector.c */; };
-		94ED03FD240CB82D0093920F /* cryptostream.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971BB2401895100DAC1E2 /* cryptostream.h */; };
-		94ED03FE240CB82D0093920F /* log.c in Sources */ = {isa = PBXBuildFile; fileRef = 9429719B2401894F00DAC1E2 /* log.c */; };
-		94ED03FF240CB82D0093920F /* log.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971BA2401895100DAC1E2 /* log.h */; };
-		94ED0400240CB82D0093920F /* saltunnel_test_main.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971962401894F00DAC1E2 /* saltunnel_test_main.c */; };
-		94ED0401240CB82D0093920F /* saltunnel.test.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971BD2401895100DAC1E2 /* saltunnel.test.c */; };
-		94ED0402240CB82D0093920F /* saltunnel.test.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971B02401895000DAC1E2 /* saltunnel.test.h */; };
-		94ED0403240CB82D0093920F /* math.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971A32401895000DAC1E2 /* math.h */; };
-		94ED0404240CB82D0093920F /* nonce.c in Sources */ = {isa = PBXBuildFile; fileRef = 9429719C2401894F00DAC1E2 /* nonce.c */; };
-		94ED0405240CB82D0093920F /* nonce.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971A42401895000DAC1E2 /* nonce.h */; };
-		94ED0406240CB82D0093920F /* oops.c in Sources */ = {isa = PBXBuildFile; fileRef = 9429719D2401895000DAC1E2 /* oops.c */; };
-		94ED0407240CB82D0093920F /* oops.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971BC2401895100DAC1E2 /* oops.h */; };
-		94ED0408240CB82D0093920F /* saltunnel_kx.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971972401894F00DAC1E2 /* saltunnel_kx.c */; };
-		94ED0409240CB82D0093920F /* saltunnel_kx.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971A62401895000DAC1E2 /* saltunnel_kx.h */; };
-		94ED040A240CB82D0093920F /* saltunnel_mx_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971932401894F00DAC1E2 /* saltunnel_mx_parallel.c */; };
-		94ED040B240CB82D0093920F /* saltunnel_mx_serial.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971A22401895000DAC1E2 /* saltunnel_mx_serial.c */; };
-		94ED040C240CB82D0093920F /* saltunnel_mx.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971C42401895100DAC1E2 /* saltunnel_mx.h */; };
-		94ED040D240CB82D0093920F /* saltunnel_tcp_client_forwarder.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971B72401895000DAC1E2 /* saltunnel_tcp_client_forwarder.c */; };
-		94ED040E240CB82D0093920F /* saltunnel_tcp_client_forwarder.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971952401894F00DAC1E2 /* saltunnel_tcp_client_forwarder.h */; };
-		94ED040F240CB82D0093920F /* saltunnel_tcp_server_forwarder.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971C52401895100DAC1E2 /* saltunnel_tcp_server_forwarder.c */; };
-		94ED0410240CB82D0093920F /* saltunnel_tcp_server_forwarder.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971C02401895100DAC1E2 /* saltunnel_tcp_server_forwarder.h */; };
-		94ED0411240CB82D0093920F /* saltunnel.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971AC2401895000DAC1E2 /* saltunnel.c */; };
-		94ED0412240CB82D0093920F /* saltunnel.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971C62401895100DAC1E2 /* saltunnel.h */; };
-		94ED0413240CB82D0093920F /* stopwatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971A92401895000DAC1E2 /* stopwatch.c */; };
-		94ED0414240CB82D0093920F /* stopwatch.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971AD2401895000DAC1E2 /* stopwatch.h */; };
-		94ED0415240CB82D0093920F /* tcpclient.c in Sources */ = {isa = PBXBuildFile; fileRef = 9429719F2401895000DAC1E2 /* tcpclient.c */; };
-		94ED0416240CB82D0093920F /* tcpclient.h in Sources */ = {isa = PBXBuildFile; fileRef = 9429719E2401895000DAC1E2 /* tcpclient.h */; };
-		94ED0417240CB82D0093920F /* tcpserver.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971B42401895000DAC1E2 /* tcpserver.c */; };
-		94ED0418240CB82D0093920F /* tcpserver.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971B92401895000DAC1E2 /* tcpserver.h */; };
-		94ED0419240CB82D0093920F /* threadpool_barrier.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971B62401895000DAC1E2 /* threadpool_barrier.c */; };
-		94ED041A240CB82D0093920F /* threadpool_barrier.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971942401894F00DAC1E2 /* threadpool_barrier.h */; };
-		94ED041B240CB82D0093920F /* threadpool.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971C72401895100DAC1E2 /* threadpool.c */; };
-		94ED041C240CB82D0093920F /* threadpool.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971C82401895100DAC1E2 /* threadpool.h */; };
-		94ED041D240CB82D0093920F /* uint16.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971B22401895000DAC1E2 /* uint16.c */; };
-		94ED041E240CB82D0093920F /* uint16.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971B82401895000DAC1E2 /* uint16.h */; };
-		94ED041F240CB82D0093920F /* rwn.c in Sources */ = {isa = PBXBuildFile; fileRef = 942971BE2401895100DAC1E2 /* rwn.c */; };
-		94ED0420240CB82D0093920F /* rwn.h in Sources */ = {isa = PBXBuildFile; fileRef = 942971B52401895000DAC1E2 /* rwn.h */; };
+		941C170B247CBFF900E2523F /* cache.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16EB247CBFEE00E2523F /* cache.c */; };
+		941C170C247CBFF900E2523F /* cache.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16CE247CBFEC00E2523F /* cache.h */; };
+		941C170D247CBFF900E2523F /* config.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16CA247CBFEC00E2523F /* config.c */; };
+		941C170E247CBFF900E2523F /* config.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16D4247CBFEC00E2523F /* config.h */; };
+		941C170F247CBFF900E2523F /* crypto_secretbox_salsa20poly1305.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16D7247CBFEC00E2523F /* crypto_secretbox_salsa20poly1305.c */; };
+		941C1710247CBFF900E2523F /* crypto_secretbox_salsa20poly1305.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16D3247CBFEC00E2523F /* crypto_secretbox_salsa20poly1305.h */; };
+		941C1711247CBFF900E2523F /* cryptostream_decrypt_feed.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16D1247CBFEC00E2523F /* cryptostream_decrypt_feed.c */; };
+		941C1712247CBFF900E2523F /* cryptostream_decrypt_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16E7247CBFED00E2523F /* cryptostream_decrypt_parallel.c */; };
+		941C1713247CBFF900E2523F /* cryptostream_decrypt.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16CB247CBFEC00E2523F /* cryptostream_decrypt.c */; };
+		941C1714247CBFF900E2523F /* cryptostream_encrypt_feed.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16D8247CBFEC00E2523F /* cryptostream_encrypt_feed.c */; };
+		941C1715247CBFF900E2523F /* cryptostream_encrypt_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16C8247CBFEB00E2523F /* cryptostream_encrypt_parallel.c */; };
+		941C1716247CBFF900E2523F /* cryptostream_encrypt.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16E9247CBFEE00E2523F /* cryptostream_encrypt.c */; };
+		941C1717247CBFF900E2523F /* cryptostream_vector.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16BF247CBFEB00E2523F /* cryptostream_vector.c */; };
+		941C1718247CBFF900E2523F /* cryptostream.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16C9247CBFEC00E2523F /* cryptostream.h */; };
+		941C1719247CBFF900E2523F /* hypercounter.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16CC247CBFEC00E2523F /* hypercounter.c */; };
+		941C171A247CBFF900E2523F /* hypercounter.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16DD247CBFED00E2523F /* hypercounter.h */; };
+		941C171B247CBFF900E2523F /* log.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16C5247CBFEB00E2523F /* log.c */; };
+		941C171C247CBFF900E2523F /* log.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16CD247CBFEC00E2523F /* log.h */; };
+		941C171D247CBFF900E2523F /* math.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16BB247CBFEB00E2523F /* math.h */; };
+		941C171E247CBFF900E2523F /* nonce.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16E2247CBFED00E2523F /* nonce.c */; };
+		941C171F247CBFF900E2523F /* nonce.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16C6247CBFEB00E2523F /* nonce.h */; };
+		941C1720247CBFF900E2523F /* oops.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16EC247CBFEE00E2523F /* oops.c */; };
+		941C1721247CBFF900E2523F /* oops.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16C4247CBFEB00E2523F /* oops.h */; };
+		941C1722247CBFF900E2523F /* rwn.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16EA247CBFEE00E2523F /* rwn.c */; };
+		941C1723247CBFF900E2523F /* rwn.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16D5247CBFEC00E2523F /* rwn.h */; };
+		941C1724247CBFF900E2523F /* saltunnel_kx.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16BC247CBFEB00E2523F /* saltunnel_kx.c */; };
+		941C1725247CBFF900E2523F /* saltunnel_kx.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16C0247CBFEB00E2523F /* saltunnel_kx.h */; };
+		941C1726247CBFF900E2523F /* saltunnel_mx_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16BA247CBFEB00E2523F /* saltunnel_mx_parallel.c */; };
+		941C1727247CBFF900E2523F /* saltunnel_mx_serial.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16D9247CBFEC00E2523F /* saltunnel_mx_serial.c */; };
+		941C1728247CBFF900E2523F /* saltunnel_mx.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16C7247CBFEB00E2523F /* saltunnel_mx.h */; };
+		941C1729247CBFF900E2523F /* saltunnel_tcp_client_forwarder.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16D0247CBFEC00E2523F /* saltunnel_tcp_client_forwarder.c */; };
+		941C172A247CBFF900E2523F /* saltunnel_tcp_client_forwarder.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16C2247CBFEB00E2523F /* saltunnel_tcp_client_forwarder.h */; };
+		941C172B247CBFF900E2523F /* saltunnel_tcp_server_forwarder.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16DB247CBFED00E2523F /* saltunnel_tcp_server_forwarder.c */; };
+		941C172C247CBFF900E2523F /* saltunnel_tcp_server_forwarder.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16CF247CBFEC00E2523F /* saltunnel_tcp_server_forwarder.h */; };
+		941C172D247CBFF900E2523F /* saltunnel.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16D6247CBFEC00E2523F /* saltunnel.c */; };
+		941C172E247CBFF900E2523F /* saltunnel.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16E0247CBFED00E2523F /* saltunnel.h */; };
+		941C172F247CBFF900E2523F /* stopwatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16E5247CBFED00E2523F /* stopwatch.c */; };
+		941C1730247CBFF900E2523F /* stopwatch.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16BD247CBFEB00E2523F /* stopwatch.h */; };
+		941C1731247CBFF900E2523F /* tcpclient.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16BE247CBFEB00E2523F /* tcpclient.c */; };
+		941C1732247CBFF900E2523F /* tcpclient.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16DE247CBFED00E2523F /* tcpclient.h */; };
+		941C1733247CBFF900E2523F /* tcpserver.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16C3247CBFEB00E2523F /* tcpserver.c */; };
+		941C1734247CBFF900E2523F /* tcpserver.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16C1247CBFEB00E2523F /* tcpserver.h */; };
+		941C1735247CBFF900E2523F /* threadpool_barrier.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16E8247CBFED00E2523F /* threadpool_barrier.c */; };
+		941C1736247CBFF900E2523F /* threadpool_barrier.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16D2247CBFEC00E2523F /* threadpool_barrier.h */; };
+		941C1737247CBFF900E2523F /* threadpool.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16DF247CBFED00E2523F /* threadpool.c */; };
+		941C1738247CBFF900E2523F /* threadpool.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16E4247CBFED00E2523F /* threadpool.h */; };
+		941C1739247CBFF900E2523F /* uint16.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16DC247CBFED00E2523F /* uint16.c */; };
+		941C173A247CBFF900E2523F /* uint16.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16E6247CBFED00E2523F /* uint16.h */; };
+		941C173B247CBFF900E2523F /* uint32.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16E1247CBFED00E2523F /* uint32.c */; };
+		941C173C247CBFF900E2523F /* uint32.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16DA247CBFEC00E2523F /* uint32.h */; };
+		941C173D247CBFF900E2523F /* uint64.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16ED247CBFEE00E2523F /* uint64.c */; };
+		941C173E247CBFF900E2523F /* uint64.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16E3247CBFED00E2523F /* uint64.h */; };
+		941C17A2247CC02C00E2523F /* cache.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16EB247CBFEE00E2523F /* cache.c */; };
+		941C17A3247CC02C00E2523F /* cache.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16CE247CBFEC00E2523F /* cache.h */; };
+		941C17A4247CC02C00E2523F /* config.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16CA247CBFEC00E2523F /* config.c */; };
+		941C17A5247CC02C00E2523F /* config.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16D4247CBFEC00E2523F /* config.h */; };
+		941C17A6247CC02C00E2523F /* crypto_secretbox_salsa20poly1305.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16D7247CBFEC00E2523F /* crypto_secretbox_salsa20poly1305.c */; };
+		941C17A7247CC02C00E2523F /* crypto_secretbox_salsa20poly1305.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16D3247CBFEC00E2523F /* crypto_secretbox_salsa20poly1305.h */; };
+		941C17A8247CC02C00E2523F /* cryptostream_decrypt_feed.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16D1247CBFEC00E2523F /* cryptostream_decrypt_feed.c */; };
+		941C17A9247CC02C00E2523F /* cryptostream_decrypt_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16E7247CBFED00E2523F /* cryptostream_decrypt_parallel.c */; };
+		941C17AA247CC02C00E2523F /* cryptostream_decrypt.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16CB247CBFEC00E2523F /* cryptostream_decrypt.c */; };
+		941C17AB247CC02C00E2523F /* cryptostream_encrypt_feed.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16D8247CBFEC00E2523F /* cryptostream_encrypt_feed.c */; };
+		941C17AC247CC02C00E2523F /* cryptostream_encrypt_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16C8247CBFEB00E2523F /* cryptostream_encrypt_parallel.c */; };
+		941C17AD247CC02C00E2523F /* cryptostream_encrypt.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16E9247CBFEE00E2523F /* cryptostream_encrypt.c */; };
+		941C17AE247CC02C00E2523F /* cryptostream_vector.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16BF247CBFEB00E2523F /* cryptostream_vector.c */; };
+		941C17AF247CC02C00E2523F /* cryptostream.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16C9247CBFEC00E2523F /* cryptostream.h */; };
+		941C17B0247CC02C00E2523F /* hypercounter.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16CC247CBFEC00E2523F /* hypercounter.c */; };
+		941C17B1247CC02C00E2523F /* hypercounter.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16DD247CBFED00E2523F /* hypercounter.h */; };
+		941C17B2247CC02C00E2523F /* log.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16C5247CBFEB00E2523F /* log.c */; };
+		941C17B3247CC02C00E2523F /* log.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16CD247CBFEC00E2523F /* log.h */; };
+		941C17B4247CC02C00E2523F /* math.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16BB247CBFEB00E2523F /* math.h */; };
+		941C17B5247CC02C00E2523F /* nonce.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16E2247CBFED00E2523F /* nonce.c */; };
+		941C17B6247CC02C00E2523F /* nonce.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16C6247CBFEB00E2523F /* nonce.h */; };
+		941C17B7247CC02C00E2523F /* oops.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16EC247CBFEE00E2523F /* oops.c */; };
+		941C17B8247CC02C00E2523F /* oops.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16C4247CBFEB00E2523F /* oops.h */; };
+		941C17B9247CC02C00E2523F /* rwn.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16EA247CBFEE00E2523F /* rwn.c */; };
+		941C17BA247CC02C00E2523F /* rwn.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16D5247CBFEC00E2523F /* rwn.h */; };
+		941C17BB247CC02C00E2523F /* saltunnel_kx.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16BC247CBFEB00E2523F /* saltunnel_kx.c */; };
+		941C17BC247CC02C00E2523F /* saltunnel_kx.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16C0247CBFEB00E2523F /* saltunnel_kx.h */; };
+		941C17BD247CC02C00E2523F /* saltunnel_mx_parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16BA247CBFEB00E2523F /* saltunnel_mx_parallel.c */; };
+		941C17BE247CC02C00E2523F /* saltunnel_mx_serial.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16D9247CBFEC00E2523F /* saltunnel_mx_serial.c */; };
+		941C17BF247CC02C00E2523F /* saltunnel_mx.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16C7247CBFEB00E2523F /* saltunnel_mx.h */; };
+		941C17C0247CC02C00E2523F /* saltunnel_tcp_client_forwarder.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16D0247CBFEC00E2523F /* saltunnel_tcp_client_forwarder.c */; };
+		941C17C1247CC02C00E2523F /* saltunnel_tcp_client_forwarder.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16C2247CBFEB00E2523F /* saltunnel_tcp_client_forwarder.h */; };
+		941C17C2247CC02C00E2523F /* saltunnel_tcp_server_forwarder.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16DB247CBFED00E2523F /* saltunnel_tcp_server_forwarder.c */; };
+		941C17C3247CC02C00E2523F /* saltunnel_tcp_server_forwarder.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16CF247CBFEC00E2523F /* saltunnel_tcp_server_forwarder.h */; };
+		941C17C4247CC02C00E2523F /* saltunnel.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16D6247CBFEC00E2523F /* saltunnel.c */; };
+		941C17C5247CC02C00E2523F /* saltunnel.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16E0247CBFED00E2523F /* saltunnel.h */; };
+		941C17C6247CC02C00E2523F /* stopwatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16E5247CBFED00E2523F /* stopwatch.c */; };
+		941C17C7247CC02C00E2523F /* stopwatch.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16BD247CBFEB00E2523F /* stopwatch.h */; };
+		941C17C8247CC02C00E2523F /* tcpclient.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16BE247CBFEB00E2523F /* tcpclient.c */; };
+		941C17C9247CC02C00E2523F /* tcpclient.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16DE247CBFED00E2523F /* tcpclient.h */; };
+		941C17CA247CC02C00E2523F /* tcpserver.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16C3247CBFEB00E2523F /* tcpserver.c */; };
+		941C17CB247CC02C00E2523F /* tcpserver.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16C1247CBFEB00E2523F /* tcpserver.h */; };
+		941C17CC247CC02C00E2523F /* threadpool_barrier.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16E8247CBFED00E2523F /* threadpool_barrier.c */; };
+		941C17CD247CC02C00E2523F /* threadpool_barrier.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16D2247CBFEC00E2523F /* threadpool_barrier.h */; };
+		941C17CE247CC02C00E2523F /* threadpool.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16DF247CBFED00E2523F /* threadpool.c */; };
+		941C17CF247CC02C00E2523F /* threadpool.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16E4247CBFED00E2523F /* threadpool.h */; };
+		941C17D0247CC02C00E2523F /* uint16.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16DC247CBFED00E2523F /* uint16.c */; };
+		941C17D1247CC02C00E2523F /* uint16.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16E6247CBFED00E2523F /* uint16.h */; };
+		941C17D2247CC02C00E2523F /* uint32.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16E1247CBFED00E2523F /* uint32.c */; };
+		941C17D3247CC02C00E2523F /* uint32.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16DA247CBFEC00E2523F /* uint32.h */; };
+		941C17D4247CC02C00E2523F /* uint64.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C16ED247CBFEE00E2523F /* uint64.c */; };
+		941C17D5247CC02C00E2523F /* uint64.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C16E3247CBFED00E2523F /* uint64.h */; };
+		941C17D6247CC03300E2523F /* cache.test.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C178F247CC02000E2523F /* cache.test.c */; };
+		941C17D7247CC03300E2523F /* cache.test.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C178D247CC02000E2523F /* cache.test.h */; };
+		941C17D8247CC03300E2523F /* chaos.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C1787247CC02000E2523F /* chaos.c */; };
+		941C17D9247CC03300E2523F /* chaos.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C1785247CC02000E2523F /* chaos.h */; };
+		941C17DA247CC03300E2523F /* cryptostream_vector.test.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C178A247CC02000E2523F /* cryptostream_vector.test.c */; };
+		941C17DB247CC03300E2523F /* cryptostream_vector.test.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C178E247CC02000E2523F /* cryptostream_vector.test.h */; };
+		941C17DC247CC03300E2523F /* hypercounter.test.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C1786247CC02000E2523F /* hypercounter.test.c */; };
+		941C17DD247CC03300E2523F /* hypercounter.test.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C178B247CC02000E2523F /* hypercounter.test.h */; };
+		941C17DE247CC03300E2523F /* log.test.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C1795247CC02000E2523F /* log.test.c */; };
+		941C17DF247CC03300E2523F /* log.test.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C1790247CC02000E2523F /* log.test.h */; };
+		941C17E0247CC03300E2523F /* nonce.test.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C1797247CC02000E2523F /* nonce.test.c */; };
+		941C17E1247CC03300E2523F /* nonce.test.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C1796247CC02000E2523F /* nonce.test.h */; };
+		941C17E2247CC03300E2523F /* rwn.test.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C1784247CC02000E2523F /* rwn.test.c */; };
+		941C17E3247CC03300E2523F /* rwn.test.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C1788247CC02000E2523F /* rwn.test.h */; };
+		941C17E4247CC03300E2523F /* saltunnel_tcp_forwarder.test.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C178C247CC02000E2523F /* saltunnel_tcp_forwarder.test.c */; };
+		941C17E5247CC03300E2523F /* saltunnel_tcp_forwarder.test.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C1792247CC02000E2523F /* saltunnel_tcp_forwarder.test.h */; };
+		941C17E6247CC03300E2523F /* saltunnel.test.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C1794247CC02000E2523F /* saltunnel.test.c */; };
+		941C17E7247CC03300E2523F /* saltunnel.test.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C1791247CC02000E2523F /* saltunnel.test.h */; };
+		941C17E8247CC03300E2523F /* tcp.test.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C1793247CC02000E2523F /* tcp.test.c */; };
+		941C17E9247CC03300E2523F /* tcp.test.h in Sources */ = {isa = PBXBuildFile; fileRef = 941C1789247CC02000E2523F /* tcp.test.h */; };
+		941C17EA247CC04A00E2523F /* saltunnel-test.c in Sources */ = {isa = PBXBuildFile; fileRef = 941C1667247CBF6100E2523F /* saltunnel-test.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -176,80 +165,81 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		94011EF1242322D8005AD00A /* nonce.test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nonce.test.h; sourceTree = "<group>"; };
-		94011EF2242322D8005AD00A /* nonce.test.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = nonce.test.c; sourceTree = "<group>"; };
-		9415876224136BB200CA793A /* hypercounter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hypercounter.h; sourceTree = "<group>"; };
-		9415876324136BB200CA793A /* hypercounter.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = hypercounter.c; sourceTree = "<group>"; };
-		9415876624186F2700CA793A /* uint64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = uint64.c; sourceTree = "<group>"; };
-		9415876724186F2800CA793A /* uint64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uint64.h; sourceTree = "<group>"; };
-		9415876B2418880C00CA793A /* cache.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cache.h; sourceTree = "<group>"; };
-		9415876C2418880C00CA793A /* cache.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = cache.c; sourceTree = "<group>"; };
-		9415876E24188B5C00CA793A /* uint32.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = uint32.c; sourceTree = "<group>"; };
-		9415877024188B5C00CA793A /* uint32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uint32.h; sourceTree = "<group>"; };
-		941587782419B6A300CA793A /* cache.test.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = cache.test.c; sourceTree = "<group>"; };
-		9415877A2419B6BC00CA793A /* cache.test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cache.test.h; sourceTree = "<group>"; };
-		942971932401894F00DAC1E2 /* saltunnel_mx_parallel.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = saltunnel_mx_parallel.c; sourceTree = "<group>"; };
-		942971942401894F00DAC1E2 /* threadpool_barrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = threadpool_barrier.h; sourceTree = "<group>"; };
-		942971952401894F00DAC1E2 /* saltunnel_tcp_client_forwarder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = saltunnel_tcp_client_forwarder.h; sourceTree = "<group>"; };
-		942971962401894F00DAC1E2 /* saltunnel_test_main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = saltunnel_test_main.c; sourceTree = "<group>"; };
-		942971972401894F00DAC1E2 /* saltunnel_kx.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = saltunnel_kx.c; sourceTree = "<group>"; };
-		9429719A2401894F00DAC1E2 /* cryptostream_encrypt_parallel.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cryptostream_encrypt_parallel.c; sourceTree = "<group>"; };
-		9429719B2401894F00DAC1E2 /* log.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = log.c; sourceTree = "<group>"; };
-		9429719C2401894F00DAC1E2 /* nonce.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = nonce.c; sourceTree = "<group>"; };
-		9429719D2401895000DAC1E2 /* oops.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = oops.c; sourceTree = "<group>"; };
-		9429719E2401895000DAC1E2 /* tcpclient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tcpclient.h; sourceTree = "<group>"; };
-		9429719F2401895000DAC1E2 /* tcpclient.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tcpclient.c; sourceTree = "<group>"; };
-		942971A12401895000DAC1E2 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
-		942971A22401895000DAC1E2 /* saltunnel_mx_serial.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = saltunnel_mx_serial.c; sourceTree = "<group>"; };
-		942971A32401895000DAC1E2 /* math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = math.h; sourceTree = "<group>"; };
-		942971A42401895000DAC1E2 /* nonce.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nonce.h; sourceTree = "<group>"; };
-		942971A62401895000DAC1E2 /* saltunnel_kx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = saltunnel_kx.h; sourceTree = "<group>"; };
-		942971A82401895000DAC1E2 /* cryptostream_decrypt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cryptostream_decrypt.c; sourceTree = "<group>"; };
-		942971A92401895000DAC1E2 /* stopwatch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = stopwatch.c; sourceTree = "<group>"; };
-		942971AB2401895000DAC1E2 /* cryptostream_encrypt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cryptostream_encrypt.c; sourceTree = "<group>"; };
-		942971AC2401895000DAC1E2 /* saltunnel.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = saltunnel.c; sourceTree = "<group>"; };
-		942971AD2401895000DAC1E2 /* stopwatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stopwatch.h; sourceTree = "<group>"; };
-		942971AF2401895000DAC1E2 /* chaos.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = chaos.h; sourceTree = "<group>"; };
-		942971B02401895000DAC1E2 /* saltunnel.test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = saltunnel.test.h; sourceTree = "<group>"; };
-		942971B12401895000DAC1E2 /* cryptostream_decrypt_parallel.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cryptostream_decrypt_parallel.c; sourceTree = "<group>"; };
-		942971B22401895000DAC1E2 /* uint16.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = uint16.c; sourceTree = "<group>"; };
-		942971B32401895000DAC1E2 /* cryptostream_vector.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cryptostream_vector.c; sourceTree = "<group>"; };
-		942971B42401895000DAC1E2 /* tcpserver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tcpserver.c; sourceTree = "<group>"; };
-		942971B52401895000DAC1E2 /* rwn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rwn.h; sourceTree = "<group>"; };
-		942971B62401895000DAC1E2 /* threadpool_barrier.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = threadpool_barrier.c; sourceTree = "<group>"; };
-		942971B72401895000DAC1E2 /* saltunnel_tcp_client_forwarder.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = saltunnel_tcp_client_forwarder.c; sourceTree = "<group>"; };
-		942971B82401895000DAC1E2 /* uint16.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uint16.h; sourceTree = "<group>"; };
-		942971B92401895000DAC1E2 /* tcpserver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tcpserver.h; sourceTree = "<group>"; };
-		942971BA2401895100DAC1E2 /* log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = log.h; sourceTree = "<group>"; };
-		942971BB2401895100DAC1E2 /* cryptostream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cryptostream.h; sourceTree = "<group>"; };
-		942971BC2401895100DAC1E2 /* oops.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = oops.h; sourceTree = "<group>"; };
-		942971BD2401895100DAC1E2 /* saltunnel.test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = saltunnel.test.c; sourceTree = "<group>"; };
-		942971BE2401895100DAC1E2 /* rwn.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = rwn.c; sourceTree = "<group>"; };
-		942971C02401895100DAC1E2 /* saltunnel_tcp_server_forwarder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = saltunnel_tcp_server_forwarder.h; sourceTree = "<group>"; };
-		942971C12401895100DAC1E2 /* cryptostream_encrypt_feed.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cryptostream_encrypt_feed.c; sourceTree = "<group>"; };
-		942971C22401895100DAC1E2 /* cryptostream_decrypt_feed.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cryptostream_decrypt_feed.c; sourceTree = "<group>"; };
-		942971C32401895100DAC1E2 /* chaos.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = chaos.c; sourceTree = "<group>"; };
-		942971C42401895100DAC1E2 /* saltunnel_mx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = saltunnel_mx.h; sourceTree = "<group>"; };
-		942971C52401895100DAC1E2 /* saltunnel_tcp_server_forwarder.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = saltunnel_tcp_server_forwarder.c; sourceTree = "<group>"; };
-		942971C62401895100DAC1E2 /* saltunnel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = saltunnel.h; sourceTree = "<group>"; };
-		942971C72401895100DAC1E2 /* threadpool.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = threadpool.c; sourceTree = "<group>"; };
-		942971C82401895100DAC1E2 /* threadpool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = threadpool.h; sourceTree = "<group>"; };
-		9490E22D246F98BF0012A652 /* rwn.test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = rwn.test.h; sourceTree = "<group>"; };
-		9490E22E246F98BF0012A652 /* rwn.test.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = rwn.test.c; sourceTree = "<group>"; };
-		9490E230246F9A1D0012A652 /* log.test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = log.test.h; sourceTree = "<group>"; };
-		9490E231246F9A1D0012A652 /* log.test.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = log.test.c; sourceTree = "<group>"; };
-		9490E233246FA08D0012A652 /* saltunnel_tcp_forwarder.test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = saltunnel_tcp_forwarder.test.h; sourceTree = "<group>"; };
-		9490E234246FA08D0012A652 /* saltunnel_tcp_forwarder.test.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = saltunnel_tcp_forwarder.test.c; sourceTree = "<group>"; };
-		9490E236246FA4620012A652 /* cryptostream_vector.test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cryptostream_vector.test.h; sourceTree = "<group>"; };
-		9490E237246FA4620012A652 /* cryptostream_vector.test.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = cryptostream_vector.test.c; sourceTree = "<group>"; };
-		9490E239246FA5AD0012A652 /* test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = test.h; sourceTree = "<group>"; };
-		9490E23A246FA5AD0012A652 /* test.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = test.c; sourceTree = "<group>"; };
+		941C1667247CBF6100E2523F /* saltunnel-test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "saltunnel-test.c"; sourceTree = "<group>"; };
+		941C16BA247CBFEB00E2523F /* saltunnel_mx_parallel.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = saltunnel_mx_parallel.c; sourceTree = "<group>"; };
+		941C16BB247CBFEB00E2523F /* math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = math.h; sourceTree = "<group>"; };
+		941C16BC247CBFEB00E2523F /* saltunnel_kx.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = saltunnel_kx.c; sourceTree = "<group>"; };
+		941C16BD247CBFEB00E2523F /* stopwatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stopwatch.h; sourceTree = "<group>"; };
+		941C16BE247CBFEB00E2523F /* tcpclient.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tcpclient.c; sourceTree = "<group>"; };
+		941C16BF247CBFEB00E2523F /* cryptostream_vector.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cryptostream_vector.c; sourceTree = "<group>"; };
+		941C16C0247CBFEB00E2523F /* saltunnel_kx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = saltunnel_kx.h; sourceTree = "<group>"; };
+		941C16C1247CBFEB00E2523F /* tcpserver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tcpserver.h; sourceTree = "<group>"; };
+		941C16C2247CBFEB00E2523F /* saltunnel_tcp_client_forwarder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = saltunnel_tcp_client_forwarder.h; sourceTree = "<group>"; };
+		941C16C3247CBFEB00E2523F /* tcpserver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tcpserver.c; sourceTree = "<group>"; };
+		941C16C4247CBFEB00E2523F /* oops.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = oops.h; sourceTree = "<group>"; };
+		941C16C5247CBFEB00E2523F /* log.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = log.c; sourceTree = "<group>"; };
+		941C16C6247CBFEB00E2523F /* nonce.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nonce.h; sourceTree = "<group>"; };
+		941C16C7247CBFEB00E2523F /* saltunnel_mx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = saltunnel_mx.h; sourceTree = "<group>"; };
+		941C16C8247CBFEB00E2523F /* cryptostream_encrypt_parallel.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cryptostream_encrypt_parallel.c; sourceTree = "<group>"; };
+		941C16C9247CBFEC00E2523F /* cryptostream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cryptostream.h; sourceTree = "<group>"; };
+		941C16CA247CBFEC00E2523F /* config.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = config.c; sourceTree = "<group>"; };
+		941C16CB247CBFEC00E2523F /* cryptostream_decrypt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cryptostream_decrypt.c; sourceTree = "<group>"; };
+		941C16CC247CBFEC00E2523F /* hypercounter.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = hypercounter.c; sourceTree = "<group>"; };
+		941C16CD247CBFEC00E2523F /* log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = log.h; sourceTree = "<group>"; };
+		941C16CE247CBFEC00E2523F /* cache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cache.h; sourceTree = "<group>"; };
+		941C16CF247CBFEC00E2523F /* saltunnel_tcp_server_forwarder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = saltunnel_tcp_server_forwarder.h; sourceTree = "<group>"; };
+		941C16D0247CBFEC00E2523F /* saltunnel_tcp_client_forwarder.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = saltunnel_tcp_client_forwarder.c; sourceTree = "<group>"; };
+		941C16D1247CBFEC00E2523F /* cryptostream_decrypt_feed.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cryptostream_decrypt_feed.c; sourceTree = "<group>"; };
+		941C16D2247CBFEC00E2523F /* threadpool_barrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = threadpool_barrier.h; sourceTree = "<group>"; };
+		941C16D3247CBFEC00E2523F /* crypto_secretbox_salsa20poly1305.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto_secretbox_salsa20poly1305.h; sourceTree = "<group>"; };
+		941C16D4247CBFEC00E2523F /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
+		941C16D5247CBFEC00E2523F /* rwn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rwn.h; sourceTree = "<group>"; };
+		941C16D6247CBFEC00E2523F /* saltunnel.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = saltunnel.c; sourceTree = "<group>"; };
+		941C16D7247CBFEC00E2523F /* crypto_secretbox_salsa20poly1305.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = crypto_secretbox_salsa20poly1305.c; sourceTree = "<group>"; };
+		941C16D8247CBFEC00E2523F /* cryptostream_encrypt_feed.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cryptostream_encrypt_feed.c; sourceTree = "<group>"; };
+		941C16D9247CBFEC00E2523F /* saltunnel_mx_serial.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = saltunnel_mx_serial.c; sourceTree = "<group>"; };
+		941C16DA247CBFEC00E2523F /* uint32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uint32.h; sourceTree = "<group>"; };
+		941C16DB247CBFED00E2523F /* saltunnel_tcp_server_forwarder.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = saltunnel_tcp_server_forwarder.c; sourceTree = "<group>"; };
+		941C16DC247CBFED00E2523F /* uint16.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = uint16.c; sourceTree = "<group>"; };
+		941C16DD247CBFED00E2523F /* hypercounter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hypercounter.h; sourceTree = "<group>"; };
+		941C16DE247CBFED00E2523F /* tcpclient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tcpclient.h; sourceTree = "<group>"; };
+		941C16DF247CBFED00E2523F /* threadpool.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = threadpool.c; sourceTree = "<group>"; };
+		941C16E0247CBFED00E2523F /* saltunnel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = saltunnel.h; sourceTree = "<group>"; };
+		941C16E1247CBFED00E2523F /* uint32.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = uint32.c; sourceTree = "<group>"; };
+		941C16E2247CBFED00E2523F /* nonce.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = nonce.c; sourceTree = "<group>"; };
+		941C16E3247CBFED00E2523F /* uint64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uint64.h; sourceTree = "<group>"; };
+		941C16E4247CBFED00E2523F /* threadpool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = threadpool.h; sourceTree = "<group>"; };
+		941C16E5247CBFED00E2523F /* stopwatch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = stopwatch.c; sourceTree = "<group>"; };
+		941C16E6247CBFED00E2523F /* uint16.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uint16.h; sourceTree = "<group>"; };
+		941C16E7247CBFED00E2523F /* cryptostream_decrypt_parallel.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cryptostream_decrypt_parallel.c; sourceTree = "<group>"; };
+		941C16E8247CBFED00E2523F /* threadpool_barrier.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = threadpool_barrier.c; sourceTree = "<group>"; };
+		941C16E9247CBFEE00E2523F /* cryptostream_encrypt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cryptostream_encrypt.c; sourceTree = "<group>"; };
+		941C16EA247CBFEE00E2523F /* rwn.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = rwn.c; sourceTree = "<group>"; };
+		941C16EB247CBFEE00E2523F /* cache.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cache.c; sourceTree = "<group>"; };
+		941C16EC247CBFEE00E2523F /* oops.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = oops.c; sourceTree = "<group>"; };
+		941C16ED247CBFEE00E2523F /* uint64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = uint64.c; sourceTree = "<group>"; };
+		941C1784247CC02000E2523F /* rwn.test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = rwn.test.c; sourceTree = "<group>"; };
+		941C1785247CC02000E2523F /* chaos.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = chaos.h; sourceTree = "<group>"; };
+		941C1786247CC02000E2523F /* hypercounter.test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = hypercounter.test.c; sourceTree = "<group>"; };
+		941C1787247CC02000E2523F /* chaos.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = chaos.c; sourceTree = "<group>"; };
+		941C1788247CC02000E2523F /* rwn.test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rwn.test.h; sourceTree = "<group>"; };
+		941C1789247CC02000E2523F /* tcp.test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tcp.test.h; sourceTree = "<group>"; };
+		941C178A247CC02000E2523F /* cryptostream_vector.test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cryptostream_vector.test.c; sourceTree = "<group>"; };
+		941C178B247CC02000E2523F /* hypercounter.test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hypercounter.test.h; sourceTree = "<group>"; };
+		941C178C247CC02000E2523F /* saltunnel_tcp_forwarder.test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = saltunnel_tcp_forwarder.test.c; sourceTree = "<group>"; };
+		941C178D247CC02000E2523F /* cache.test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cache.test.h; sourceTree = "<group>"; };
+		941C178E247CC02000E2523F /* cryptostream_vector.test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cryptostream_vector.test.h; sourceTree = "<group>"; };
+		941C178F247CC02000E2523F /* cache.test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cache.test.c; sourceTree = "<group>"; };
+		941C1790247CC02000E2523F /* log.test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = log.test.h; sourceTree = "<group>"; };
+		941C1791247CC02000E2523F /* saltunnel.test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = saltunnel.test.h; sourceTree = "<group>"; };
+		941C1792247CC02000E2523F /* saltunnel_tcp_forwarder.test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = saltunnel_tcp_forwarder.test.h; sourceTree = "<group>"; };
+		941C1793247CC02000E2523F /* tcp.test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tcp.test.c; sourceTree = "<group>"; };
+		941C1794247CC02000E2523F /* saltunnel.test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = saltunnel.test.c; sourceTree = "<group>"; };
+		941C1795247CC02000E2523F /* log.test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = log.test.c; sourceTree = "<group>"; };
+		941C1796247CC02000E2523F /* nonce.test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nonce.test.h; sourceTree = "<group>"; };
+		941C1797247CC02000E2523F /* nonce.test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = nonce.test.c; sourceTree = "<group>"; };
 		9490E23F246FA9C60012A652 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		94CE75AC23E5284C00A84ABC /* saltunnel-test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "saltunnel-test"; sourceTree = BUILT_PRODUCTS_DIR; };
-		94D2234B243A44C400EED0E8 /* saltunnel_client_main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = saltunnel_client_main.c; sourceTree = "<group>"; };
-		94D2234D243A44CC00EED0E8 /* saltunnel_server_main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = saltunnel_server_main.c; sourceTree = "<group>"; };
-		94DC1EFB24707E6A0026A53D /* crypto_secretbox_salsa20poly1305.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = crypto_secretbox_salsa20poly1305.h; sourceTree = "<group>"; };
-		94DC1EFE24707EB80026A53D /* crypto_secretbox_salsa20poly1305.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = crypto_secretbox_salsa20poly1305.c; sourceTree = "<group>"; };
 		94ED0383240CAF9B0093920F /* saltunnel-client */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "saltunnel-client"; sourceTree = BUILT_PRODUCTS_DIR; };
 		94ED03C6240CB2230093920F /* saltunnel-server */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "saltunnel-server"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -282,25 +272,26 @@
 		9490E23C246FA86D0012A652 /* test */ = {
 			isa = PBXGroup;
 			children = (
-				942971962401894F00DAC1E2 /* saltunnel_test_main.c */,
-				9490E239246FA5AD0012A652 /* test.h */,
-				9490E23A246FA5AD0012A652 /* test.c */,
-				941587782419B6A300CA793A /* cache.test.c */,
-				9415877A2419B6BC00CA793A /* cache.test.h */,
-				942971C32401895100DAC1E2 /* chaos.c */,
-				942971AF2401895000DAC1E2 /* chaos.h */,
-				9490E236246FA4620012A652 /* cryptostream_vector.test.h */,
-				9490E237246FA4620012A652 /* cryptostream_vector.test.c */,
-				9490E230246F9A1D0012A652 /* log.test.h */,
-				9490E231246F9A1D0012A652 /* log.test.c */,
-				94011EF2242322D8005AD00A /* nonce.test.c */,
-				94011EF1242322D8005AD00A /* nonce.test.h */,
-				942971BD2401895100DAC1E2 /* saltunnel.test.c */,
-				942971B02401895000DAC1E2 /* saltunnel.test.h */,
-				9490E233246FA08D0012A652 /* saltunnel_tcp_forwarder.test.h */,
-				9490E234246FA08D0012A652 /* saltunnel_tcp_forwarder.test.c */,
-				9490E22D246F98BF0012A652 /* rwn.test.h */,
-				9490E22E246F98BF0012A652 /* rwn.test.c */,
+				941C178F247CC02000E2523F /* cache.test.c */,
+				941C178D247CC02000E2523F /* cache.test.h */,
+				941C1787247CC02000E2523F /* chaos.c */,
+				941C1785247CC02000E2523F /* chaos.h */,
+				941C178A247CC02000E2523F /* cryptostream_vector.test.c */,
+				941C178E247CC02000E2523F /* cryptostream_vector.test.h */,
+				941C1786247CC02000E2523F /* hypercounter.test.c */,
+				941C178B247CC02000E2523F /* hypercounter.test.h */,
+				941C1795247CC02000E2523F /* log.test.c */,
+				941C1790247CC02000E2523F /* log.test.h */,
+				941C1797247CC02000E2523F /* nonce.test.c */,
+				941C1796247CC02000E2523F /* nonce.test.h */,
+				941C1784247CC02000E2523F /* rwn.test.c */,
+				941C1788247CC02000E2523F /* rwn.test.h */,
+				941C178C247CC02000E2523F /* saltunnel_tcp_forwarder.test.c */,
+				941C1792247CC02000E2523F /* saltunnel_tcp_forwarder.test.h */,
+				941C1794247CC02000E2523F /* saltunnel.test.c */,
+				941C1791247CC02000E2523F /* saltunnel.test.h */,
+				941C1793247CC02000E2523F /* tcp.test.c */,
+				941C1789247CC02000E2523F /* tcp.test.h */,
 			);
 			path = test;
 			sourceTree = "<group>";
@@ -308,57 +299,58 @@
 		9490E23D246FA8800012A652 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				94DC1EFE24707EB80026A53D /* crypto_secretbox_salsa20poly1305.c */,
-				94DC1EFB24707E6A0026A53D /* crypto_secretbox_salsa20poly1305.h */,
-				942971A12401895000DAC1E2 /* config.h */,
-				942971C22401895100DAC1E2 /* cryptostream_decrypt_feed.c */,
-				942971B12401895000DAC1E2 /* cryptostream_decrypt_parallel.c */,
-				942971A82401895000DAC1E2 /* cryptostream_decrypt.c */,
-				942971C12401895100DAC1E2 /* cryptostream_encrypt_feed.c */,
-				9429719A2401894F00DAC1E2 /* cryptostream_encrypt_parallel.c */,
-				942971AB2401895000DAC1E2 /* cryptostream_encrypt.c */,
-				942971B32401895000DAC1E2 /* cryptostream_vector.c */,
-				942971BB2401895100DAC1E2 /* cryptostream.h */,
-				9429719B2401894F00DAC1E2 /* log.c */,
-				942971BA2401895100DAC1E2 /* log.h */,
-				942971A32401895000DAC1E2 /* math.h */,
-				9429719C2401894F00DAC1E2 /* nonce.c */,
-				942971A42401895000DAC1E2 /* nonce.h */,
-				9429719D2401895000DAC1E2 /* oops.c */,
-				942971BC2401895100DAC1E2 /* oops.h */,
-				9415876224136BB200CA793A /* hypercounter.h */,
-				9415876324136BB200CA793A /* hypercounter.c */,
-				9415876B2418880C00CA793A /* cache.h */,
-				9415876C2418880C00CA793A /* cache.c */,
-				942971972401894F00DAC1E2 /* saltunnel_kx.c */,
-				942971A62401895000DAC1E2 /* saltunnel_kx.h */,
-				942971932401894F00DAC1E2 /* saltunnel_mx_parallel.c */,
-				942971A22401895000DAC1E2 /* saltunnel_mx_serial.c */,
-				942971C42401895100DAC1E2 /* saltunnel_mx.h */,
-				942971B72401895000DAC1E2 /* saltunnel_tcp_client_forwarder.c */,
-				942971952401894F00DAC1E2 /* saltunnel_tcp_client_forwarder.h */,
-				942971C52401895100DAC1E2 /* saltunnel_tcp_server_forwarder.c */,
-				942971C02401895100DAC1E2 /* saltunnel_tcp_server_forwarder.h */,
-				942971AC2401895000DAC1E2 /* saltunnel.c */,
-				942971C62401895100DAC1E2 /* saltunnel.h */,
-				942971A92401895000DAC1E2 /* stopwatch.c */,
-				942971AD2401895000DAC1E2 /* stopwatch.h */,
-				9429719F2401895000DAC1E2 /* tcpclient.c */,
-				9429719E2401895000DAC1E2 /* tcpclient.h */,
-				942971B42401895000DAC1E2 /* tcpserver.c */,
-				942971B92401895000DAC1E2 /* tcpserver.h */,
-				942971B62401895000DAC1E2 /* threadpool_barrier.c */,
-				942971942401894F00DAC1E2 /* threadpool_barrier.h */,
-				942971C72401895100DAC1E2 /* threadpool.c */,
-				942971C82401895100DAC1E2 /* threadpool.h */,
-				942971B22401895000DAC1E2 /* uint16.c */,
-				942971B82401895000DAC1E2 /* uint16.h */,
-				9415876E24188B5C00CA793A /* uint32.c */,
-				9415877024188B5C00CA793A /* uint32.h */,
-				9415876624186F2700CA793A /* uint64.c */,
-				9415876724186F2800CA793A /* uint64.h */,
-				942971BE2401895100DAC1E2 /* rwn.c */,
-				942971B52401895000DAC1E2 /* rwn.h */,
+				941C16EB247CBFEE00E2523F /* cache.c */,
+				941C16CE247CBFEC00E2523F /* cache.h */,
+				941C16CA247CBFEC00E2523F /* config.c */,
+				941C16D4247CBFEC00E2523F /* config.h */,
+				941C16D7247CBFEC00E2523F /* crypto_secretbox_salsa20poly1305.c */,
+				941C16D3247CBFEC00E2523F /* crypto_secretbox_salsa20poly1305.h */,
+				941C16D1247CBFEC00E2523F /* cryptostream_decrypt_feed.c */,
+				941C16E7247CBFED00E2523F /* cryptostream_decrypt_parallel.c */,
+				941C16CB247CBFEC00E2523F /* cryptostream_decrypt.c */,
+				941C16D8247CBFEC00E2523F /* cryptostream_encrypt_feed.c */,
+				941C16C8247CBFEB00E2523F /* cryptostream_encrypt_parallel.c */,
+				941C16E9247CBFEE00E2523F /* cryptostream_encrypt.c */,
+				941C16BF247CBFEB00E2523F /* cryptostream_vector.c */,
+				941C16C9247CBFEC00E2523F /* cryptostream.h */,
+				941C16CC247CBFEC00E2523F /* hypercounter.c */,
+				941C16DD247CBFED00E2523F /* hypercounter.h */,
+				941C16C5247CBFEB00E2523F /* log.c */,
+				941C16CD247CBFEC00E2523F /* log.h */,
+				941C16BB247CBFEB00E2523F /* math.h */,
+				941C16E2247CBFED00E2523F /* nonce.c */,
+				941C16C6247CBFEB00E2523F /* nonce.h */,
+				941C16EC247CBFEE00E2523F /* oops.c */,
+				941C16C4247CBFEB00E2523F /* oops.h */,
+				941C16EA247CBFEE00E2523F /* rwn.c */,
+				941C16D5247CBFEC00E2523F /* rwn.h */,
+				941C16BC247CBFEB00E2523F /* saltunnel_kx.c */,
+				941C16C0247CBFEB00E2523F /* saltunnel_kx.h */,
+				941C16BA247CBFEB00E2523F /* saltunnel_mx_parallel.c */,
+				941C16D9247CBFEC00E2523F /* saltunnel_mx_serial.c */,
+				941C16C7247CBFEB00E2523F /* saltunnel_mx.h */,
+				941C16D0247CBFEC00E2523F /* saltunnel_tcp_client_forwarder.c */,
+				941C16C2247CBFEB00E2523F /* saltunnel_tcp_client_forwarder.h */,
+				941C16DB247CBFED00E2523F /* saltunnel_tcp_server_forwarder.c */,
+				941C16CF247CBFEC00E2523F /* saltunnel_tcp_server_forwarder.h */,
+				941C16D6247CBFEC00E2523F /* saltunnel.c */,
+				941C16E0247CBFED00E2523F /* saltunnel.h */,
+				941C16E5247CBFED00E2523F /* stopwatch.c */,
+				941C16BD247CBFEB00E2523F /* stopwatch.h */,
+				941C16BE247CBFEB00E2523F /* tcpclient.c */,
+				941C16DE247CBFED00E2523F /* tcpclient.h */,
+				941C16C3247CBFEB00E2523F /* tcpserver.c */,
+				941C16C1247CBFEB00E2523F /* tcpserver.h */,
+				941C16E8247CBFED00E2523F /* threadpool_barrier.c */,
+				941C16D2247CBFEC00E2523F /* threadpool_barrier.h */,
+				941C16DF247CBFED00E2523F /* threadpool.c */,
+				941C16E4247CBFED00E2523F /* threadpool.h */,
+				941C16DC247CBFED00E2523F /* uint16.c */,
+				941C16E6247CBFED00E2523F /* uint16.h */,
+				941C16E1247CBFED00E2523F /* uint32.c */,
+				941C16DA247CBFEC00E2523F /* uint32.h */,
+				941C16ED247CBFEE00E2523F /* uint64.c */,
+				941C16E3247CBFED00E2523F /* uint64.h */,
 			);
 			path = src;
 			sourceTree = "<group>";
@@ -386,8 +378,7 @@
 			children = (
 				9490E23D246FA8800012A652 /* src */,
 				9490E23C246FA86D0012A652 /* test */,
-				94D2234B243A44C400EED0E8 /* saltunnel_client_main.c */,
-				94D2234D243A44CC00EED0E8 /* saltunnel_server_main.c */,
+				941C1667247CBF6100E2523F /* saltunnel-test.c */,
 				9490E23F246FA9C60012A652 /* README.md */,
 			);
 			path = saltunnel;
@@ -492,64 +483,79 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9490E23B246FA5AD0012A652 /* test.c in Sources */,
-				94ED03EB240CB82D0093920F /* chaos.c in Sources */,
-				94ED03EC240CB82D0093920F /* chaos.h in Sources */,
-				94ED03ED240CB82D0093920F /* config.h in Sources */,
-				94ED03F6240CB82D0093920F /* cryptostream_decrypt_feed.c in Sources */,
-				94ED03F7240CB82D0093920F /* cryptostream_decrypt_parallel.c in Sources */,
-				94ED03F8240CB82D0093920F /* cryptostream_decrypt.c in Sources */,
-				94ED03F9240CB82D0093920F /* cryptostream_encrypt_feed.c in Sources */,
-				94ED03FA240CB82D0093920F /* cryptostream_encrypt_parallel.c in Sources */,
-				94ED03FB240CB82D0093920F /* cryptostream_encrypt.c in Sources */,
-				94ED03FC240CB82D0093920F /* cryptostream_vector.c in Sources */,
-				94ED03FD240CB82D0093920F /* cryptostream.h in Sources */,
-				94ED03FE240CB82D0093920F /* log.c in Sources */,
-				94ED03FF240CB82D0093920F /* log.h in Sources */,
-				94ED0400240CB82D0093920F /* saltunnel_test_main.c in Sources */,
-				94ED0401240CB82D0093920F /* saltunnel.test.c in Sources */,
-				94DC1EFF24707EB80026A53D /* crypto_secretbox_salsa20poly1305.c in Sources */,
-				94ED0402240CB82D0093920F /* saltunnel.test.h in Sources */,
-				94ED0403240CB82D0093920F /* math.h in Sources */,
-				94ED0404240CB82D0093920F /* nonce.c in Sources */,
-				94ED0405240CB82D0093920F /* nonce.h in Sources */,
-				94ED0406240CB82D0093920F /* oops.c in Sources */,
-				94ED0407240CB82D0093920F /* oops.h in Sources */,
-				94ED0408240CB82D0093920F /* saltunnel_kx.c in Sources */,
-				94ED0409240CB82D0093920F /* saltunnel_kx.h in Sources */,
-				94ED040A240CB82D0093920F /* saltunnel_mx_parallel.c in Sources */,
-				9415876D2418880C00CA793A /* cache.c in Sources */,
-				9490E232246F9A1D0012A652 /* log.test.c in Sources */,
-				941587792419B6A300CA793A /* cache.test.c in Sources */,
-				9415877224188B5D00CA793A /* uint32.c in Sources */,
-				94011EF3242322D8005AD00A /* nonce.test.c in Sources */,
-				94ED040B240CB82D0093920F /* saltunnel_mx_serial.c in Sources */,
-				94ED040C240CB82D0093920F /* saltunnel_mx.h in Sources */,
-				94ED040D240CB82D0093920F /* saltunnel_tcp_client_forwarder.c in Sources */,
-				9490E235246FA08D0012A652 /* saltunnel_tcp_forwarder.test.c in Sources */,
-				94ED040E240CB82D0093920F /* saltunnel_tcp_client_forwarder.h in Sources */,
-				94ED040F240CB82D0093920F /* saltunnel_tcp_server_forwarder.c in Sources */,
-				9415876924186F2800CA793A /* uint64.c in Sources */,
-				94ED0410240CB82D0093920F /* saltunnel_tcp_server_forwarder.h in Sources */,
-				94ED0411240CB82D0093920F /* saltunnel.c in Sources */,
-				94ED0412240CB82D0093920F /* saltunnel.h in Sources */,
-				94ED0413240CB82D0093920F /* stopwatch.c in Sources */,
-				9415876424136BB200CA793A /* hypercounter.c in Sources */,
-				94ED0414240CB82D0093920F /* stopwatch.h in Sources */,
-				94ED0415240CB82D0093920F /* tcpclient.c in Sources */,
-				94ED0416240CB82D0093920F /* tcpclient.h in Sources */,
-				94ED0417240CB82D0093920F /* tcpserver.c in Sources */,
-				94ED0418240CB82D0093920F /* tcpserver.h in Sources */,
-				94ED0419240CB82D0093920F /* threadpool_barrier.c in Sources */,
-				94ED041A240CB82D0093920F /* threadpool_barrier.h in Sources */,
-				9490E238246FA4620012A652 /* cryptostream_vector.test.c in Sources */,
-				94ED041B240CB82D0093920F /* threadpool.c in Sources */,
-				94ED041C240CB82D0093920F /* threadpool.h in Sources */,
-				94ED041D240CB82D0093920F /* uint16.c in Sources */,
-				9490E22F246F98BF0012A652 /* rwn.test.c in Sources */,
-				94ED041E240CB82D0093920F /* uint16.h in Sources */,
-				94ED041F240CB82D0093920F /* rwn.c in Sources */,
-				94ED0420240CB82D0093920F /* rwn.h in Sources */,
+				941C17EA247CC04A00E2523F /* saltunnel-test.c in Sources */,
+				941C17D6247CC03300E2523F /* cache.test.c in Sources */,
+				941C17D7247CC03300E2523F /* cache.test.h in Sources */,
+				941C17D8247CC03300E2523F /* chaos.c in Sources */,
+				941C17D9247CC03300E2523F /* chaos.h in Sources */,
+				941C17DA247CC03300E2523F /* cryptostream_vector.test.c in Sources */,
+				941C17DB247CC03300E2523F /* cryptostream_vector.test.h in Sources */,
+				941C17DC247CC03300E2523F /* hypercounter.test.c in Sources */,
+				941C17DD247CC03300E2523F /* hypercounter.test.h in Sources */,
+				941C17DE247CC03300E2523F /* log.test.c in Sources */,
+				941C17DF247CC03300E2523F /* log.test.h in Sources */,
+				941C17E0247CC03300E2523F /* nonce.test.c in Sources */,
+				941C17E1247CC03300E2523F /* nonce.test.h in Sources */,
+				941C17E2247CC03300E2523F /* rwn.test.c in Sources */,
+				941C17E3247CC03300E2523F /* rwn.test.h in Sources */,
+				941C17E4247CC03300E2523F /* saltunnel_tcp_forwarder.test.c in Sources */,
+				941C17E5247CC03300E2523F /* saltunnel_tcp_forwarder.test.h in Sources */,
+				941C17E6247CC03300E2523F /* saltunnel.test.c in Sources */,
+				941C17E7247CC03300E2523F /* saltunnel.test.h in Sources */,
+				941C17E8247CC03300E2523F /* tcp.test.c in Sources */,
+				941C17E9247CC03300E2523F /* tcp.test.h in Sources */,
+				941C17A2247CC02C00E2523F /* cache.c in Sources */,
+				941C17A3247CC02C00E2523F /* cache.h in Sources */,
+				941C17A4247CC02C00E2523F /* config.c in Sources */,
+				941C17A5247CC02C00E2523F /* config.h in Sources */,
+				941C17A6247CC02C00E2523F /* crypto_secretbox_salsa20poly1305.c in Sources */,
+				941C17A7247CC02C00E2523F /* crypto_secretbox_salsa20poly1305.h in Sources */,
+				941C17A8247CC02C00E2523F /* cryptostream_decrypt_feed.c in Sources */,
+				941C17A9247CC02C00E2523F /* cryptostream_decrypt_parallel.c in Sources */,
+				941C17AA247CC02C00E2523F /* cryptostream_decrypt.c in Sources */,
+				941C17AB247CC02C00E2523F /* cryptostream_encrypt_feed.c in Sources */,
+				941C17AC247CC02C00E2523F /* cryptostream_encrypt_parallel.c in Sources */,
+				941C17AD247CC02C00E2523F /* cryptostream_encrypt.c in Sources */,
+				941C17AE247CC02C00E2523F /* cryptostream_vector.c in Sources */,
+				941C17AF247CC02C00E2523F /* cryptostream.h in Sources */,
+				941C17B0247CC02C00E2523F /* hypercounter.c in Sources */,
+				941C17B1247CC02C00E2523F /* hypercounter.h in Sources */,
+				941C17B2247CC02C00E2523F /* log.c in Sources */,
+				941C17B3247CC02C00E2523F /* log.h in Sources */,
+				941C17B4247CC02C00E2523F /* math.h in Sources */,
+				941C17B5247CC02C00E2523F /* nonce.c in Sources */,
+				941C17B6247CC02C00E2523F /* nonce.h in Sources */,
+				941C17B7247CC02C00E2523F /* oops.c in Sources */,
+				941C17B8247CC02C00E2523F /* oops.h in Sources */,
+				941C17B9247CC02C00E2523F /* rwn.c in Sources */,
+				941C17BA247CC02C00E2523F /* rwn.h in Sources */,
+				941C17BB247CC02C00E2523F /* saltunnel_kx.c in Sources */,
+				941C17BC247CC02C00E2523F /* saltunnel_kx.h in Sources */,
+				941C17BD247CC02C00E2523F /* saltunnel_mx_parallel.c in Sources */,
+				941C17BE247CC02C00E2523F /* saltunnel_mx_serial.c in Sources */,
+				941C17BF247CC02C00E2523F /* saltunnel_mx.h in Sources */,
+				941C17C0247CC02C00E2523F /* saltunnel_tcp_client_forwarder.c in Sources */,
+				941C17C1247CC02C00E2523F /* saltunnel_tcp_client_forwarder.h in Sources */,
+				941C17C2247CC02C00E2523F /* saltunnel_tcp_server_forwarder.c in Sources */,
+				941C17C3247CC02C00E2523F /* saltunnel_tcp_server_forwarder.h in Sources */,
+				941C17C4247CC02C00E2523F /* saltunnel.c in Sources */,
+				941C17C5247CC02C00E2523F /* saltunnel.h in Sources */,
+				941C17C6247CC02C00E2523F /* stopwatch.c in Sources */,
+				941C17C7247CC02C00E2523F /* stopwatch.h in Sources */,
+				941C17C8247CC02C00E2523F /* tcpclient.c in Sources */,
+				941C17C9247CC02C00E2523F /* tcpclient.h in Sources */,
+				941C17CA247CC02C00E2523F /* tcpserver.c in Sources */,
+				941C17CB247CC02C00E2523F /* tcpserver.h in Sources */,
+				941C17CC247CC02C00E2523F /* threadpool_barrier.c in Sources */,
+				941C17CD247CC02C00E2523F /* threadpool_barrier.h in Sources */,
+				941C17CE247CC02C00E2523F /* threadpool.c in Sources */,
+				941C17CF247CC02C00E2523F /* threadpool.h in Sources */,
+				941C17D0247CC02C00E2523F /* uint16.c in Sources */,
+				941C17D1247CC02C00E2523F /* uint16.h in Sources */,
+				941C17D2247CC02C00E2523F /* uint32.c in Sources */,
+				941C17D3247CC02C00E2523F /* uint32.h in Sources */,
+				941C17D4247CC02C00E2523F /* uint64.c in Sources */,
+				941C17D5247CC02C00E2523F /* uint64.h in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -557,54 +563,58 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				94D22351243A4ECE00EED0E8 /* uint64.c in Sources */,
-				94D22352243A4ECE00EED0E8 /* uint64.h in Sources */,
-				94D22350243A4EB300EED0E8 /* hypercounter.c in Sources */,
-				94D2234F243A4EAD00EED0E8 /* hypercounter.h in Sources */,
-				94ED038C240CB08A0093920F /* config.h in Sources */,
-				94ED0395240CB08A0093920F /* cryptostream_decrypt_feed.c in Sources */,
-				94ED0396240CB08A0093920F /* cryptostream_decrypt_parallel.c in Sources */,
-				94ED0397240CB08A0093920F /* cryptostream_decrypt.c in Sources */,
-				94D2234C243A44C400EED0E8 /* saltunnel_client_main.c in Sources */,
-				94ED0398240CB08A0093920F /* cryptostream_encrypt_feed.c in Sources */,
-				94ED0399240CB08A0093920F /* cryptostream_encrypt_parallel.c in Sources */,
-				94ED039A240CB08A0093920F /* cryptostream_encrypt.c in Sources */,
-				94ED039B240CB08A0093920F /* cryptostream_vector.c in Sources */,
-				94ED039C240CB08A0093920F /* cryptostream.h in Sources */,
-				94ED039D240CB08A0093920F /* log.c in Sources */,
-				94ED039E240CB08A0093920F /* log.h in Sources */,
-				94ED03A0240CB08A0093920F /* math.h in Sources */,
-				94ED03A1240CB08A0093920F /* nonce.c in Sources */,
-				94ED03A2240CB08A0093920F /* nonce.h in Sources */,
-				94ED03A3240CB08A0093920F /* oops.c in Sources */,
-				94DC1F0024707EB80026A53D /* crypto_secretbox_salsa20poly1305.c in Sources */,
-				94ED03A4240CB08A0093920F /* oops.h in Sources */,
-				94ED03A7240CB08A0093920F /* saltunnel_kx.c in Sources */,
-				94ED03A8240CB08A0093920F /* saltunnel_kx.h in Sources */,
-				94ED03A9240CB08A0093920F /* saltunnel_mx_parallel.c in Sources */,
-				94ED03AA240CB08A0093920F /* saltunnel_mx_serial.c in Sources */,
-				94ED03AB240CB08A0093920F /* saltunnel_mx.h in Sources */,
-				94ED03AC240CB08B0093920F /* saltunnel_tcp_client_forwarder.c in Sources */,
-				94ED03AD240CB08B0093920F /* saltunnel_tcp_client_forwarder.h in Sources */,
-				94ED03AE240CB08B0093920F /* saltunnel_tcp_server_forwarder.c in Sources */,
-				94ED03AF240CB08B0093920F /* saltunnel_tcp_server_forwarder.h in Sources */,
-				9415877324188B5D00CA793A /* uint32.c in Sources */,
-				94ED03B0240CB08B0093920F /* saltunnel.c in Sources */,
-				94ED03B1240CB08B0093920F /* saltunnel.h in Sources */,
-				94ED03B2240CB08B0093920F /* stopwatch.c in Sources */,
-				94ED03B3240CB08B0093920F /* stopwatch.h in Sources */,
-				94ED03B4240CB08B0093920F /* tcpclient.c in Sources */,
-				94ED03B5240CB08B0093920F /* tcpclient.h in Sources */,
-				94ED03B6240CB08B0093920F /* tcpserver.c in Sources */,
-				94ED03B7240CB08B0093920F /* tcpserver.h in Sources */,
-				94ED03BA240CB08B0093920F /* threadpool_barrier.c in Sources */,
-				94ED03BB240CB08B0093920F /* threadpool_barrier.h in Sources */,
-				94ED03BC240CB08B0093920F /* threadpool.c in Sources */,
-				94ED03BD240CB08B0093920F /* threadpool.h in Sources */,
-				94ED03BE240CB08B0093920F /* uint16.c in Sources */,
-				94ED03BF240CB08B0093920F /* uint16.h in Sources */,
-				94ED03C0240CB08B0093920F /* rwn.c in Sources */,
-				94ED03C1240CB08B0093920F /* rwn.h in Sources */,
+				941C170B247CBFF900E2523F /* cache.c in Sources */,
+				941C170C247CBFF900E2523F /* cache.h in Sources */,
+				941C170D247CBFF900E2523F /* config.c in Sources */,
+				941C170E247CBFF900E2523F /* config.h in Sources */,
+				941C170F247CBFF900E2523F /* crypto_secretbox_salsa20poly1305.c in Sources */,
+				941C1710247CBFF900E2523F /* crypto_secretbox_salsa20poly1305.h in Sources */,
+				941C1711247CBFF900E2523F /* cryptostream_decrypt_feed.c in Sources */,
+				941C1712247CBFF900E2523F /* cryptostream_decrypt_parallel.c in Sources */,
+				941C1713247CBFF900E2523F /* cryptostream_decrypt.c in Sources */,
+				941C1714247CBFF900E2523F /* cryptostream_encrypt_feed.c in Sources */,
+				941C1715247CBFF900E2523F /* cryptostream_encrypt_parallel.c in Sources */,
+				941C1716247CBFF900E2523F /* cryptostream_encrypt.c in Sources */,
+				941C1717247CBFF900E2523F /* cryptostream_vector.c in Sources */,
+				941C1718247CBFF900E2523F /* cryptostream.h in Sources */,
+				941C1719247CBFF900E2523F /* hypercounter.c in Sources */,
+				941C171A247CBFF900E2523F /* hypercounter.h in Sources */,
+				941C171B247CBFF900E2523F /* log.c in Sources */,
+				941C171C247CBFF900E2523F /* log.h in Sources */,
+				941C171D247CBFF900E2523F /* math.h in Sources */,
+				941C171E247CBFF900E2523F /* nonce.c in Sources */,
+				941C171F247CBFF900E2523F /* nonce.h in Sources */,
+				941C1720247CBFF900E2523F /* oops.c in Sources */,
+				941C1721247CBFF900E2523F /* oops.h in Sources */,
+				941C1722247CBFF900E2523F /* rwn.c in Sources */,
+				941C1723247CBFF900E2523F /* rwn.h in Sources */,
+				941C1724247CBFF900E2523F /* saltunnel_kx.c in Sources */,
+				941C1725247CBFF900E2523F /* saltunnel_kx.h in Sources */,
+				941C1726247CBFF900E2523F /* saltunnel_mx_parallel.c in Sources */,
+				941C1727247CBFF900E2523F /* saltunnel_mx_serial.c in Sources */,
+				941C1728247CBFF900E2523F /* saltunnel_mx.h in Sources */,
+				941C1729247CBFF900E2523F /* saltunnel_tcp_client_forwarder.c in Sources */,
+				941C172A247CBFF900E2523F /* saltunnel_tcp_client_forwarder.h in Sources */,
+				941C172B247CBFF900E2523F /* saltunnel_tcp_server_forwarder.c in Sources */,
+				941C172C247CBFF900E2523F /* saltunnel_tcp_server_forwarder.h in Sources */,
+				941C172D247CBFF900E2523F /* saltunnel.c in Sources */,
+				941C172E247CBFF900E2523F /* saltunnel.h in Sources */,
+				941C172F247CBFF900E2523F /* stopwatch.c in Sources */,
+				941C1730247CBFF900E2523F /* stopwatch.h in Sources */,
+				941C1731247CBFF900E2523F /* tcpclient.c in Sources */,
+				941C1732247CBFF900E2523F /* tcpclient.h in Sources */,
+				941C1733247CBFF900E2523F /* tcpserver.c in Sources */,
+				941C1734247CBFF900E2523F /* tcpserver.h in Sources */,
+				941C1735247CBFF900E2523F /* threadpool_barrier.c in Sources */,
+				941C1736247CBFF900E2523F /* threadpool_barrier.h in Sources */,
+				941C1737247CBFF900E2523F /* threadpool.c in Sources */,
+				941C1738247CBFF900E2523F /* threadpool.h in Sources */,
+				941C1739247CBFF900E2523F /* uint16.c in Sources */,
+				941C173A247CBFF900E2523F /* uint16.h in Sources */,
+				941C173B247CBFF900E2523F /* uint32.c in Sources */,
+				941C173C247CBFF900E2523F /* uint32.h in Sources */,
+				941C173D247CBFF900E2523F /* uint64.c in Sources */,
+				941C173E247CBFF900E2523F /* uint64.h in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -612,36 +622,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9490E240246FACB40012A652 /* saltunnel_server_main.c in Sources */,
-				94D22355243A66B400EED0E8 /* uint64.c in Sources */,
-				94DC1F0124707EB80026A53D /* crypto_secretbox_salsa20poly1305.c in Sources */,
-				94D22356243A66B400EED0E8 /* uint64.h in Sources */,
-				94D22353243A66A500EED0E8 /* hypercounter.h in Sources */,
-				94D22354243A66A500EED0E8 /* hypercounter.c in Sources */,
-				94ED03D2240CB23C0093920F /* cryptostream_decrypt_feed.c in Sources */,
-				94ED03D3240CB23C0093920F /* cryptostream_decrypt_parallel.c in Sources */,
-				9415877424188B5D00CA793A /* uint32.c in Sources */,
-				94ED03D4240CB23C0093920F /* cryptostream_decrypt.c in Sources */,
-				94ED03D5240CB23C0093920F /* cryptostream_encrypt_feed.c in Sources */,
-				94ED03D6240CB23C0093920F /* cryptostream_encrypt_parallel.c in Sources */,
-				94ED03D7240CB23C0093920F /* cryptostream_encrypt.c in Sources */,
-				94ED03D8240CB23C0093920F /* cryptostream_vector.c in Sources */,
-				94ED03D9240CB23C0093920F /* log.c in Sources */,
-				94ED03DB240CB23C0093920F /* nonce.c in Sources */,
-				94ED03DC240CB23C0093920F /* oops.c in Sources */,
-				94ED03DE240CB23C0093920F /* saltunnel_kx.c in Sources */,
-				94ED03DF240CB23C0093920F /* saltunnel_mx_parallel.c in Sources */,
-				94ED03E0240CB23C0093920F /* saltunnel_mx_serial.c in Sources */,
-				94ED03E1240CB23C0093920F /* saltunnel_tcp_client_forwarder.c in Sources */,
-				94ED03E2240CB23C0093920F /* saltunnel_tcp_server_forwarder.c in Sources */,
-				94ED03E3240CB23C0093920F /* saltunnel.c in Sources */,
-				94ED03E4240CB23C0093920F /* stopwatch.c in Sources */,
-				94ED03E5240CB23C0093920F /* tcpclient.c in Sources */,
-				94ED03E6240CB23C0093920F /* tcpserver.c in Sources */,
-				94ED03E7240CB23C0093920F /* threadpool_barrier.c in Sources */,
-				94ED03E8240CB23C0093920F /* threadpool.c in Sources */,
-				94ED03E9240CB23C0093920F /* uint16.c in Sources */,
-				94ED03EA240CB23C0093920F /* rwn.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
