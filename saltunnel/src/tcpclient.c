@@ -84,15 +84,16 @@ static int cleanup_then_oops_sys(int socket, const char* warning, struct addrinf
 int tcpclient_new(const char* ip, const char* port, tcpclient_options options)
 {
     // Resolve address
+    struct addrinfo hints = { .ai_family = AF_INET,       .ai_socktype=SOCK_STREAM,
+                              .ai_protocol = IPPROTO_TCP, .ai_flags=AI_CANONNAME };
     struct addrinfo* server_address;
-    struct addrinfo hints = { .ai_socktype = SOCK_STREAM, .ai_flags = AI_CANONNAME };
     if (getaddrinfo(ip, port, &hints, &server_address)!=0) {
         errno = EHOSTUNREACH; // Why is there no 'Unknown host' errno?
         return oops("failed to resolve ip address of hostname");
     }
     
     // Open a socket
-    int s = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+    int s = socket(server_address->ai_family, server_address->ai_socktype, server_address->ai_protocol);
     if (s<0) return cleanup_then_oops_sys(s, "failed to create TCP client socket", server_address);
     
     // Enable TCP_NODELAY
