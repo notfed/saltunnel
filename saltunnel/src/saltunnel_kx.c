@@ -221,8 +221,6 @@ int saltunnel_kx_serverhi_tryread(serverhi* serverhi_plaintext_pinned,
                                   unsigned char my_sk[32],
                                   unsigned char session_shared_keys_pinned[64])
 {
-    errno = EBADMSG; // TODO: Do we need this?
-    
     // Start with a ciphertext and zeroed-out plaintext
     serverhi serverhi_ciphertext;
     memset(serverhi_plaintext_pinned, 0, sizeof(serverhi));
@@ -275,18 +273,16 @@ int saltunnel_kx_serverhi_tryread(serverhi* serverhi_plaintext_pinned,
     // Erase local copy of their_pk
     memset(serverhi_plaintext_pinned->public_key, 0, 32);
     
-    
     log_trace("connection %d: client forwarder successfully read serverhi", remote_fd);
     
-    errno = 0;
     return 0;
 }
 
-int saltunnel_kx_calculate_shared_key(unsigned char keys_out_pinned[64],
+int saltunnel_kx_calculate_shared_key(unsigned char keys_out_pinned[96],
                                       const unsigned char pk_pinned[32],
                                       const unsigned char sk_pinned[32])
 {
-    unsigned char s[32]; // TODO: Pin this
+    unsigned char* s = &keys_out_pinned[64];
     if (crypto_scalarmult_curve25519(s, sk_pinned, pk_pinned) != 0) {
         return oops("authentication failed: failed to derive shared key");
     }

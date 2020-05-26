@@ -12,4 +12,4 @@ int saltunnel_tcp_client_forwarder(unsigned char* long_term_shared_key,
                          const char* to_ip,
                          const char* to_port);
 
-#endif /* saltunnel_tcp_client_forwarder_h */
+#endif /* saltunnel_tcp_client_forwarder_h) */

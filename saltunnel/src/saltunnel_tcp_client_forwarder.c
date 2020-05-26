@@ -21,7 +21,7 @@ typedef struct connection_thread_context {
     unsigned char long_term_key[32];
     unsigned char my_sk[32];
     unsigned char their_pk[32];
-    unsigned char session_shared_keys[64]; // Client = [0..32), Server = [32..64)
+    unsigned char session_shared_keys[96]; // Client = [0..32), Server = [32..64), Tmp  = [64..96)
     int local_fd;
     const char* remote_ip;
     const char* remote_port;
