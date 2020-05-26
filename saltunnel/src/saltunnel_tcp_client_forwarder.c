@@ -88,7 +88,8 @@ static void* connection_thread(void* v)
     
     log_trace("connection %d: successfully calculated shared key", remote_fd);
 
-    // Send message0 (TODO: Detect whether data is available on ctx->local_fd, in which case this is unnecessary.)
+    // Send message0
+    // TODO: Detect whether data is available on ctx->local_fd, making this step unnecessary.
     log_trace("connection %d: about to send first message to server", remote_fd);
     if(saltunnel_kx_message0_trywrite(ctx->session_shared_keys, remote_fd)<0) {
         log_trace("failed to send first message to server");

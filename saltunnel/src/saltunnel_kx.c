@@ -26,6 +26,12 @@
 #include <string.h>
 #include <time.h>
 
+static const unsigned char zero_16[16] = {0};
+
+static const unsigned char nonce24_zero[24] = {0};
+
+static const message0 message0_zero = {0};
+
 int saltunnel_kx_clienthi_trywrite(clienthi* clienthi_plaintext_pinned,
                                   const unsigned char long_term_key_pinned[32],
                                   int to_fd,
@@ -108,7 +114,7 @@ int saltunnel_kx_clienthi_tryread(cache* table,
     
     // Verify version
     if(sodium_compare(clienthi_plaintext_pinned->version, version, 8) != 0)
-        return oops("authentication failed: version mismatch");
+        return oops("authentication failed: clienthi version mismatch");
     
     // Generate timestamp
     struct timespec my_now;
@@ -141,6 +147,10 @@ int saltunnel_kx_clienthi_tryread(cache* table,
         if(cache_insert(table, clienthi_plaintext_pinned->machine_id, clienthi_plaintext_pinned->machine_counter)<0)
             return -1;
     }
+    
+    // Verify zeros
+    if(!sodium_is_zero(clienthi_plaintext_pinned->zeros, sizeof(clienthi_plaintext_pinned->zeros)))
+       return oops("authentication failed: clienthi zeros were not zero");
     
     // Copy their_pk to output
     memcpy(their_pk_out_pinned, clienthi_plaintext_pinned->public_key, sizeof(clienthi_plaintext_pinned->public_key));
@@ -241,7 +251,7 @@ int saltunnel_kx_serverhi_tryread(serverhi* serverhi_plaintext_pinned,
     
     // Verify version
     if(sodium_compare(serverhi_plaintext_pinned->version, version, 8) != 0)
-        return oops("authentication failed: version mismatch");
+        return oops("authentication failed: serverhi version mismatch");
     
     // Calculate shared key
     if(saltunnel_kx_calculate_shared_key(session_shared_keys_pinned, serverhi_plaintext_pinned->public_key, my_sk)<0)
@@ -253,8 +263,12 @@ int saltunnel_kx_serverhi_tryread(serverhi* serverhi_plaintext_pinned,
         expected_proof[i] = session_shared_keys_pinned[0+i]  ^ session_shared_keys_pinned[48+i];
     }
     if(sodium_compare(expected_proof, serverhi_plaintext_pinned->proof, 16)!=0)
-        return oops("authentication failed: proof was invalid");
+        return oops("authentication failed: serverhi proof was invalid");
     
+    // Verify zeros
+    if(!sodium_is_zero(serverhi_plaintext_pinned->zeros, sizeof(serverhi_plaintext_pinned->zeros)))
+       return oops("authentication failed: serverhi zeros were not zero");
+        
     // Copy their_pk to output
     memcpy(their_pk_out_pinned, serverhi_plaintext_pinned->public_key, 32);
     
@@ -268,9 +282,6 @@ int saltunnel_kx_serverhi_tryread(serverhi* serverhi_plaintext_pinned,
     return 0;
 }
 
-
-static const unsigned char zero_16[16] = {0};
-
 int saltunnel_kx_calculate_shared_key(unsigned char keys_out_pinned[64],
                                       const unsigned char pk_pinned[32],
                                       const unsigned char sk_pinned[32])
@@ -283,10 +294,6 @@ int saltunnel_kx_calculate_shared_key(unsigned char keys_out_pinned[64],
     memset(s, 0, 32);
     return 0;
 }
-
-static const unsigned char nonce24_zero[24] = {0};
-
-static const message0 message0_zero = {0};
 
 int saltunnel_kx_message0_trywrite(unsigned char session_shared_keys[64],  int to_fd)
 {

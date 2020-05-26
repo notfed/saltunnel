@@ -26,7 +26,7 @@ typedef struct clienthi {
     unsigned char timestamp[8];       // Seconds since 1970-01-01T00:00:00Z
     unsigned char machine_id[16];     // Unique {machine_id,boot_time} identifier
     unsigned char machine_counter[8]; // Monotonic time since boot
-    unsigned char zeros[400];         // TODO: Verify that these are all zero. This allows new features (like open routing) w/ same versionId.
+    unsigned char zeros[400];
 } clienthi;
 
 typedef struct serverhi {
@@ -43,7 +43,7 @@ typedef struct serverhi {
     unsigned char version[8];
     unsigned char public_key[32];
     unsigned char proof[16]; 
-    unsigned char zeros[416];         // TODO: Verify that these are all zero. This allows new features (like open routing) w/ same versionId.
+    unsigned char zeros[416];
 } serverhi;
 
 typedef struct message0 {
