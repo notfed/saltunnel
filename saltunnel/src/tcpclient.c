@@ -19,7 +19,8 @@
 #include <time.h>
 
 // TODO: Accept an extra "cancellation_fd" which we'll also watch for POLLHUP
-static int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen_t addrlen, unsigned int timeout_ms) {
+static int connect_with_cancellable_timeout(int sockfd, const struct sockaddr *addr, socklen_t addrlen,
+                                            unsigned int timeout_ms, int cancel_fd) {
     int rc = 0;
     // Set O_NONBLOCK
     int sockfd_flags_before;
@@ -47,9 +48,10 @@ static int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen
                                                   + (deadline.tv_nsec - now.tv_nsec)/1000000l);
                     if(ms_until_deadline<0) { rc=0; break; }
                     // Wait for connect to complete (or for the timeout deadline)
-                    struct pollfd pfds[] = { { .fd = sockfd, .events = POLLOUT } };
+                    struct pollfd pfds[] = { { .fd = sockfd, .events = POLLOUT },
+                                             { .fd = cancel_fd, .events = POLLHUP } };
                     rc = poll(pfds, 1, ms_until_deadline); // TODO: Need to interrupt when client disconnects
-                    // Find out whether the connection failed or succeeded.
+                    // If poll 'succeeded', make sure it *really* succeeded
                     if(rc>0) {
                         int error = 0; socklen_t len = sizeof(error);
                         int retval = getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &error, &len);

@@ -73,7 +73,9 @@ static void* connection_thread(void* v)
     // Create a TCP Client to connect to target
     tcpclient_options options = {
         .OPT_TCP_NODELAY = 1,
-        .OPT_CONNECT_TIMEOUT = config_connection_timeout_ms
+        .OPT_CONNECT_TIMEOUT = config_connection_timeout_ms,
+//        .OPT_CANCELLABLE_CONNECT = 1,
+//        .OPT_CONNECT_CANCEL_FD = ctx->remote_fd
     };
     
     log_trace("connecting to %s:%s", ctx->to_ip, ctx->to_port);
@@ -169,8 +171,7 @@ int saltunnel_tcp_server_forwarder(cache* table,
     tcpserver_options options = {
      .OPT_TCP_NODELAY = 1,
      .OPT_SO_REUSEADDR = 1,
-     .OPT_TCP_DEFER_ACCEPT = 1,
-     .OPT_SO_RCVLOWAT = 512
+     .OPT_TCP_DEFER_ACCEPT = 1
     };
     
     int s = tcpserver_new(from_ip, from_port, options);
@@ -189,6 +190,22 @@ int saltunnel_tcp_server_forwarder(cache* table,
             continue;
         }
         log_info("connection accepted (but not yet authenticated) from source address (fd %d)", remote_fd);
+        
+        //
+        //  TODO: OS X does not support TCP_DEFER_ACCEPT: saltunnel-server on OS X has a DoS vulnerability.
+        //   The problem is that:
+        //   - If, after a connection is accepted, it doesn't immediately have 512 bytes of data, then
+        //     an attacker can DoS our TCP server by opening a many connections and not writing anything.
+        //   - If we simply drop incoming connections that don't yet have data, we have a race condition,
+        //     because there may be a small time gap between the first ACK and the first packet with data.
+        //  Possible Solution A)
+        //     Put a 100ms (or so?) RCV-TIMEOUT. (More of a mitigation than solution.)
+        //  Possible Solution B)
+        //     As new connections arrive, queue them into a kqueue. Meanwhile, keep polling the kqueue
+        //     to see if any have data. If one has data, enforce that it's 512 bytes and verify it,
+        //     and if that passes, spawn off a thread.
+        //  Probably Best Solution) The combination of A and B.
+        //
 
         // Handle the connection (but do some DoS prevention checks first)
         connection_thread_context* ctx = calloc(1,sizeof(connection_thread_context));
