@@ -17,6 +17,13 @@ static void strncpy_boring(char *output, char* src, int maxlen) {
     }
 }
 
+static char* memrchr(char* s, int c, size_t n) {
+    while(n-->0)
+        if(s[n]==c)
+            return s+n;
+    return NULL;
+}
+
 char* log_filename_idempotent_fill(char* log_name, char* log_filename_from_macro, int len, char* log_name_filled) {
     if(!*log_name_filled) {
         char result[256];
@@ -39,7 +46,7 @@ char* log_filename_idempotent_fill(char* log_name, char* log_filename_from_macro
         strncpy(result,last_slash,255);
         
         // After that, point to the first period
-        char* first_dot = memchr(result, '.', 255); // TODO: Last period!
+        char* first_dot = memrchr(result, '.', 255);
         
         // If there was a period, null it out
         if(first_dot!=0) {
