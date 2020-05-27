@@ -31,7 +31,8 @@ static int enable_tcp_defer_accept(int socket_fd) {
 }
 
 static int ignore_sigpipe() {
-    return (signal(SIGPIPE, SIG_IGN) == SIG_ERR ? -1 : 1);
+//    return (signal(SIGPIPE, SIG_IGN) == SIG_ERR ? -1 : 1); TODO
+    return 0;
 }
 
 static int cleanup_then_oops(int socket, const char* warning) {
@@ -52,7 +53,7 @@ int tcpserver_new(const char* ip, const char* port, tcpserver_options options)
     server_address.sin_port = htons(atoi(port));
         
     // Open a socket
-    int s = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+    int s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (s == -1)
         return oops_sys("failed to create TCP server socket");
     

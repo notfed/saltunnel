@@ -74,8 +74,8 @@ static void* connection_thread(void* v)
     tcpclient_options options = {
         .OPT_TCP_NODELAY = 1,
         .OPT_CONNECT_TIMEOUT = config_connection_timeout_ms,
-//        .OPT_CANCELLABLE_CONNECT = 1,
-//        .OPT_CONNECT_CANCEL_FD = ctx->remote_fd
+        .OPT_CANCELLABLE_CONNECT = 1,
+        .OPT_CONNECT_CANCEL_FD = ctx->remote_fd
     };
     
     log_trace("connecting to %s:%s", ctx->to_ip, ctx->to_port);

@@ -5,6 +5,7 @@
 
 #include "tcpclient.h"
 #include "oops.h"
+#include "math.h"
 
 #include <signal.h>
 #include <netdb.h>
@@ -18,41 +19,49 @@
 #include <poll.h>
 #include <time.h>
 
-// TODO: Accept an extra "cancellation_fd" which we'll also watch for POLLHUP
 static int connect_with_cancellable_timeout(int sockfd, const struct sockaddr *addr, socklen_t addrlen,
                                             unsigned int timeout_ms, int cancel_fd) {
     int rc = 0;
+    
     // Set O_NONBLOCK
     int sockfd_flags_before;
     if((sockfd_flags_before=fcntl(sockfd,F_GETFL,0)<0)) return -1;
     if(fcntl(sockfd,F_SETFL,sockfd_flags_before | O_NONBLOCK)<0) return -1;
-    // Start connecting (asynchronously)
+    // This one-time 'loop' just lets us 'break' to get out of it
     do {
+        // Start connecting (asynchronously)
         if (connect(sockfd, addr, addrlen)<0) {
             // Did connect return an error? If so, we'll fail.
             if ((errno != EWOULDBLOCK) && (errno != EINPROGRESS)) {
                 rc = -1;
             }
-            // Otherwise, we'll wait for it to complete.
+            // Otherwise, asynchronous connect has begun
+            // We'll now wait for one of (A) timeout expired, or (B) cancel_fd closed, or (C) connection completed.
             else {
-                // Set a deadline timestamp 'timeout' ms from now (needed b/c poll can be interrupted)
+                // Set a deadline timestamp 'timeout' ms from now. (Needed b/c poll can be interrupted.)
                 struct timespec now;
                 if(clock_gettime(CLOCK_MONOTONIC, &now)<0) { rc=-1; break; }
                 struct timespec deadline = { .tv_sec = now.tv_sec,
                                              .tv_nsec = now.tv_nsec + timeout_ms*1000000l};
-                // Wait for the connection to complete.
+                // We'll repeatedly poll in 500ms intervals. (Needed b/c poll won't detect POLLHUP if it happens during poll.)
                 do {
                     // Calculate how long until the deadline
                     if(clock_gettime(CLOCK_MONOTONIC, &now)<0) { rc=-1; break; }
                     int ms_until_deadline = (int)(  (deadline.tv_sec  - now.tv_sec)*1000l
                                                   + (deadline.tv_nsec - now.tv_nsec)/1000000l);
+                    // (A) If the timeout has expired, exit.
                     if(ms_until_deadline<0) { rc=0; break; }
-                    // Wait for connect to complete (or for the timeout deadline)
-                    struct pollfd pfds[] = { { .fd = sockfd, .events = POLLOUT },
-                                             { .fd = cancel_fd, .events = POLLHUP } };
-                    rc = poll(pfds, 1, ms_until_deadline); // TODO: Need to interrupt when client disconnects
-                    // If poll 'succeeded', make sure it *really* succeeded
-                    if(rc>0) {
+                    // Perform the poll
+                    struct pollfd pfds[] = { { .fd = sockfd,    .events = POLLHUP|POLLERR|POLLOUT },
+                                             { .fd = cancel_fd, .events = POLLHUP|POLLERR } };
+                    rc = poll(pfds, 2, MIN(ms_until_deadline+1,500));
+                    // (B) If the cancel_fd has a POLLHUP or POLLERR, exit.
+                    if(rc>0 && pfds[1].revents>0) {
+                        errno = ECONNRESET;
+                        rc = -1;
+                    }
+                    // (C) If the connection has completed, check to see whether it succeeded or failed, then exit.
+                    else if(rc>0 && pfds[0].revents>0) {
                         int error = 0; socklen_t len = sizeof(error);
                         int retval = getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &error, &len);
                         if(retval==0) errno = error;
@@ -60,11 +69,11 @@ static int connect_with_cancellable_timeout(int sockfd, const struct sockaddr *a
                     }
                 }
                 // If poll was interrupted, try again.
-                while(rc==-1 && errno==EINTR);
+                while(rc==0 || (rc==-1 && errno==EINTR));
                 // Did poll timeout? If so, fail.
                 if(rc==0) {
                     errno = ETIMEDOUT;
-                    rc=-1;
+                    rc = -1;
                 }
             }
         }
@@ -115,23 +124,19 @@ int tcpclient_new(const char* ip, const char* port, tcpclient_options options)
     }
     
     // Connect using the socket
-    if(options.OPT_CONNECT_TIMEOUT>0) {
-        if(connect_with_timeout(s, server_address->ai_addr, server_address->ai_addrlen, options.OPT_CONNECT_TIMEOUT)<0)
-            return cleanup_then_oops_sys(s, "failed to connect to destination address", server_address);
-    } else {
-        if(connect(s, server_address->ai_addr, server_address->ai_addrlen)<0) {
-            return cleanup_then_oops_sys(s, "failed to connect to destination address", server_address);
-        }
-    }
-    
-    // Free the address
-    freeaddrinfo(server_address);
+    unsigned int timeout = (options.OPT_CONNECT_TIMEOUT>0 ? options.OPT_CONNECT_TIMEOUT : 3600000);
+    int cancel_fd = (options.OPT_CANCELLABLE_CONNECT?options.OPT_CONNECT_CANCEL_FD:-1);
+    if(connect_with_cancellable_timeout(s, server_address->ai_addr, server_address->ai_addrlen, timeout, cancel_fd)<0)
+    { return cleanup_then_oops_sys(s, "failed to connect to destination address", server_address); }
     
     // Make it non-blocking
     if(options.OPT_NONBLOCK) {
         if(fd_unblock(s)<0)
             return cleanup_then_oops_sys(s, "failed to set set O_NONBLOCK on TCP client socket", server_address);
     }
+    
+    // Free the address
+    freeaddrinfo(server_address);
 
     return s;
 }
