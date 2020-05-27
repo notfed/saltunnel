@@ -195,11 +195,12 @@ int saltunnel_tcp_server_forwarder(cache* table,
         //  TODO: OS X does not support TCP_DEFER_ACCEPT: saltunnel-server on OS X has a DoS vulnerability.
         //   The problem is that:
         //   - If, after a connection is accepted, it doesn't immediately have 512 bytes of data, then
-        //     an attacker can DoS our TCP server by opening a many connections and not writing anything.
+        //     an attacker can DoS our TCP server by opening many connections and not writing any data.
         //   - If we simply drop incoming connections that don't yet have data, we have a race condition,
         //     because there may be a small time gap between the first ACK and the first packet with data.
+        //   - On Linux, TCP_DEFER_ACCEPT solves this.  But it's not supported on OS X.
         //  Possible Solution A)
-        //     Put a 100ms (or so?) RCV-TIMEOUT. (More of a mitigation than solution.)
+        //     Temporarily put a 100ms (or so?) SO_RCVTIMEO. (More of a mitigation than solution.)
         //  Possible Solution B)
         //     As new connections arrive, queue them into a kqueue. Meanwhile, keep polling the kqueue
         //     to see if any have data. If one has data, enforce that it's 512 bytes and verify it,
