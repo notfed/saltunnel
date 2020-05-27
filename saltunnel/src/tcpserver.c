@@ -31,7 +31,7 @@ static int enable_tcp_defer_accept(int socket_fd) {
 }
 
 static int ignore_sigpipe() {
-//    return (signal(SIGPIPE, SIG_IGN) == SIG_ERR ? -1 : 1); TODO
+    return (signal(SIGPIPE, SIG_IGN) == SIG_ERR ? -1 : 1);
     return 0;
 }
 
